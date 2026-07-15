@@ -1,0 +1,6 @@
+/vendor/
+*.db
+*.sqlite
+*.exe
+*.dll
+*.so
