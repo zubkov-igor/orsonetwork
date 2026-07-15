@@ -32,9 +32,24 @@ func (s *Scanner) Scan() []models.Network {
             gw,
         )
 
-        network.Hosts = DiscoverHosts(
-            network.CIDR,
-        )
+network.Hosts = DiscoverHosts(
+    network.CIDR,
+)
+
+network.Hosts = EnrichHosts(
+    network.Hosts,
+    network.CIDR,
+)
+
+for _, h := range network.Hosts {
+
+    println(
+        "SCAN HOST:",
+        h.IP,
+        h.MAC,
+        h.Vendor,
+    )
+}
 
         networks = append(
             networks,

@@ -1,6 +1,3 @@
-/vendor/
-*.db
-*.sqlite
-*.exe
-*.dll
-*.so
+build/bin
+node_modules
+frontend/dist

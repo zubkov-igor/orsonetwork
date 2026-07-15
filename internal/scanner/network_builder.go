@@ -17,5 +17,6 @@ func BuildNetwork(
         CIDR:      network.String(),
         Interface: iface.Name,
         Gateway:   gateway.IP,
+        Hosts:     []models.Host{},
     }
 }

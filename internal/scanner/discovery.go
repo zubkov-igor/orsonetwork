@@ -71,7 +71,15 @@ func DiscoverHosts(cidr string) []models.Host {
 
     }()
 
+for _, h := range hosts {
 
+    fmt.Println(
+        "ENRICH RESULT:",
+        h.IP,
+        h.MAC,
+        h.Vendor,
+    )
+}
 
     for host := range results {
 
@@ -84,17 +92,6 @@ func DiscoverHosts(cidr string) []models.Host {
 
     fmt.Println("Ping:", time.Since(start))
 
-
-    for i := range hosts {
-
-        
-        hosts[i].Vendor = LookupVendor(
-            hosts[i].MAC,
-        )
-
-    }
-
-    fmt.Println("Vendor:", time.Since(start))
 
     return hosts
 }

@@ -9,7 +9,9 @@ func TestBuildTopology(t *testing.T) {
 	topology := s.Topology()
 
 	t.Log("Networks:", len(topology.Networks))
+	t.Log("Nodes:", len(topology.Nodes))
 	t.Log("Links:", len(topology.Links))
+
 
 	for _, network := range topology.Networks {
 
@@ -21,9 +23,24 @@ func TestBuildTopology(t *testing.T) {
 		)
 	}
 
+
+	for _, node := range topology.Nodes {
+
+		t.Log(
+    "NODE:",
+    node.Type,
+    node.ID,
+    node.IP,
+    node.MAC,
+    node.Vendor,
+)
+	}
+
+
 	for _, link := range topology.Links {
 
 		t.Log(
+			"LINK:",
 			link.From,
 			"->",
 			link.To,

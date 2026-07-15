@@ -1,7 +1,7 @@
 package models
 
 type Link struct {
-    From string
-    To   string
-    Type string
+    From string `json:"from"`
+    To   string `json:"to"`
+    Type string `json:"type"`
 }

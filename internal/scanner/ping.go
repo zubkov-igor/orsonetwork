@@ -33,7 +33,7 @@ func PingHost(
 
 
 	// ICMP требует root
-	pinger.SetPrivileged(true)
+	pinger.SetPrivileged(false)
 
 
 	err = pinger.Run()
