@@ -1,7 +1,7 @@
 export default function Footer() {
     return (
         <footer class="footer">
-            Footer
+            OrsoNetwork &copy; 2026
         </footer>
     );
 }

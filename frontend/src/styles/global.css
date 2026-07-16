@@ -3,20 +3,29 @@
 ============================================= */
 
 :root {
-    --color-back: #0f172a;
-    --color-panel: #111827;
-    --color-first: #2563eb;
+    --color-back: #F0FFFF;
+    --color-text: #222051;
+
+    --color-block: #2E86C1;
+    --color-dark: #121212;
+    --color-light: #FFFAFA;
+
     --color-accent: #10b981;
     --color-warning: #f59e0b;
     --color-danger: #ef4444;
-
-    --color-text: #e5e7eb;
     --color-muted: #94a3b8;
 
     --base-font-size: 16px;
+    --header-height: 3.75rem;
+    --sidebar-width-expanded: 10.375rem;
+    --sidebar-width-compact: 4.375rem;
+    --color-shadow: rgba(0, 0, 0, .1);
+
+    --transition-speed: 0.3s;
+    --transition-fast: .15s;
+    --transition-normal: .30s;
+    --transition-slow: .45s;
 }
-
-
 
 
 /* =============================================
@@ -57,9 +66,67 @@ html {
     line-height: 1.5;
 }
 
-body {
-    min-height: 100vh;
+body,
+#app {
+    width: 100%;
+    height: 100%;
     background-color: var(--color-back);
     color: var(--color-text);
     overflow-x: hidden;
+}
+
+.app__layout {
+    width: 100%;
+    min-height: 100vh;
+
+    display: grid;
+
+    grid-template-rows:
+        var(--header-height)
+        1fr
+        var(--header-height);
+
+    grid-template-columns:
+        var(--sidebar-width) 1fr;
+
+    grid-template-areas:
+        "header header"
+        "sidebar main"
+        "footer footer";
+}
+
+.app__layout {
+    --sidebar-width: var(--sidebar-width-compact);
+}
+
+.app__layout.expanded {
+    --sidebar-width: var(--sidebar-width-expanded);
+}
+
+
+/* =============================================
+    Main
+============================================= */
+
+.main {
+    grid-area: main;
+    overflow: auto;
+    padding: 1.5rem;
+}
+
+
+/* =============================================
+    Footer
+============================================= */
+
+.footer {
+    grid-area: footer;
+    background-color: var(--color-block);
+    color: var(--color-light);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    border-top: 1px solid var(--color-shadow);
 }

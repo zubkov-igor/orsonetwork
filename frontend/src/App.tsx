@@ -1,7 +1,7 @@
+import AppLayout from "./layout/AppLayout";
+
 export default function App() {
     return (
-        <h1>
-            OrsoNetwork
-        </h1>
+        <AppLayout />
     );
 }

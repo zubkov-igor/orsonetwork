@@ -11,5 +11,4 @@ type Host struct {
     Online   bool
     RTT      time.Duration
 
-    LastSeen time.Time
 }
