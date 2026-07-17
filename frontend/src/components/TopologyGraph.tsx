@@ -6,119 +6,235 @@ import {
 
 import cytoscape from "cytoscape";
 
-import { topology } from "../store/topology";
+import {
+    topology,
+    selectedDevice,
+} from "../store/topology";
 
-export default function TopologyGraph() {
+
+interface TopologyGraphProps {
+    compact?: boolean;
+}
+
+export default function TopologyGraph(
+    props: TopologyGraphProps
+) {
     let container: HTMLDivElement | undefined;
 
     let cy: cytoscape.Core | undefined;
 
-    onMount(() => {
-        if (!container) {
-            return;
-        }
+onMount(() => {
+    if (!container) {
+        return;
+    }
+    
+    const styles = getComputedStyle(
+        document.documentElement
+    );
 
-        cy = cytoscape({
-            container,
+    const colorNode = styles
+        .getPropertyValue("--color-node")
+        .trim();
 
-            style: [
-  {
-    selector: "node",
+    const colorNodeBorder = styles
+        .getPropertyValue("--color-node-border")
+        .trim();
 
-    style: {
-        "background-color": "#d7dee7",
-        label: "data(label)",
-        color: "#0f1720",
-        "text-valign": "center",
-        "text-halign": "center",
+    const colorGateway = styles
+        .getPropertyValue("--color-gateway")
+        .trim();
+
+    const colorGatewayBorder = styles
+        .getPropertyValue("--color-gateway-border")
+        .trim();
+
+    const colorLight = styles
+        .getPropertyValue("--color-light")
+        .trim();
+
+cy = cytoscape({
+    container,
+
+style: [
+    {
+        selector: "node",
+
+        style: {
+            "background-color": colorNode,
+            width: 70,
+            height: 70,
+            label: "data(label)",
+            color: colorLight,
+            "text-valign": "center",
+            "text-halign": "center",
+            "font-size": 11,
+            "font-weight": "bold",
+            "text-wrap": "wrap",
+            "text-max-width": "80px",
+            "border-width": 2,
+            "border-color": colorNodeBorder,
+        },
     },
-},
 
-{
-    selector: 'node[type = "gateway"]',
+    {
+        selector: "node.node--selected",
 
-    style: {
-        "background-color": "#f0a202",
-        color: "#0b1117",
+        style: {
+            "border-width": 5,
+            "border-color": colorGatewayBorder,
+            "overlay-color": colorGatewayBorder,
+            "overlay-opacity": 0.25,
+            "overlay-padding": 8,
+        },
     },
-},
 
-{
-    selector: 'node[type = "host"]',
+    {
+        selector: 'node[type = "gateway"]',
 
-    style: {
-        "background-color": "#d7dee7",
-        color: "#0f1720",
+        style: {
+            "background-color": colorGateway,
+            width: 90,
+            height: 90,
+            "border-width": 3,
+            "border-color": colorGatewayBorder,
+            "font-size": 12,
+        },
     },
-},
 
-{
-    selector: "edge",
+        {
+            selector: 'node[type = "host"]',
 
-    style: {
-        width: 2,
-        "line-color": "#52606d",
-    },
-},
-            ],
+            style: {
+                "background-color": colorNode,
 
-            layout: {
-                name: "breadthfirst",
-                directed: true,
-                padding: 30,
+                width: 70,
+                height: 70,
+
+                "border-color": colorNodeBorder,
             },
-        });
+        },
 
-        createEffect(() => {
-            const currentTopology = topology();
+        {
+            selector: "edge",
 
-            if (!currentTopology || !cy) {
-                return;
-            }
+            style: {
+                width: 2,
 
-            cy.elements().remove();
+                "line-color": colorNodeBorder,
 
-            const nodes = currentTopology.nodes ?? [];
-            const links = currentTopology.links ?? [];
+                "target-arrow-color": colorNodeBorder,
 
-            cy.add([
-                ...nodes.map((node) => ({
-                    data: {
-                        id: node.id,
-                        label: node.label,
-                        type: node.type,
-                        ip: node.ip,
-                        mac: node.mac,
-                        vendor: node.vendor,
-                    },
-                })),
+                "target-arrow-shape": "triangle",
 
-                ...links.map((link, index) => ({
-                    data: {
-                        id: `link-${index}`,
-                        source: link.from,
-                        target: link.to,
-                        type: link.type,
-                    },
-                })),
-            ]);
+                "curve-style": "bezier",
+            },
+        },
+    ],
 
-            cy.layout({
-                name: "breadthfirst",
-                directed: true,
-                padding: 30,
-            }).run();
-        });
+    layout: {
+        name: "breadthfirst",
+        directed: true,
+        padding: 30,
+    },
+});
 
-        onCleanup(() => {
-            cy?.destroy();
-        });
+requestAnimationFrame(() => {
+
+    cy?.resize();
+
+    cy?.layout({
+        name: "breadthfirst",
+        directed: true,
+        padding: props.compact ? 20 : 40,
+    }).run();
+
+});
+
+createEffect(() => {
+    const currentTopology = topology();
+
+    if (!currentTopology || !cy) {
+        return;
+    }
+
+    cy.elements().remove();
+
+    const nodes = currentTopology.nodes ?? [];
+    const links = currentTopology.links ?? [];
+
+    cy.add([
+        ...nodes.map((node) => ({
+            data: {
+                id: node.id,
+                label: `${node.type.toUpperCase()}\n${node.ip}`,
+                type: node.type,
+                ip: node.ip,
+                mac: node.mac,
+                vendor: node.vendor,
+            },
+        })),
+
+        ...links.map((link, index) => ({
+            data: {
+                id: `link-${index}`,
+                source: link.from,
+                target: link.to,
+                type: link.type,
+            },
+        })),
+    ]);
+
+    cy.resize();
+
+    cy.layout({
+        name: "breadthfirst",
+        directed: true,
+        padding: props.compact ? 20 : 40,
+    }).run();
+});
+
+
+createEffect(() => {
+    const selected = selectedDevice();
+
+    if (!cy) {
+        return;
+    }
+
+    cy.nodes().removeClass(
+        "node--selected"
+    );
+
+    if (!selected) {
+        return;
+    }
+
+    const node =
+        cy.getElementById(selected.id);
+
+    if (node.length > 0) {
+        node.addClass(
+            "node--selected"
+        );
+    }
+});
+
+
+
+    onCleanup(() => {
+        cy?.destroy();
     });
+
+});
 
     return (
         <div
             ref={container}
-            class="topology-graph"
+            class={`topology-graph ${
+                props.compact
+                    ? "topology-graph--compact"
+                    : ""
+            }`}
         />
     );
 }

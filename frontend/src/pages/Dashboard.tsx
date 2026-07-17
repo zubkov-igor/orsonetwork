@@ -37,7 +37,11 @@ export default function Dashboard() {
                     </strong>
                 </div>
             </div>
-            <TopologyGraph />
+            <div class="dashboard__topology">
+    <h2>Network Topology</h2>
+
+    <TopologyGraph compact />
+</div>
             <h2>Devices</h2>
 
             <div class="dashboard__nodes">
@@ -45,25 +49,25 @@ export default function Dashboard() {
                     <div class="node-card">
                         <h3>{node.label}</h3>
 
-                        <p>
+                        <span>
                             Type: {node.type}
-                        </p>
+                        </span>
 
-                        <p>
+                        <span>
                             IP: {node.ip}
-                        </p>
+                        </span>
 
-                        <p>
+                        <span>
                             MAC: {node.mac || "—"}
-                        </p>
+                        </span>
 
-                        <p>
+                        <span>
                             Vendor: {node.vendor || "—"}
-                        </p>
+                        </span>
                     </div>
                 ))}
             </div>
-            
+
         </div>
     );
 }
