@@ -38,7 +38,6 @@ network.Hosts = DiscoverHosts(
 
 network.Hosts = EnrichHosts(
     network.Hosts,
-    network.CIDR,
 )
 
 for _, h := range network.Hosts {

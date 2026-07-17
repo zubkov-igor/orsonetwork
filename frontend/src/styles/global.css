@@ -3,23 +3,26 @@
 ============================================= */
 
 :root {
-    --color-back: #F0FFFF;
-    --color-text: #222051;
+    --color-back: #0f1720;
+    --color-text: #d7dee7;
 
-    --color-block: #2E86C1;
-    --color-dark: #121212;
-    --color-light: #FFFAFA;
+    --color-block: #17212b;
+    --color-dark: #0b1117;
+    --color-light: #f4f7fa;
 
-    --color-accent: #10b981;
-    --color-warning: #f59e0b;
-    --color-danger: #ef4444;
-    --color-muted: #94a3b8;
+    --color-accent: #3b82f6;
+    --color-warning: #f0a202;
+    --color-danger: #e74c3c;
+    --color-muted: #7f8c99;
+
+    --color-border: #2b3945;
+    --color-link: #52606d;
+    --color-shadow: rgba(0, 0, 0, 0.35);
 
     --base-font-size: 16px;
     --header-height: 3.75rem;
     --sidebar-width-expanded: 10.375rem;
     --sidebar-width-compact: 4.375rem;
-    --color-shadow: rgba(0, 0, 0, .1);
 
     --transition-speed: 0.3s;
     --transition-fast: .15s;
@@ -130,3 +133,5 @@ body,
     text-align: center;
     border-top: 1px solid var(--color-shadow);
 }
+
+

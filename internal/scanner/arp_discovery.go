@@ -3,108 +3,90 @@ package scanner
 import (
     "net"
     "net/netip"
-    "time"
-
+  
     "OrsoNetwork/internal/models"
 
     "github.com/mdlayher/arp"
 )
 
+func ARPDiscovery(
+    hosts []models.Host,
+) []models.Host {
 
-func ARPDiscovery(cidr string) []models.Host {
-
-    var hosts []models.Host
-
+    var arpHosts []models.Host
 
     interfaces := GetInterfaces()
 
     if len(interfaces) == 0 {
-        return hosts
+        return arpHosts
     }
-
 
     iface, err := net.InterfaceByName(
         interfaces[0].Name,
     )
 
     if err != nil {
-        return hosts
+        return arpHosts
     }
-
 
     client, err := arp.Dial(iface)
 
     if err != nil {
-        return hosts
+        println(
+            "ARP DIAL ERROR:",
+            err.Error(),
+        )
+
+        return arpHosts
     }
 
     defer client.Close()
 
+    for _, host := range hosts {
 
-
-    // время ожидания ARP ответов
-    err = client.SetReadDeadline(
-        time.Now().Add(
-            2 * time.Second,
-        ),
-    )
-
-    if err != nil {
-        return hosts
-    }
-
-
-
-    ips := HostsFromCIDR(cidr)
-
-
-
-    // отправляем ARP запросы
-    for _, ip := range ips {
-
-
-        addr, err := netip.ParseAddr(ip)
-
-        if err != nil {
-            continue
-        }
-
-
-        err = client.Request(addr)
-
-        if err != nil {
-            continue
-        }
-
-    }
-
-
-
-    // читаем ответы
-    for {
-
-
-        packet, _, err := client.Read()
-
-
-        if err != nil {
-            break
-        }
-
-
-
-        hosts = append(
-            hosts,
-            models.Host{
-                IP: packet.SenderIP.String(),
-                MAC: packet.SenderHardwareAddr.String(),
-                Online: true,
-            },
+        addr, err := netip.ParseAddr(
+            host.IP,
         )
 
+        if err != nil {
+            continue
+        }
+
+        println(
+            "ARP REQUEST:",
+            host.IP,
+        )
+
+        mac, err := client.Resolve(addr)
+
+        if err != nil {
+
+            println(
+                "ARP RESOLVE ERROR:",
+                host.IP,
+                err.Error(),
+            )
+
+            continue
+        }
+
+        arpHost := models.Host{
+            IP:     host.IP,
+            MAC:    mac.String(),
+            Online: true,
+        }
+
+        println(
+            "ARP HOST:",
+            arpHost.IP,
+            arpHost.MAC,
+        )
+
+        arpHosts = append(
+            arpHosts,
+            arpHost,
+        )
     }
 
-
-
-    return hosts
+    return arpHosts
 }
