@@ -218,8 +218,34 @@ export default function Devices() {
                         {device().vendor || "—"}
                     </strong>
                 </div>
+                <div class="device-details__row">
+    <span>Latency</span>
+    <strong>
+        {device().online
+            ? `${(
+                device().rtt / 1_000_000
+            ).toFixed(1)} ms`
+            : "—"}
+    </strong>
+</div>
+
+                <div class="device-details__status">
+    <span
+        class={`device-status ${
+            device().online
+                ? "device-status--online"
+                : "device-status--offline"
+        }`}
+    >
+        {device().online
+            ? "● Online"
+            : "● Offline"}
+    </span>
+</div>
 
             </aside>
+
+
 
         )}
 

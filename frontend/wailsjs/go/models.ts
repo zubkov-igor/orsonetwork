@@ -26,6 +26,7 @@ export namespace models {
 	    from: string;
 	    to: string;
 	    type: string;
+	    latency: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Link(source);
@@ -36,6 +37,7 @@ export namespace models {
 	        this.from = source["from"];
 	        this.to = source["to"];
 	        this.type = source["type"];
+	        this.latency = source["latency"];
 	    }
 	}
 	export class Network {
@@ -81,6 +83,8 @@ export namespace models {
 	    ip: string;
 	    mac: string;
 	    vendor: string;
+	    online: boolean;
+	    rtt: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Node(source);
@@ -94,6 +98,8 @@ export namespace models {
 	        this.ip = source["ip"];
 	        this.mac = source["mac"];
 	        this.vendor = source["vendor"];
+	        this.online = source["online"];
+	        this.rtt = source["rtt"];
 	    }
 	}
 	export class Topology {

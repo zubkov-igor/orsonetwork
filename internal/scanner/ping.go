@@ -19,7 +19,6 @@ func PingHost(
 		IP: ip,
 	}
 
-
 	pinger, err := ping.NewPinger(ip)
 
 	if err != nil {

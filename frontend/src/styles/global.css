@@ -33,6 +33,15 @@
   --color-node-border: #7f8c99;
   --color-gateway: #3b82f6;
   --color-gateway-border: #f0a202;
+
+/* Colors: latency */
+--color-latency-good: #2dd4bf;
+--color-latency-warning: #38bdf8;
+--color-latency-critical: #c084fc;
+--color-latency-timeout: #64748b;
+
+--color-latency-label: #f8fafc;
+--color-latency-label-bg: #1e293b;
 }
 
 

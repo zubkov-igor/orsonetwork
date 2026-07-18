@@ -1,6 +1,10 @@
 package scanner
 
-import "OrsoNetwork/internal/models"
+import (
+    "time"
+
+    "OrsoNetwork/internal/models"
+)
 
 type Scanner struct {
 }
@@ -63,7 +67,44 @@ func (s *Scanner) Topology() models.Topology {
 
     networks := s.Scan()
 
-    return BuildTopology(
+    topology := BuildTopology(
         networks,
     )
+
+    pingResults := make(
+        map[string]models.Host,
+    )
+
+    for i := range topology.Nodes {
+
+        node := &topology.Nodes[i]
+
+        result := PingHost(
+            node.IP,
+            2*time.Second,
+        )
+
+        pingResults[node.IP] = result
+
+        node.Online = result.Online
+        node.RTT = result.RTT
+    }
+
+    for i := range topology.Links {
+
+        result :=
+            pingResults[topology.Links[i].To]
+
+        if result.Online {
+
+            topology.Links[i].Latency =
+                result.RTT.Seconds() * 1000
+
+        } else {
+
+            topology.Links[i].Latency = 0
+        }
+    }
+
+    return topology
 }

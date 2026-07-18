@@ -8,7 +8,6 @@ type Host struct {
     Hostname string
     Vendor   string
 
-    Online   bool
-    RTT      time.Duration
-
+    Online bool
+    RTT    time.Duration
 }
