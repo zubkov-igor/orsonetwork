@@ -10,6 +10,8 @@ import {
     setSelectedDevice,
 } from "../store/topology";
 
+import Select from "../components/Select";
+
 
 export default function Devices() {
 
@@ -73,32 +75,29 @@ export default function Devices() {
                     }
                 />
 
+<Select
+    value={typeFilter()}
+    options={[
+        {
+            value: "all",
+            label: "All",
+        },
+        {
+            value: "gateway",
+            label: "Gateway",
+        },
+        {
+            value: "host",
+            label: "Host",
+        },
+    ]}
+    onChange={setTypeFilter}
+/>
 
-                <select
-                    class="devices__filter"
-                    value={typeFilter()}
-                    onChange={(e) =>
-                        setTypeFilter(
-                            e.currentTarget.value
-                        )
-                    }
-                >
-
-                    <option value="all">
-                        All
-                    </option>
-
-                    <option value="gateway">
-                        Gateway
-                    </option>
-
-                    <option value="host">
-                        Host
-                    </option>
-
-                </select>
+           
 
             </div>
+
 
 <div class="devices__layout">
             <div class="devices__table-wrapper">
@@ -139,11 +138,19 @@ export default function Devices() {
 
     setSelectedDevice(device);}}>
 
-                                    <td>
-                                        <span class="device-status device-status--online">
-                                            ● Online
-                                        </span>
-                                    </td>
+                                   <td>
+    <span
+        class={`device-status ${
+            device.online
+                ? "device-status--online"
+                : "device-status--offline"
+        }`}
+    >
+        {device.online
+            ? "● Online"
+            : "● Offline"}
+    </span>
+</td>
 
 
                                     <td>
@@ -229,7 +236,7 @@ export default function Devices() {
     </strong>
 </div>
 
-                <div class="device-details__status">
+ <div class="device-details__status">
     <span
         class={`device-status ${
             device().online
