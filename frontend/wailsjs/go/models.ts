@@ -1,12 +1,13 @@
 export namespace models {
 	
 	export class Host {
-	    IP: string;
-	    MAC: string;
-	    Hostname: string;
-	    Vendor: string;
-	    Online: boolean;
-	    RTT: number;
+	    ip: string;
+	    mac: string;
+	    hostname: string;
+	    vendor: string;
+	    sources: string[];
+	    online: boolean;
+	    rtt: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Host(source);
@@ -14,12 +15,13 @@ export namespace models {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.IP = source["IP"];
-	        this.MAC = source["MAC"];
-	        this.Hostname = source["Hostname"];
-	        this.Vendor = source["Vendor"];
-	        this.Online = source["Online"];
-	        this.RTT = source["RTT"];
+	        this.ip = source["ip"];
+	        this.mac = source["mac"];
+	        this.hostname = source["hostname"];
+	        this.vendor = source["vendor"];
+	        this.sources = source["sources"];
+	        this.online = source["online"];
+	        this.rtt = source["rtt"];
 	    }
 	}
 	export class Link {
@@ -27,6 +29,7 @@ export namespace models {
 	    to: string;
 	    type: string;
 	    latency: number;
+	    status: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Link(source);
@@ -38,6 +41,7 @@ export namespace models {
 	        this.to = source["to"];
 	        this.type = source["type"];
 	        this.latency = source["latency"];
+	        this.status = source["status"];
 	    }
 	}
 	export class Network {
@@ -82,7 +86,9 @@ export namespace models {
 	    type: string;
 	    ip: string;
 	    mac: string;
+	    hostname: string;
 	    vendor: string;
+	    sources: string[];
 	    online: boolean;
 	    rtt: number;
 	
@@ -97,7 +103,9 @@ export namespace models {
 	        this.type = source["type"];
 	        this.ip = source["ip"];
 	        this.mac = source["mac"];
+	        this.hostname = source["hostname"];
 	        this.vendor = source["vendor"];
+	        this.sources = source["sources"];
 	        this.online = source["online"];
 	        this.rtt = source["rtt"];
 	    }

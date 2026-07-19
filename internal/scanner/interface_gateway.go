@@ -1,19 +1,42 @@
 package scanner
 
-import "OrsoNetwork/internal/models"
+import (
+    "OrsoNetwork/internal/logger"
+    "OrsoNetwork/internal/models"
+)
 
 func GatewayForInterface(
-	iface string,
-	gateways []models.Gateway,
+    iface models.Interface,
+    gateways []models.Gateway,
 ) *models.Gateway {
 
-	for _, gw := range gateways {
+    logger.Log.Println(
+        "GATEWAY SEARCH FOR INTERFACE:",
+        iface.Name,
+    )
 
-		if gw.Interface == iface {
-			return &gw
-		}
+    for _, gw := range gateways {
 
-	}
+        logger.Log.Println(
+            "CHECK GATEWAY:",
+            gw.IP,
+            gw.Interface,
+        )
 
-	return nil
+        if gw.Interface == iface.Name {
+
+            logger.Log.Println(
+                "GATEWAY MATCH:",
+                gw.IP,
+            )
+
+            return &gw
+        }
+    }
+
+    logger.Log.Println(
+        "GATEWAY NOT FOUND",
+    )
+
+    return nil
 }

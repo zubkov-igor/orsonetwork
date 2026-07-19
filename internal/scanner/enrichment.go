@@ -27,6 +27,10 @@ func EnrichHosts(
             hosts[i].Vendor = LookupVendor(
                 arpHost.MAC,
             )
+
+            hosts[i].Hostname = LookupHostname(
+                hosts[i].IP,
+            )
         }
     }
 

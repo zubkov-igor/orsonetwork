@@ -12,6 +12,7 @@
     "vite": "^3.0.7"
   },
   "dependencies": {
-    "cytoscape": "^3.34.0"
+    "cytoscape": "^3.34.0",
+    "lucide-solid": "^1.25.0"
   }
 }

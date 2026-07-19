@@ -1,92 +1,154 @@
 package scanner
 
 import (
-	_ "embed"
-	"encoding/json"
-	"strings"
+    _ "embed"
+    "bufio"
+    "bytes"
+    "encoding/json"
+    "strings"
+
+    "OrsoNetwork/internal/logger"
 )
 
-//go:embed data/mac-vendors.json
+//go:embed data/macaddress.io-db.json
 var vendorJSON []byte
 
 var vendors map[string]string
-
+var legacyVendors map[string]string
 
 type VendorRecord struct {
-	MACPrefix  string `json:"macPrefix"`
-	VendorName string `json:"vendorName"`
-	Private    bool   `json:"private"`
-	BlockType  string `json:"blockType"`
-	LastUpdate string `json:"lastUpdate"`
+    OUI         string `json:"oui"`
+    CompanyName string `json:"companyName"`
 }
-
 
 func LookupVendor(mac string) string {
 
-	if mac == "" {
-		return ""
-	}
+    if mac == "" {
+        return ""
+    }
 
 
-	if vendors == nil {
-		LoadVendorDB()
-	}
+    if vendors == nil {
+        LoadVendorDB()
+    }
 
 
-	prefix := normalizeMAC(mac)
+    if legacyVendors == nil {
+        LoadLegacyVendorDB()
+    }
 
 
-	vendor, ok := vendors[prefix]
+    prefix := normalizeMAC(mac)
 
 
-	if ok {
-		return vendor
-	}
+    vendor, ok := vendors[prefix]
 
 
-	return "Unknown"
+    if ok {
+
+        if !strings.Contains(
+            vendor,
+            "REDACTED",
+        ) {
+            return vendor
+        }
+
+    }
+
+
+    legacyVendor, ok := legacyVendors[prefix]
+
+
+    if ok {
+        return legacyVendor
+    }
+
+
+    return "Unknown"
 }
-
 
 func LoadVendorDB() {
 
-	var records []VendorRecord
+    logger.Log.Println(
+        "LOADING VENDOR DB BYTES:",
+        len(vendorJSON),
+    )
 
-	err := json.Unmarshal(
-		vendorJSON,
-		&records,
-	)
+    vendors = make(
+        map[string]string,
+    )
 
-	if err != nil {
-		panic(err)
-	}
+    scanner := bufio.NewScanner(
+        bytes.NewReader(vendorJSON),
+    )
 
+    count := 0
 
-	vendors = make(
-		map[string]string,
-	)
+    for scanner.Scan() {
 
+        var record VendorRecord
 
-	for _, r := range records {
+        err := json.Unmarshal(
+            scanner.Bytes(),
+            &record,
+        )
 
-		vendors[r.MACPrefix] = r.VendorName
+        if err != nil {
+            logger.Log.Println(
+                "VENDOR JSON ERROR:",
+                err.Error(),
+            )
+            continue
+        }
 
-	}
+        prefix := normalizePrefix(
+            record.OUI,
+        )
+
+        if prefix == "" {
+            continue
+        }
+
+        vendors[prefix] = record.CompanyName
+
+        count++
+    }
+
+    if err := scanner.Err(); err != nil {
+
+        logger.Log.Println(
+            "VENDOR SCANNER ERROR:",
+            err.Error(),
+        )
+
+        panic(err)
+    }
+
+    logger.Log.Println(
+        "VENDOR DB LOADED:",
+        count,
+        "MAP SIZE:",
+        len(vendors),
+    )
 }
-
 
 func normalizeMAC(mac string) string {
 
-	mac = strings.ToUpper(mac)
+    mac = strings.ToUpper(mac)
 
-	mac = strings.ReplaceAll(mac, "-", ":")
-	mac = strings.ReplaceAll(mac, ".", "")
+    mac = strings.ReplaceAll(mac, ":", "")
+    mac = strings.ReplaceAll(mac, "-", "")
+    mac = strings.ReplaceAll(mac, ".", "")
+
+    if len(mac) < 6 {
+        return ""
+    }
+
+    return mac[:6]
+}
 
 
-	if len(mac) < 8 {
-		return ""
-	}
+func normalizePrefix(prefix string) string {
 
-
-	return mac[:8]
+    return normalizeMAC(prefix)
 }

@@ -162,7 +162,7 @@ style: [
             },
         },
         {
-    selector: 'edge[latencyStatus = "good"]',
+    selector: 'edge[status = "good"]',
 
     style: {
         "line-color": colorLatencyGood,
@@ -171,7 +171,7 @@ style: [
 },
 
 {
-    selector: 'edge[latencyStatus = "warning"]',
+    selector: 'edge[status = "warning"]',
 
     style: {
         "line-color": colorLatencyWarning,
@@ -180,7 +180,7 @@ style: [
 },
 
 {
-    selector: 'edge[latencyStatus = "critical"]',
+    selector: 'edge[status = "critical"]',
 
     style: {
         "line-color": colorLatencyCritical,
@@ -189,7 +189,7 @@ style: [
 },
 
 {
-    selector: 'edge[latencyStatus = "timeout"]',
+    selector: 'edge[status = "timeout"]',
 
     style: {
         "line-color": colorLatencyTimeout,
@@ -260,31 +260,33 @@ createEffect(() => {
                 ip: node.ip,
                 mac: node.mac,
                 vendor: node.vendor,
+                hostname: node.hostname,
+                sources: node.sources,
             },
         })),
 
-        ...links.map((link, index) => ({
-            data: {
-                id: `link-${index}`,
-                source: link.from,
-                target: link.to,
-                type: link.type,
+      ...links.map((link, index) => ({
+    data: {
+        id: `link-${index}`,
+        source: link.from,
+        target: link.to,
+        type: link.type,
 
-                latencyLabel:
-                    link.latency > 0
-                        ? `${link.latency.toFixed(1)} ms`
-                        : "—",
+        latencyLabel:
+            link.latency > 0
+                ? `${link.latency.toFixed(1)} ms`
+                : "—",
 
-                latencyStatus:
-                    link.latency <= 0
-                        ? "timeout"
-                        : link.latency < latencyGood
-                            ? "good"
-                            : link.latency <= latencyWarning
-                                ? "warning"
-                                : "critical",
-            },
-        })),
+        latencyStatus:
+            link.latency <= 0
+                ? "timeout"
+                : link.latency < latencyGood
+                    ? "good"
+                    : link.latency <= latencyWarning
+                        ? "warning"
+                        : "critical",
+    },
+})),
     ]);
 
     cy.resize();

@@ -4,6 +4,11 @@ import {
     Show,
 } from "solid-js";
 
+import {
+    Router,
+    Monitor,
+} from "lucide-solid";
+
     import {
     topology,
     selectedDevice,
@@ -172,6 +177,17 @@ export default function Devices() {
                                         {device.vendor || "—"}
                                     </td>
 
+                                    <td>
+                                        {device.hostname || "—"}
+                                    </td>
+
+                                    <td>
+                                         Sources:
+    {device.sources?.length
+        ? device.sources.join(", ")
+        : "—"}
+                                    </td>
+
                                 </tr>
 
                             )}
@@ -190,52 +206,24 @@ export default function Devices() {
 
             <aside class="device-details">
 
-                <h2>
-                    {device().label}
-                </h2>
+<div class="device-details__header">
 
+    {device().type === "gateway"
+        ? <Router size={24} />
+        : <Monitor size={24} />
+    }
 
-                <div class="device-details__row">
-                    <span>Type</span>
-                    <strong>
-                        {device().type}
-                    </strong>
-                </div>
+    <div>
+        <h2>
+            {device().type.toUpperCase()}
+        </h2>
 
+        <span class="device-details__ip">
+            {device().ip}
+        </span>
+    </div>
 
-                <div class="device-details__row">
-                    <span>IP</span>
-                    <strong>
-                        {device().ip}
-                    </strong>
-                </div>
-
-
-                <div class="device-details__row">
-                    <span>MAC</span>
-                    <strong>
-                        {device().mac || "—"}
-                    </strong>
-                </div>
-
-
-                <div class="device-details__row">
-                    <span>Vendor</span>
-                    <strong>
-                        {device().vendor || "—"}
-                    </strong>
-                </div>
-                <div class="device-details__row">
-    <span>Latency</span>
-    <strong>
-        {device().online
-            ? `${(
-                device().rtt / 1_000_000
-            ).toFixed(1)} ms`
-            : "—"}
-    </strong>
 </div>
-
  <div class="device-details__status">
     <span
         class={`device-status ${
@@ -249,6 +237,64 @@ export default function Devices() {
             : "● Offline"}
     </span>
 </div>
+
+<div class="device-details__section">
+
+    <h3>
+        Network
+    </h3>
+
+    <div class="device-details__row">
+        <span>Type</span>
+        <strong>
+            {device().type}
+        </strong>
+    </div>
+
+    <div class="device-details__row">
+        <span>IP</span>
+        <strong>
+            {device().ip}
+        </strong>
+    </div>
+
+    <div class="device-details__row">
+        <span>Latency</span>
+        <strong>
+            {device().online
+                ? `${(
+                    device().rtt / 1_000_000
+                ).toFixed(1)} ms`
+                : "—"}
+        </strong>
+    </div>
+
+</div>
+
+
+<div class="device-details__section">
+
+    <h3>
+        Hardware
+    </h3>
+
+    <div class="device-details__row">
+        <span>MAC</span>
+        <strong>
+            {device().mac || "—"}
+        </strong>
+    </div>
+
+    <div class="device-details__row">
+        <span>Vendor</span>
+        <strong>
+            {device().vendor || "—"}
+        </strong>
+    </div>
+
+</div>
+
+
 
             </aside>
 

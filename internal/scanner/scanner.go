@@ -4,6 +4,7 @@ import (
     "time"
 
     "OrsoNetwork/internal/models"
+    "OrsoNetwork/internal/logger"
 )
 
 type Scanner struct {
@@ -15,44 +16,84 @@ func New() *Scanner {
 
 func (s *Scanner) Scan() []models.Network {
 
+    logger.Log.Println(
+        "SCANNER SCAN START",
+    )
+
     var networks []models.Network
 
     interfaces := GetInterfaces()
+
+    logger.Log.Println(
+        "SCANNER INTERFACES:",
+        len(interfaces),
+    )
+
     gateways := GetGateways()
+
+    logger.Log.Println(
+        "SCANNER GATEWAYS:",
+        len(gateways),
+    )
+
+    logger.Log.Println(
+        "SCANNER LOOP START",
+    )
 
     for _, iface := range interfaces {
 
-        gw := GatewayForInterface(
+        logger.Log.Println(
+            "PROCESS INTERFACE:",
             iface.Name,
-            gateways,
         )
 
+gw := GatewayForInterface(
+    iface,
+    gateways,
+)
         if gw == nil {
+
+            logger.Log.Println(
+                "NO GATEWAY FOR INTERFACE:",
+                iface.Name,
+            )
+
             continue
         }
+
+        logger.Log.Println(
+            "GATEWAY FOUND:",
+            iface.Name,
+            gw.IP,
+        )
 
         network := BuildNetwork(
             iface,
             gw,
         )
 
-network.Hosts = DiscoverHosts(
-    network.CIDR,
-)
+        logger.Log.Println(
+            "NETWORK BUILT:",
+            network.CIDR,
+        )
 
-network.Hosts = EnrichHosts(
-    network.Hosts,
-)
+        network.Hosts = DiscoverHosts(
+            network.CIDR,
+        )
 
-for _, h := range network.Hosts {
+        logger.Log.Println(
+            "HOSTS DISCOVERED:",
+            len(network.Hosts),
+        )
 
-    println(
-        "SCAN HOST:",
-        h.IP,
-        h.MAC,
-        h.Vendor,
-    )
-}
+        network.Hosts = EnrichHosts(
+            network.Hosts,
+        )
+
+        logger.Log.Println(
+            "HOSTS ENRICHED:",
+            len(network.Hosts),
+        )
 
         networks = append(
             networks,
@@ -90,19 +131,35 @@ func (s *Scanner) Topology() models.Topology {
         node.RTT = result.RTT
     }
 
-    for i := range topology.Links {
+   for i := range topology.Links {
 
         result :=
             pingResults[topology.Links[i].To]
 
         if result.Online {
 
-            topology.Links[i].Latency =
+            latency :=
                 result.RTT.Seconds() * 1000
+
+            topology.Links[i].Latency = latency
+
+            switch {
+
+            case latency < 10:
+                topology.Links[i].Status = "good"
+
+            case latency < 50:
+                topology.Links[i].Status = "warning"
+
+            default:
+                topology.Links[i].Status = "critical"
+            }
 
         } else {
 
             topology.Links[i].Latency = 0
+
+            topology.Links[i].Status = "timeout"
         }
     }
 

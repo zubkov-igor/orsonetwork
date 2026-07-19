@@ -24,16 +24,21 @@ for _, host := range network.Hosts {
 
     topology.Nodes = append(
         topology.Nodes,
-        models.Node{
-            ID:     NodeID(host),
-            Label:  host.IP,
-            Type:   nodeType,
-            IP:     host.IP,
-            MAC:    host.MAC,
-            Vendor: host.Vendor,
-            Online: host.Online,
-            RTT:    host.RTT,
-        },
+      models.Node{
+    ID:       NodeID(host),
+    Label:    host.IP,
+    Type:     nodeType,
+
+    IP:       host.IP,
+    MAC:      host.MAC,
+    Hostname: host.Hostname,
+    Vendor:   host.Vendor,
+
+    Sources: host.Sources,
+
+    Online: host.Online,
+    RTT:    host.RTT,
+},
     )
 
     if host.IP == network.Gateway {

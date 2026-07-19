@@ -3,36 +3,102 @@ package scanner
 import (
     "net"
     "net/netip"
-  
+    "time"
+
     "OrsoNetwork/internal/models"
+    "OrsoNetwork/internal/logger"
 
     "github.com/mdlayher/arp"
 )
+
 
 func ARPDiscovery(
     hosts []models.Host,
 ) []models.Host {
 
+    logger.Log.Println(
+        "ARP DISCOVERY START",
+    )
+
     var arpHosts []models.Host
 
+
     interfaces := GetInterfaces()
+
+    for _, i := range interfaces {
+
+    logger.Log.Println(
+        "AVAILABLE INTERFACE:",
+        i.Name,
+    )
+}
+
 
     if len(interfaces) == 0 {
         return arpHosts
     }
 
-    iface, err := net.InterfaceByName(
-        interfaces[0].Name,
+
+var iface *net.Interface
+
+
+for _, i := range interfaces {
+
+    if i.Name == "" {
+        continue
+    }
+
+
+    found, err := net.InterfaceByName(
+        i.Name,
     )
 
     if err != nil {
+        continue
+    }
+
+
+    if IsVirtualInterface(found.Name) {
+
+        logger.Log.Println(
+            "SKIP INTERFACE:",
+            found.Name,
+        )
+
+        continue
+    }
+
+
+    iface = found
+
+    logger.Log.Println(
+        "ARP INTERFACE:",
+        iface.Name,
+        iface.HardwareAddr.String(),
+    )
+
+    break
+}
+
+
+    if iface == nil {
+        logger.Log.Println(
+            "NO ARP INTERFACE",
+        )
+
         return arpHosts
     }
 
-    client, err := arp.Dial(iface)
+
+
+    client, err := arp.Dial(
+        iface,
+    )
+
 
     if err != nil {
-        println(
+
+        logger.Log.Println(
             "ARP DIAL ERROR:",
             err.Error(),
         )
@@ -40,53 +106,83 @@ func ARPDiscovery(
         return arpHosts
     }
 
+
     defer client.Close()
 
+
+
     for _, host := range hosts {
+
 
         addr, err := netip.ParseAddr(
             host.IP,
         )
 
+
         if err != nil {
             continue
         }
 
-        println(
-            "ARP REQUEST:",
-            host.IP,
+
+       logger.Log.Println(
+    "ARP REQUEST:",
+    host.IP,
+)
+
+        err = client.SetReadDeadline(
+            time.Now().Add(
+                1 * time.Second,
+            ),
         )
 
-        mac, err := client.Resolve(addr)
+
+        if err != nil {
+            continue
+        }
+
+
+        mac, err := client.Resolve(
+            addr,
+        )
+
 
         if err != nil {
 
-            println(
-                "ARP RESOLVE ERROR:",
-                host.IP,
-                err.Error(),
+            logger.Log.Println(
+    "ARP RESOLVE ERROR:",
+    host.IP,
+    err.Error(),
+)
+
+            arpHosts = append(
+                arpHosts,
+                host,
             )
 
             continue
         }
 
-        arpHost := models.Host{
-            IP:     host.IP,
-            MAC:    mac.String(),
-            Online: true,
-        }
 
-        println(
-            "ARP HOST:",
-            arpHost.IP,
-            arpHost.MAC,
-        )
+
+        arpHost := host
+
+        arpHost.MAC = mac.String()
+
+
+
+     logger.Log.Println(
+    "ARP HOST:",
+    arpHost.IP,
+    arpHost.MAC,
+)
+
 
         arpHosts = append(
             arpHosts,
             arpHost,
         )
     }
+
 
     return arpHosts
 }

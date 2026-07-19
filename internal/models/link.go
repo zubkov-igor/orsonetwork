@@ -5,4 +5,5 @@ type Link struct {
     To      string  `json:"to"`
     Type    string  `json:"type"`
     Latency float64 `json:"latency"`
+    Status  string  `json:"status"`
 }

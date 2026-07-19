@@ -2,10 +2,10 @@ package scanner
 
 import (
 	"net"
-	"strings"
 
 	"OrsoNetwork/internal/models"
 )
+
 
 func GetInterfaces() []models.Interface {
 
@@ -17,24 +17,15 @@ func GetInterfaces() []models.Interface {
 		return result
 	}
 
-
 	for _, iface := range interfaces {
-
 
 		if iface.Flags&net.FlagUp == 0 {
 			continue
 		}
 
-
-		name := strings.ToLower(iface.Name)
-
-
-		if strings.Contains(name, "tun") ||
-			strings.Contains(name, "docker") ||
-			strings.Contains(name, "veth") {
+		if IsVirtualInterface(iface.Name) {
 			continue
 		}
-
 
 		addrs, err := iface.Addrs()
 
@@ -42,9 +33,7 @@ func GetInterfaces() []models.Interface {
 			continue
 		}
 
-
 		for _, addr := range addrs {
-
 
 			ipNet, ok := addr.(*net.IPNet)
 
@@ -52,19 +41,15 @@ func GetInterfaces() []models.Interface {
 				continue
 			}
 
-
 			ip := ipNet.IP
-
 
 			if ip.To4() == nil {
 				continue
 			}
 
-
 			if ip.IsLoopback() {
 				continue
 			}
-
 
 			result = append(
 				result,
@@ -76,7 +61,6 @@ func GetInterfaces() []models.Interface {
 			)
 		}
 	}
-
 
 	return result
 }

@@ -64,6 +64,13 @@ export default function Dashboard() {
                         <span>
                             Vendor: {node.vendor || "—"}
                         </span>
+                          <span>
+                            Hostname: {node.hostname || "—"}
+                        </span>
+                          <span>
+                            Sources:
+{node.sources?.join(", ") || "—"}
+                        </span>
                     </div>
                 ))}
             </div>

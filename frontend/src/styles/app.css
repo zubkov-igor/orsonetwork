@@ -537,6 +537,10 @@
     border:
         1px solid var(--color-accent);
 
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.25);
+
+
     border-radius:
         10px;
 
@@ -554,6 +558,25 @@
 
 }
 
+.device-details__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.device-details__header svg {
+    color: var(--color-accent);
+    flex-shrink: 0;
+}
+
+.device-details__header h2 {
+    margin: 0;
+}
+
+.device-details__ip {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+}
 
 .device-details__row {
 
@@ -595,8 +618,10 @@
 .devices__row.selected {
 
     background:
-        rgba(16,185,129,.25);
+        rgba(59,130,246,.18);
 
+    box-shadow:
+        inset 3px 0 0 var(--color-accent);
 }
 
 .select {
@@ -680,4 +705,16 @@
     background: rgba(59, 130, 246, 0.25);
 
     color: var(--color-light);
+}
+
+
+.device-details__section {
+    margin-top: 1rem;
+}
+
+.device-details__section h3 {
+    margin-bottom: .5rem;
+    color: var(--color-muted);
+    font-size: .85rem;
+    text-transform: uppercase;
 }
