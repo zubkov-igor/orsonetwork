@@ -6,7 +6,6 @@ func TestGetGateways(t *testing.T) {
 
 	gateways := GetGateways()
 
-
 	for _, gw := range gateways {
 
 		t.Log(
@@ -15,7 +14,6 @@ func TestGetGateways(t *testing.T) {
 		)
 
 	}
-
 
 	if len(gateways) == 0 {
 		t.Error("no gateways found")

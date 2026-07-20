@@ -6,7 +6,6 @@ import (
 	"OrsoNetwork/internal/models"
 )
 
-
 func GetInterfaces() []models.Interface {
 
 	result := []models.Interface{}
@@ -54,8 +53,8 @@ func GetInterfaces() []models.Interface {
 			result = append(
 				result,
 				models.Interface{
-					Name: iface.Name,
-					IP: ip.String(),
+					Name:      iface.Name,
+					IP:        ip.String(),
 					Scannable: true,
 				},
 			)

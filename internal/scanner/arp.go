@@ -5,9 +5,7 @@ import (
 	"strings"
 )
 
-
 type ARPTable map[string]string
-
 
 func (a ARPTable) Lookup(ip string) string {
 
@@ -15,19 +13,14 @@ func (a ARPTable) Lookup(ip string) string {
 
 }
 
-
-
 func GetARPTable() ARPTable {
 
-
 	table := make(ARPTable)
-
 
 	cmd := exec.Command(
 		"ip",
 		"neigh",
 	)
-
 
 	output, err := cmd.Output()
 
@@ -35,31 +28,22 @@ func GetARPTable() ARPTable {
 		return table
 	}
 
-
-
 	lines := strings.Split(
 		string(output),
 		"\n",
 	)
 
-
-
 	for _, line := range lines {
 
-
 		fields := strings.Fields(line)
-
 
 		if len(fields) < 5 {
 			continue
 		}
 
-
 		ip := fields[0]
 
-
 		for i, field := range fields {
-
 
 			if field == "lladdr" && i+1 < len(fields) {
 
@@ -71,8 +55,6 @@ func GetARPTable() ARPTable {
 			}
 		}
 	}
-
-
 
 	return table
 }

@@ -22,23 +22,21 @@ func TestARPRequest(t *testing.T) {
 
 	defer client.Close()
 
-
 	mac, err := client.Resolve(
-	netip.MustParseAddr("192.168.0.1"),
-)
+		netip.MustParseAddr("192.168.0.1"),
+	)
 
-if err != nil {
-	t.Fatal(err)
-}
-
-t.Log(
-	"MAC:",
-	mac,
-)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	t.Log(
+		"MAC:",
+		mac,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	t.Log(
 		"MAC:",
@@ -53,7 +51,6 @@ func TestARPDiscovery(t *testing.T) {
 		"192.168.0.0/24",
 	)
 
-
 	for _, h := range hosts {
 
 		t.Log(
@@ -63,7 +60,6 @@ func TestARPDiscovery(t *testing.T) {
 		)
 
 	}
-
 
 	if len(hosts) == 0 {
 		t.Error("no hosts found")

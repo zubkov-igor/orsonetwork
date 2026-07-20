@@ -1,188 +1,173 @@
 package scanner
 
 import (
-    "net"
-    "net/netip"
-    "time"
+	"net"
+	"net/netip"
+	"time"
 
-    "OrsoNetwork/internal/models"
-    "OrsoNetwork/internal/logger"
+	"OrsoNetwork/internal/logger"
+	"OrsoNetwork/internal/models"
 
-    "github.com/mdlayher/arp"
+	"github.com/mdlayher/arp"
 )
-
 
 func ARPDiscovery(
-    hosts []models.Host,
+	hosts []models.Host,
 ) []models.Host {
 
-    logger.Log.Println(
-        "ARP DISCOVERY START",
-    )
+	logger.Log.Println(
+		"ARP DISCOVERY START",
+	)
 
-    var arpHosts []models.Host
+	var arpHosts []models.Host
 
+	var interfaceIP string
 
-    interfaces := GetInterfaces()
+	interfaces := GetInterfaces()
 
-    for _, i := range interfaces {
+	for _, i := range interfaces {
 
-    logger.Log.Println(
-        "AVAILABLE INTERFACE:",
-        i.Name,
-    )
-}
+		logger.Log.Println(
+			"AVAILABLE INTERFACE:",
+			i.Name,
+		)
+	}
 
+	if len(interfaces) == 0 {
+		return arpHosts
+	}
 
-    if len(interfaces) == 0 {
-        return arpHosts
-    }
+	var iface *net.Interface
 
+	for _, i := range interfaces {
 
-var iface *net.Interface
+		if i.Name == "" {
+			continue
+		}
 
+		found, err := net.InterfaceByName(
+			i.Name,
+		)
 
-for _, i := range interfaces {
+		if err != nil {
+			continue
+		}
 
-    if i.Name == "" {
-        continue
-    }
+		if IsVirtualInterface(found.Name) {
 
+			logger.Log.Println(
+				"SKIP INTERFACE:",
+				found.Name,
+			)
 
-    found, err := net.InterfaceByName(
-        i.Name,
-    )
+			continue
+		}
 
-    if err != nil {
-        continue
-    }
+		iface = found
+		interfaceIP = i.IP
 
+		logger.Log.Println(
+			"ARP INTERFACE:",
+			iface.Name,
+			iface.HardwareAddr.String(),
+		)
 
-    if IsVirtualInterface(found.Name) {
+		break
+	}
 
-        logger.Log.Println(
-            "SKIP INTERFACE:",
-            found.Name,
-        )
+	if iface == nil {
+		logger.Log.Println(
+			"NO ARP INTERFACE",
+		)
 
-        continue
-    }
+		return arpHosts
+	}
 
+	client, err := arp.Dial(
+		iface,
+	)
 
-    iface = found
+	if err != nil {
 
-    logger.Log.Println(
-        "ARP INTERFACE:",
-        iface.Name,
-        iface.HardwareAddr.String(),
-    )
+		logger.Log.Println(
+			"ARP DIAL ERROR:",
+			err.Error(),
+		)
 
-    break
-}
+		return arpHosts
+	}
 
+	defer client.Close()
 
-    if iface == nil {
-        logger.Log.Println(
-            "NO ARP INTERFACE",
-        )
+	for _, host := range hosts {
 
-        return arpHosts
-    }
+		if host.IP == interfaceIP {
+			logger.Log.Println(
+				"SKIP OWN HOST:",
+				host.IP,
+			)
 
+			continue
+		}
 
+		addr, err := netip.ParseAddr(
+			host.IP,
+		)
 
-    client, err := arp.Dial(
-        iface,
-    )
-
-
-    if err != nil {
-
-        logger.Log.Println(
-            "ARP DIAL ERROR:",
-            err.Error(),
-        )
-
-        return arpHosts
-    }
-
-
-    defer client.Close()
-
-
-
-    for _, host := range hosts {
-
-
-        addr, err := netip.ParseAddr(
-            host.IP,
-        )
-
-
-        if err != nil {
-            continue
-        }
-
-
-       logger.Log.Println(
-    "ARP REQUEST:",
-    host.IP,
-)
-
-        err = client.SetReadDeadline(
-            time.Now().Add(
-                1 * time.Second,
-            ),
-        )
-
-
-        if err != nil {
-            continue
-        }
-
-
-        mac, err := client.Resolve(
-            addr,
-        )
-
-
-        if err != nil {
-
-            logger.Log.Println(
-    "ARP RESOLVE ERROR:",
-    host.IP,
-    err.Error(),
-)
-
-            arpHosts = append(
-                arpHosts,
-                host,
-            )
-
-            continue
-        }
-
-
-
-        arpHost := host
-
-        arpHost.MAC = mac.String()
-
-
-
-     logger.Log.Println(
-    "ARP HOST:",
-    arpHost.IP,
-    arpHost.MAC,
-)
-
-
-        arpHosts = append(
-            arpHosts,
-            arpHost,
-        )
-    }
-
-
-    return arpHosts
+		if err != nil {
+			continue
+		}
+
+		logger.Log.Println(
+			"ARP REQUEST:",
+			host.IP,
+		)
+
+		err = client.SetReadDeadline(
+			time.Now().Add(
+				1 * time.Second,
+			),
+		)
+
+		if err != nil {
+			continue
+		}
+
+		mac, err := client.Resolve(
+			addr,
+		)
+
+		if err != nil {
+
+			logger.Log.Println(
+				"ARP RESOLVE ERROR:",
+				host.IP,
+				err.Error(),
+			)
+
+			arpHosts = append(
+				arpHosts,
+				host,
+			)
+
+			continue
+		}
+
+		arpHost := host
+
+		arpHost.MAC = mac.String()
+
+		logger.Log.Println(
+			"ARP HOST:",
+			arpHost.IP,
+			arpHost.MAC,
+		)
+
+		arpHosts = append(
+			arpHosts,
+			arpHost,
+		)
+	}
+
+	return arpHosts
 }

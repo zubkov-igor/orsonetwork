@@ -4,14 +4,11 @@ import (
 	"testing"
 )
 
-
 func TestDiscoverHosts(t *testing.T) {
-
 
 	hosts := DiscoverHosts(
 		"192.168.0.0/30",
 	)
-
 
 	for _, h := range hosts {
 

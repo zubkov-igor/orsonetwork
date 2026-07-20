@@ -3,13 +3,13 @@ package models
 import "time"
 
 type Host struct {
-    IP       string   `json:"ip"`
-    MAC      string   `json:"mac"`
-    Hostname string   `json:"hostname"`
-    Vendor   string   `json:"vendor"`
+	IP       string `json:"ip"`
+	MAC      string `json:"mac"`
+	Hostname string `json:"hostname"`
+	Vendor   string `json:"vendor"`
 
-    Sources []string `json:"sources"`
+	Sources []string `json:"sources"`
 
-    Online bool          `json:"online"`
-    RTT    time.Duration `json:"rtt"`
+	Online bool          `json:"online"`
+	RTT    time.Duration `json:"rtt"`
 }

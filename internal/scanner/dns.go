@@ -1,13 +1,27 @@
 package scanner
 
 import (
+	"context"
 	"net"
 	"strings"
+	"time"
 )
 
 func LookupHostname(ip string) string {
 
-	names, err := net.LookupAddr(ip)
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		200*time.Millisecond,
+	)
+
+	defer cancel()
+
+	resolver := net.DefaultResolver
+
+	names, err := resolver.LookupAddr(
+		ctx,
+		ip,
+	)
 
 	if err != nil {
 		return ""

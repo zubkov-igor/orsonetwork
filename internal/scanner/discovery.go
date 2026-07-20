@@ -1,97 +1,92 @@
 package scanner
 
 import (
-    "sync"
-    "time"
-    "fmt"
+	"fmt"
+	"sync"
+	"time"
 
-    "OrsoNetwork/internal/models"
+	"OrsoNetwork/internal/models"
 )
-
 
 const workers = 24
 
 const timeout = 200 * time.Millisecond
 
+func DiscoverHosts(
+	cidr string,
+	ownIP string,
+) []models.Host {
 
-func DiscoverHosts(cidr string) []models.Host {
+	var hosts []models.Host
 
+	start := time.Now()
 
-    var hosts []models.Host
+	ips := HostsFromCIDR(cidr)
 
-    start := time.Now()
+	fmt.Println(
+		"CIDR:",
+		time.Since(start),
+	)
 
-    ips := HostsFromCIDR(cidr)
+	jobs := make(chan string)
 
-    fmt.Println("CIDR:", time.Since(start))
+	results := make(chan models.Host)
 
-    jobs := make(chan string)
+	var wg sync.WaitGroup
 
-    results := make(chan models.Host)
+	wg.Add(workers)
 
+	for i := 0; i < workers; i++ {
 
-    var wg sync.WaitGroup
+		go worker(
+			jobs,
+			results,
+			&wg,
+			timeout,
+		)
+	}
 
+	go func() {
 
-    wg.Add(workers)
+		for _, ip := range ips {
 
+			jobs <- ip
+		}
 
-    for i := 0; i < workers; i++ {
+		close(jobs)
 
-        go worker(
-            jobs,
-            results,
-            &wg,
-            timeout,
-        )
+	}()
 
-    }
+	go func() {
 
+		wg.Wait()
 
+		close(results)
 
-    go func() {
+	}()
 
-        for _, ip := range ips {
+	for host := range results {
 
-            jobs <- ip
+		if host.IP == ownIP {
 
-        }
+			fmt.Println(
+				"SKIP OWN HOST:",
+				host.IP,
+			)
 
-        close(jobs)
+			continue
+		}
 
-    }()
+		hosts = append(
+			hosts,
+			host,
+		)
+	}
 
+	fmt.Println(
+		"Ping:",
+		time.Since(start),
+	)
 
-
-    go func() {
-
-        wg.Wait()
-
-        close(results)
-
-    }()
-
-for _, h := range hosts {
-
-    fmt.Println(
-        "ENRICH RESULT:",
-        h.IP,
-        h.MAC,
-        h.Vendor,
-    )
-}
-
-    for host := range results {
-
-        hosts = append(
-            hosts,
-            host,
-        )
-
-    }
-
-    fmt.Println("Ping:", time.Since(start))
-
-
-    return hosts
+	return hosts
 }

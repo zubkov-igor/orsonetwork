@@ -4,17 +4,13 @@ import (
 	"testing"
 )
 
-
 func TestHostsFromCIDR(t *testing.T) {
-
 
 	hosts := HostsFromCIDR(
 		"192.168.0.0/29",
 	)
 
-
 	expected := 6
-
 
 	if len(hosts) != expected {
 
@@ -24,7 +20,6 @@ func TestHostsFromCIDR(t *testing.T) {
 			len(hosts),
 		)
 	}
-
 
 	t.Log(hosts)
 }

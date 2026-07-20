@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-
 func TestPingHost(t *testing.T) {
 
 	host := PingHost(
@@ -13,11 +12,9 @@ func TestPingHost(t *testing.T) {
 		time.Second,
 	)
 
-
 	if !host.Online {
 		t.Fatal("host is offline")
 	}
-
 
 	t.Log(
 		"RTT:",

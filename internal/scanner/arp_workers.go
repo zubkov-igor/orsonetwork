@@ -1,17 +1,16 @@
 package scanner
 
 import (
-	"net"
-	"time"
 	"fmt"
+	"net"
 	"net/netip"
 	"sync"
+	"time"
 
 	"OrsoNetwork/internal/models"
 
 	"github.com/mdlayher/arp"
 )
-
 
 func arpWorker(
 	client *arp.Client,
@@ -23,7 +22,6 @@ func arpWorker(
 	defer wg.Done()
 	defer client.Close()
 
-
 	for ip := range jobs {
 
 		addr, err := netip.ParseAddr(ip)
@@ -32,17 +30,15 @@ func arpWorker(
 			continue
 		}
 
-
 		mac, err := client.Resolve(addr)
 
 		if err != nil {
 			continue
 		}
 
-
 		results <- models.Host{
-			IP: ip,
-			MAC: mac.String(),
+			IP:     ip,
+			MAC:    mac.String(),
 			Online: true,
 		}
 
@@ -51,45 +47,41 @@ func arpWorker(
 }
 
 func arpResolve(
-    client *arp.Client,
-    addr netip.Addr,
+	client *arp.Client,
+	addr netip.Addr,
 ) (net.HardwareAddr, error) {
 
-    type result struct {
-        mac net.HardwareAddr
-        err error
-    }
+	type result struct {
+		mac net.HardwareAddr
+		err error
+	}
 
+	ch := make(chan result, 1)
 
-    ch := make(chan result, 1)
+	go func() {
 
+		mac, err := arpResolve(
+			client,
+			addr,
+		)
 
-    go func(){
+		ch <- result{
+			mac: mac,
+			err: err,
+		}
 
-        mac, err := arpResolve(
-    client,
-    addr,
-)
+	}()
 
-        ch <- result{
-            mac: mac,
-            err: err,
-        }
+	select {
 
-    }()
+	case r := <-ch:
+		return r.mac, r.err
 
+	case <-time.After(
+		500 * time.Millisecond,
+	):
+		return nil, fmt.Errorf("arp timeout")
 
-    select {
-
-    case r := <-ch:
-        return r.mac, r.err
-
-
-    case <-time.After(
-        500 * time.Millisecond,
-    ):
-        return nil, fmt.Errorf("arp timeout")
-
-    }
+	}
 
 }

@@ -116,6 +116,8 @@ export default function Devices() {
                             <th>IP</th>
                             <th>MAC</th>
                             <th>Vendor</th>
+                            <th>Hostname</th>
+                            <th>Sources</th>
                         </tr>
                     </thead>
 
@@ -182,7 +184,7 @@ export default function Devices() {
                                     </td>
 
                                     <td>
-                                         Sources:
+                                         
     {device.sources?.length
         ? device.sources.join(", ")
         : "—"}

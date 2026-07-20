@@ -8,12 +8,10 @@ import (
 	ping "github.com/go-ping/ping"
 )
 
-
 func PingHost(
 	ip string,
 	timeout time.Duration,
 ) models.Host {
-
 
 	host := models.Host{
 		IP: ip,
@@ -25,15 +23,12 @@ func PingHost(
 		return host
 	}
 
-
 	pinger.Count = 1
 
 	pinger.Timeout = timeout
 
-
 	// ICMP требует root
 	pinger.SetPrivileged(false)
-
 
 	err = pinger.Run()
 
@@ -44,9 +39,7 @@ func PingHost(
 		return host
 	}
 
-
 	stats := pinger.Statistics()
-
 
 	if stats.PacketsRecv == 0 {
 
@@ -55,11 +48,9 @@ func PingHost(
 		return host
 	}
 
-
 	host.Online = true
 
 	host.RTT = stats.AvgRtt
 
 	return host
 }
-
