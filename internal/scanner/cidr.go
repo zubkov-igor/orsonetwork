@@ -4,6 +4,10 @@ import (
 	"net"
 )
 
+
+// Преобразует CIDR-сеть в список IP-адресов хостов.
+// Адрес сети и broadcast исключаются.
+
 func HostsFromCIDR(cidr string) []string {
 
 	var hosts []string

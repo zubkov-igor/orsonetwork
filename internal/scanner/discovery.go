@@ -1,92 +1,121 @@
 package scanner
 
 import (
-	"fmt"
-	"sync"
-	"time"
+    "sync"
+    "time"
 
-	"OrsoNetwork/internal/models"
+    "OrsoNetwork/internal/logger"
+    "OrsoNetwork/internal/models"
 )
 
-const workers = 24
+const pingWorkers = 24
+const pingTimeout = 200 * time.Millisecond
 
-const timeout = 200 * time.Millisecond
 
 func DiscoverHosts(
-	cidr string,
-	ownIP string,
+    cidr string,
+    ownIP string,
 ) []models.Host {
 
-	var hosts []models.Host
+    hosts := []models.Host{}
 
-	start := time.Now()
+    start := time.Now()
 
-	ips := HostsFromCIDR(cidr)
+    ips := HostsFromCIDR(cidr)
 
-	fmt.Println(
-		"CIDR:",
-		time.Since(start),
-	)
+    logger.Log.Println(
+        "CIDR HOSTS GENERATED:",
+        len(ips),
+        time.Since(start),
+    )
 
-	jobs := make(chan string)
 
-	results := make(chan models.Host)
+    filteredIPs := make([]string, 0, len(ips))
 
-	var wg sync.WaitGroup
+    for _, ip := range ips {
 
-	wg.Add(workers)
+        if ip == ownIP {
 
-	for i := 0; i < workers; i++ {
+            logger.Log.Println(
+                "SKIP OWN IP:",
+                ip,
+            )
 
-		go worker(
-			jobs,
-			results,
-			&wg,
-			timeout,
-		)
-	}
+            continue
+        }
 
-	go func() {
+        filteredIPs = append(
+            filteredIPs,
+            ip,
+        )
+    }
 
-		for _, ip := range ips {
 
-			jobs <- ip
-		}
+    ips = filteredIPs
 
-		close(jobs)
 
-	}()
+    logger.Log.Println(
+        "CIDR HOSTS AFTER FILTER:",
+        len(ips),
+        time.Since(start),
+    )
 
-	go func() {
 
-		wg.Wait()
+    jobs := make(chan string)
+    results := make(chan models.Host)
 
-		close(results)
 
-	}()
+    var wg sync.WaitGroup
 
-	for host := range results {
+    wg.Add(pingWorkers)
 
-		if host.IP == ownIP {
 
-			fmt.Println(
-				"SKIP OWN HOST:",
-				host.IP,
-			)
+    for i := 0; i < pingWorkers; i++ {
 
-			continue
-		}
+        go pingWorker(
+            jobs,
+            results,
+            &wg,
+            pingTimeout,
+        )
+    }
 
-		hosts = append(
-			hosts,
-			host,
-		)
-	}
 
-	fmt.Println(
-		"Ping:",
-		time.Since(start),
-	)
+    go func() {
 
-	return hosts
+        for _, ip := range ips {
+            jobs <- ip
+        }
+
+        close(jobs)
+
+    }()
+
+
+    go func() {
+
+        wg.Wait()
+
+        close(results)
+
+    }()
+
+
+    for host := range results {
+
+        hosts = append(
+            hosts,
+            host,
+        )
+    }
+
+
+    logger.Log.Println(
+        "PING DISCOVERY FINISHED:",
+        len(hosts),
+        time.Since(start),
+    )
+
+
+    return hosts
 }

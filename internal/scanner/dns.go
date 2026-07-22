@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func LookupHostname(ip string) string {
+func LookupReverseDNS(ip string) string {
 
 	ctx, cancel := context.WithTimeout(
 		context.Background(),

@@ -10,6 +10,7 @@ func GetInterfaces() []models.Interface {
 
 	result := []models.Interface{}
 
+	// Получаем список всех сетевых интерфейсов ОС.
 	interfaces, err := net.Interfaces()
 
 	if err != nil {
