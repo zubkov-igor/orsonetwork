@@ -5,13 +5,17 @@ import (
 	"net"
 	"strings"
 	"time"
+
+	"OrsoNetwork/internal/logger"
 )
 
 func LookupReverseDNS(ip string) string {
 
+	const dnsTimeout = 500 * time.Millisecond
+
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
-		200*time.Millisecond,
+		dnsTimeout,
 	)
 
 	defer cancel()
@@ -26,6 +30,12 @@ func LookupReverseDNS(ip string) string {
 	if err != nil {
 		return ""
 	}
+
+	logger.Log.Println(
+    "REVERSE DNS:",
+    ip,
+    names,
+)
 
 	if len(names) == 0 {
 		return ""

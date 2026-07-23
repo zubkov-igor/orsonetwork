@@ -12,7 +12,7 @@ type Node struct {
 	Hostname string `json:"hostname"`
 	Vendor   string `json:"vendor"`
 
-	Sources []string `json:"sources"`
+	Sources []DiscoverySource `json:"sources"`
 
 	Online bool          `json:"online"`
 	RTT    time.Duration `json:"rtt"`
