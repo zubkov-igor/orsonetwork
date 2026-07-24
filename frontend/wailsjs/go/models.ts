@@ -1,8 +1,8 @@
 export namespace models {
 	
 	export class DiscoverySource {
-	    type: string;
-	    value: string;
+	    Type: string;
+	    Value: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new DiscoverySource(source);
@@ -10,8 +10,8 @@ export namespace models {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.type = source["type"];
-	        this.value = source["value"];
+	        this.Type = source["Type"];
+	        this.Value = source["Value"];
 	    }
 	}
 	export class Host {

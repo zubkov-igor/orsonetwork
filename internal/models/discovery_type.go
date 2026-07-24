@@ -1,9 +1,9 @@
 package models
 
+type DiscoveryType string
+
 const (
-    DiscoveryARP        = "arp"
-    DiscoveryReverseDNS = "reverse-dns"
-    DiscoveryMDNS       = "mdns"
-    DiscoveryNetBIOS    = "netbios"
-    DiscoveryLLMNR      = "llmnr"
+    DiscoveryARP        DiscoveryType = "arp"
+    DiscoveryReverseDNS DiscoveryType = "reverse_dns"
+    DiscoveryNetBIOS    DiscoveryType = "netbios"
 )

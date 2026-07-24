@@ -57,6 +57,44 @@ for i := range hosts {
 },
         )
     }
+
+if hosts[i].Hostname == "" {
+
+    netbios, err := LookupNetBIOS(
+        hosts[i].IP,
+    )
+
+    if err == nil {
+
+        if netbios.Name != "" {
+
+            hosts[i].Hostname = netbios.Name
+
+            hosts[i].Sources = append(
+                hosts[i].Sources,
+                models.DiscoverySource{
+                    Type: models.DiscoveryNetBIOS,
+                    Value: netbios.Name,
+                },
+            )
+        }
+
+
+        if hosts[i].MAC == "" && netbios.MAC != "" {
+
+            hosts[i].MAC = netbios.MAC
+
+            hosts[i].Sources = append(
+                hosts[i].Sources,
+                models.DiscoverySource{
+                    Type: models.DiscoveryNetBIOS,
+                    Value: netbios.MAC,
+                },
+            )
+        }
+    }
+}
+    
 }
 
 	return hosts

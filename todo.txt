@@ -324,3 +324,16 @@ TODO:
 [ ] не использовать Host напрямую во frontend
 [ ] оставить time.Duration внутри backend
 
+
+
+-----------------------------------------------------
+
+
+TODO: Replace external nmblookup with native NBNS implementation.
+
+Current status:
+- UDP transport works.
+- NBSTAT packet is sent.
+- Windows does not respond to our handcrafted query.
+- Need byte-by-byte comparison with Samba nmblookup request.
+
