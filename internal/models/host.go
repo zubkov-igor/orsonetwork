@@ -7,9 +7,12 @@ type Host struct {
 	MAC      string `json:"mac"`
 	Hostname string `json:"hostname"`
 	Vendor   string `json:"vendor"`
+	Ports    []Port `json:"ports"`
+
+	Type DeviceType `json:"deviceType"`
 
 	Sources []DiscoverySource `json:"sources"`
 
-	Online bool          `json:"online"`
-	RTT    time.Duration `json:"rtt"`
+	Online bool
+	RTT    time.Duration
 }

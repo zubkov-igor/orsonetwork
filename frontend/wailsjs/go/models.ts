@@ -14,14 +14,34 @@ export namespace models {
 	        this.Value = source["Value"];
 	    }
 	}
+	export class Port {
+	    number: number;
+	    protocol: string;
+	    service: string;
+	    open: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new Port(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.number = source["number"];
+	        this.protocol = source["protocol"];
+	        this.service = source["service"];
+	        this.open = source["open"];
+	    }
+	}
 	export class Host {
 	    ip: string;
 	    mac: string;
 	    hostname: string;
 	    vendor: string;
+	    ports: Port[];
+	    deviceType: string;
 	    sources: DiscoverySource[];
-	    online: boolean;
-	    rtt: number;
+	    Online: boolean;
+	    RTT: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Host(source);
@@ -33,9 +53,11 @@ export namespace models {
 	        this.mac = source["mac"];
 	        this.hostname = source["hostname"];
 	        this.vendor = source["vendor"];
+	        this.ports = this.convertValues(source["ports"], Port);
+	        this.deviceType = source["deviceType"];
 	        this.sources = this.convertValues(source["sources"], DiscoverySource);
-	        this.online = source["online"];
-	        this.rtt = source["rtt"];
+	        this.Online = source["Online"];
+	        this.RTT = source["RTT"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -160,6 +182,7 @@ export namespace models {
 		    return a;
 		}
 	}
+	
 	export class Topology {
 	    nodes: Node[];
 	    links: Link[];

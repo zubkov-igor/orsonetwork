@@ -1,6 +1,9 @@
 package scanner
 
-import "OrsoNetwork/internal/models"
+import (
+    "OrsoNetwork/internal/logger"
+    "OrsoNetwork/internal/models"
+)
 
 func EnrichHosts(
 	hosts []models.Host,
@@ -20,6 +23,7 @@ func EnrichHosts(
 
 for i := range hosts {
 
+    // ARP
     if arpHost, ok := arpMap[hosts[i].IP]; ok {
 
         if arpHost.MAC != "" {
@@ -28,10 +32,10 @@ for i := range hosts {
 
             hosts[i].Sources = append(
                 hosts[i].Sources,
-               models.DiscoverySource{
-    Type:  models.DiscoveryARP,
-    Value: arpHost.MAC,
-},
+                models.DiscoverySource{
+                    Type:  models.DiscoveryARP,
+                    Value: arpHost.MAC,
+                },
             )
 
             hosts[i].Vendor = LookupVendor(
@@ -41,6 +45,7 @@ for i := range hosts {
     }
 
 
+    // Reverse DNS
     hostname := LookupReverseDNS(
         hosts[i].IP,
     )
@@ -51,50 +56,84 @@ for i := range hosts {
 
         hosts[i].Sources = append(
             hosts[i].Sources,
-          models.DiscoverySource{
-    Type:  models.DiscoveryReverseDNS,
-    Value: hostname,
-},
+            models.DiscoverySource{
+                Type:  models.DiscoveryReverseDNS,
+                Value: hostname,
+            },
         )
     }
 
-if hosts[i].Hostname == "" {
 
-    netbios, err := LookupNetBIOS(
-        hosts[i].IP,
-    )
+    // NetBIOS fallback
+    if hosts[i].Hostname == "" {
 
-    if err == nil {
+        netbios, err := LookupNetBIOS(
+            hosts[i].IP,
+        )
 
-        if netbios.Name != "" {
+        if err == nil {
 
-            hosts[i].Hostname = netbios.Name
+            if netbios.Name != "" {
 
-            hosts[i].Sources = append(
-                hosts[i].Sources,
-                models.DiscoverySource{
-                    Type: models.DiscoveryNetBIOS,
-                    Value: netbios.Name,
-                },
-            )
-        }
+                hosts[i].Hostname = netbios.Name
+
+                hosts[i].Sources = append(
+                    hosts[i].Sources,
+                    models.DiscoverySource{
+                        Type: models.DiscoveryNetBIOS,
+                        Value: netbios.Name,
+                    },
+                )
+            }
 
 
-        if hosts[i].MAC == "" && netbios.MAC != "" {
+            if hosts[i].MAC == "" && netbios.MAC != "" {
 
-            hosts[i].MAC = netbios.MAC
+                hosts[i].MAC = netbios.MAC
 
-            hosts[i].Sources = append(
-                hosts[i].Sources,
-                models.DiscoverySource{
-                    Type: models.DiscoveryNetBIOS,
-                    Value: netbios.MAC,
-                },
-            )
+                hosts[i].Sources = append(
+                    hosts[i].Sources,
+                    models.DiscoverySource{
+                        Type: models.DiscoveryNetBIOS,
+                        Value: netbios.MAC,
+                    },
+                )
+            }
         }
     }
+
+hosts[i].Ports = ScanPorts(
+    hosts[i].IP,
+)
+
+for _, p := range hosts[i].Ports {
+
+    logger.Log.Println(
+        "OPEN PORT:",
+        hosts[i].IP,
+        p.Number,
+        p.Protocol,
+        p.Service,
+    )
 }
-    
+
+// Device detection
+device := models.Device{
+    IP:       hosts[i].IP,
+    MAC:      hosts[i].MAC,
+    Hostname: hosts[i].Hostname,
+}
+
+hosts[i].Type = IdentifyDevice(device)
+
+logger.Log.Println(
+    "DEVICE DETECTED:",
+    hosts[i].IP,
+    hosts[i].Hostname,
+    hosts[i].Vendor,
+    hosts[i].Type,
+)
+
 }
 
 	return hosts

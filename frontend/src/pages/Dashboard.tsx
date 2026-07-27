@@ -44,36 +44,23 @@ export default function Dashboard() {
 </div>
             <h2>Devices</h2>
 
-            <div class="dashboard__nodes">
-                {topology()?.nodes.map((node) => (
-                    <div class="node-card">
-                        <h3>{node.label}</h3>
+    <div class="dashboard__nodes">
+    {topology()?.nodes.map((node) => (
+        <div class="node-card">
+         <h3>
+    {node.hostname || node.ip}
+</h3>
 
-                        <span>
-                            Type: {node.type}
-                        </span>
+{node.hostname && (
+    <span>{node.ip}</span>
+)}
 
-                        <span>
-                            IP: {node.ip}
-                        </span>
+<span>{node.type}</span>
 
-                        <span>
-                            MAC: {node.mac || "—"}
-                        </span>
-
-                        <span>
-                            Vendor: {node.vendor || "—"}
-                        </span>
-                          <span>
-                            Hostname: {node.hostname || "—"}
-                        </span>
-                          <span>
-                            Sources:
-{node.sources?.join(", ") || "—"}
-                        </span>
-                    </div>
-                ))}
-            </div>
+<span>{node.vendor || "Unknown vendor"}</span>
+        </div>
+    ))}
+</div>
 
         </div>
     );
