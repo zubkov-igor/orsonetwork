@@ -14,6 +14,48 @@ export namespace models {
 	        this.Value = source["Value"];
 	    }
 	}
+	export class UDPService {
+	    ip: string;
+	    port: number;
+	    protocol: string;
+	    service: string;
+	    info: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UDPService(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ip = source["ip"];
+	        this.port = source["port"];
+	        this.protocol = source["protocol"];
+	        this.service = source["service"];
+	        this.info = source["info"];
+	    }
+	}
+	export class MDNSService {
+	    name: string;
+	    service: string;
+	    host: string;
+	    ip: string;
+	    port: number;
+	    txt: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new MDNSService(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.service = source["service"];
+	        this.host = source["host"];
+	        this.ip = source["ip"];
+	        this.port = source["port"];
+	        this.txt = source["txt"];
+	    }
+	}
 	export class Port {
 	    number: number;
 	    protocol: string;
@@ -38,6 +80,8 @@ export namespace models {
 	    hostname: string;
 	    vendor: string;
 	    ports: Port[];
+	    mdns: MDNSService[];
+	    udp: UDPService[];
 	    deviceType: string;
 	    sources: DiscoverySource[];
 	    Online: boolean;
@@ -54,6 +98,8 @@ export namespace models {
 	        this.hostname = source["hostname"];
 	        this.vendor = source["vendor"];
 	        this.ports = this.convertValues(source["ports"], Port);
+	        this.mdns = this.convertValues(source["mdns"], MDNSService);
+	        this.udp = this.convertValues(source["udp"], UDPService);
 	        this.deviceType = source["deviceType"];
 	        this.sources = this.convertValues(source["sources"], DiscoverySource);
 	        this.Online = source["Online"];
@@ -98,6 +144,7 @@ export namespace models {
 	        this.status = source["status"];
 	    }
 	}
+	
 	export class Network {
 	    cidr: string;
 	    interface: string;

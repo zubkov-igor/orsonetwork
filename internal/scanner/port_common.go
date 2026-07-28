@@ -1,17 +1,37 @@
 package scanner
 
-// CommonPorts — небольшой набор наиболее информативных портов
-// для идентификации устройств.
+// CommonPorts — информативные TCP порты
 var CommonPorts = []int{
-    22,   // SSH
-    53,   // DNS
-    80,   // HTTP
-    139,  // NetBIOS
-    443,  // HTTPS
-    445,  // SMB
-    515,  // LPD Printer
-    554,  // RTSP Camera
-    631,  // IPP Printer
-    9100, // RAW Printer
-    3389, // RDP
+
+    // Web
+    80,     // HTTP
+    443,    // HTTPS
+    8080,   // HTTP alternate
+    8443,   // HTTPS alternate
+
+    // Remote access
+    22,     // SSH
+    23,     // Telnet
+    3389,   // RDP
+
+    // Windows
+    135,    // RPC
+    139,    // NetBIOS
+    445,    // SMB
+
+    // DNS
+    53,
+
+    // Printers
+    515,
+    631,
+    9100,
+
+    // Cameras / DVR
+    554,    // RTSP
+    8000,   // Hikvision
+    8081,
+
+    // Media
+    1900,   // SSDP/UPnP TCP rare
 }

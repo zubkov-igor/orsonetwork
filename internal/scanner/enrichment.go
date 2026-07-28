@@ -6,43 +6,84 @@ import (
 )
 
 func EnrichHosts(
-	hosts []models.Host,
+    hosts []models.Host,
 ) []models.Host {
 
-	arpHosts := ARPDiscovery(
-		hosts,
-	)
 
-	arpMap := make(
-		map[string]models.Host,
-	)
+    mdnsRecords := DiscoverMDNS()
 
-	for _, h := range arpHosts {
-		arpMap[h.IP] = h
-	}
+    logger.Log.Println(
+        "MDNS FOUND:",
+        len(mdnsRecords),
+    )
 
-for i := range hosts {
 
-    // ARP
-    if arpHost, ok := arpMap[hosts[i].IP]; ok {
+    arpHosts := ARPDiscovery(
+        hosts,
+    )
 
-        if arpHost.MAC != "" {
+    arpMap := make(
+        map[string]models.Host,
+    )
 
-            hosts[i].MAC = arpHost.MAC
-
-            hosts[i].Sources = append(
-                hosts[i].Sources,
-                models.DiscoverySource{
-                    Type:  models.DiscoveryARP,
-                    Value: arpHost.MAC,
-                },
-            )
-
-            hosts[i].Vendor = LookupVendor(
-                arpHost.MAC,
-            )
-        }
+    for _, h := range arpHosts {
+        arpMap[h.IP] = h
     }
+
+
+    for i := range hosts {
+
+
+        // MDNS
+        for _, mdns := range mdnsRecords {
+
+            if mdns.IP == hosts[i].IP {
+
+                hosts[i].MDNS = append(
+                    hosts[i].MDNS,
+                    mdns,
+                )
+
+
+                hosts[i].Sources = append(
+                    hosts[i].Sources,
+                    models.DiscoverySource{
+                        Type: models.DiscoveryMDNS,
+                        Value: mdns.Name,
+                    },
+                )
+            }
+        }
+
+
+
+        // ARP
+        if arpHost, ok := arpMap[hosts[i].IP]; ok {
+
+            if arpHost.MAC != "" {
+
+                hosts[i].MAC = arpHost.MAC
+
+                hosts[i].Vendor = LookupVendor(
+                    arpHost.MAC,
+                )
+            }
+        }
+
+hosts[i].UDPServices = DiscoverUDP(
+    hosts[i].IP,
+)
+
+
+for _, u := range hosts[i].UDPServices {
+
+    logger.Log.Println(
+        "UDP SERVICE:",
+        hosts[i].IP,
+        u.Port,
+        u.Service,
+    )
+}
 
 
     // Reverse DNS
@@ -116,6 +157,8 @@ for _, p := range hosts[i].Ports {
         p.Service,
     )
 }
+
+
 
 // Device detection
 device := models.Device{

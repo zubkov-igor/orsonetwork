@@ -1,43 +1,48 @@
 package scanner
 
-func PortService(port int) string {
+var PortServices = map[int]string{
 
-	switch port {
+	22: "ssh",
+	23: "telnet",
 
-	case 22:
-		return "ssh"
+	53: "dns",
 
-	case 53:
-		return "dns"
+	80: "http",
+	443: "https",
 
-	case 80:
-		return "http"
+	135: "msrpc",
+	139: "netbios",
+	445: "smb",
 
-	case 139:
-		return "netbios"
+	515: "lpd-printer",
+	631: "ipp-printer",
+	9100: "raw-printer",
 
-	case 443:
-		return "https"
+	554: "rtsp",
 
-	case 445:
-		return "smb"
+	1900: "ssdp-upnp",
 
-	case 515:
-		return "lpd"
+	3389: "rdp",
 
-	case 554:
-		return "rtsp"
+	5000: "synology",
 
-	case 631:
-		return "ipp"
+	8000: "camera-http",
 
-	case 9100:
-		return "jetdirect"
+	8008: "google-cast",
+	8009: "chromecast",
 
-	case 3389:
-		return "rdp"
+	8080: "http-alt",
+	8443: "https-alt",
+}
 
-	default:
-		return "unknown"
+
+func DetectPortService(port int) string {
+
+	service, ok := PortServices[port]
+
+	if ok {
+		return service
 	}
+
+	return "unknown"
 }

@@ -14,34 +14,34 @@ import (
 var assets embed.FS
 
 func main() {
-	
+
 	logger.Init()
 
 	app := NewApp()
 
 	// Create application with options
-err := wails.Run(&options.App{
-    Title: "OrsoNetwork",
+	err := wails.Run(&options.App{
+		Title: "OrsoNetwork",
 
-    WindowStartState: options.Maximised,
+		WindowStartState: options.Maximised,
 
-    AssetServer: &assetserver.Options{
-        Assets: assets,
-    },
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
 
-    BackgroundColour: &options.RGBA{
-        R: 27,
-        G: 38,
-        B: 54,
-        A: 1,
-    },
+		BackgroundColour: &options.RGBA{
+			R: 27,
+			G: 38,
+			B: 54,
+			A: 1,
+		},
 
-    OnStartup: app.startup,
+		OnStartup: app.startup,
 
-    Bind: []interface{}{
-        app,
-    },
-})
+		Bind: []interface{}{
+			app,
+		},
+	})
 
 	if err != nil {
 		println("Error:", err.Error())
