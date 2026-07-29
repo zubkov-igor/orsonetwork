@@ -1,3 +1,16 @@
+// BuildTopology converts discovered hosts
+// into a graph representation.
+//
+// Current links describe logical network relation
+// through the gateway.
+//
+// TODO:
+// improve topology discovery using:
+// - LLDP
+// - SNMP
+// - ARP relationships
+// - WiFi information
+
 package scanner
 
 import "OrsoNetwork/internal/models"
@@ -23,42 +36,50 @@ func BuildTopology(
 			}
 		}
 
-		for _, host := range network.Hosts {
 
-			nodeType := "host"
+        for _, host := range network.Hosts {
 
-			if host.IP == network.Gateway {
-				nodeType = "gateway"
-			}
+            label := host.IP
 
-			topology.Nodes = append(
-				topology.Nodes,
-				models.Node{
-					ID:     NodeID(host),
-					Label:  host.IP,
-					Type:   nodeType,
-					IP:     host.IP,
-					MAC:    host.MAC,
-					Vendor: host.Vendor,
-				},
-			)
+            if host.Hostname != "" {
+                label = host.Hostname
+            }
 
-			if host.IP != network.Gateway {
+            topology.Nodes = append(
+                topology.Nodes,
+                models.Node{
+                    ID:       NodeID(host),
+                    Label:    label,
+                    Type:     string(host.Type),
+                    IP:       host.IP,
+                    MAC:      host.MAC,
+                    Hostname: host.Hostname,
+                    Vendor:   host.Vendor,
+                    Sources:  host.Sources,
+                    Online:   host.Online,
+                    RTT:      host.RTT,
+                },
+            )
 
-				topology.Links = append(
-					topology.Links,
-					models.Link{
-						From: NodeID(gateway),
-						To:   NodeID(host),
-						Type: "network",
-					},
-				)
-			}
-		}
-	}
 
-	return topology
+            if host.IP != network.Gateway && gateway.IP != "" {
+
+                topology.Links = append(
+                    topology.Links,
+                    models.Link{
+                        From: NodeID(gateway),
+                        To:   NodeID(host),
+                        Type: "network",
+                    },
+                )
+            }
+        }
+    }
+
+
+    return topology
 }
+
 
 func NodeID(host models.Host) string {
 

@@ -1,5 +1,7 @@
 package models
 
+// DeviceType is the final classification
+// result after discovery enrichment.
 type DeviceType string
 
 const (
@@ -27,3 +29,5 @@ const (
 
 	DeviceIoT DeviceType = "iot"
 )
+
+

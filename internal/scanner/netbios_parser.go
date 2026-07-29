@@ -1,50 +1,76 @@
 package scanner
 
 import (
-        "strings"
+    "strings"
 )
 
-func ParseNMBLookup(data []byte) NetBIOSResult {
+func ParseNetBIOSResponse(
+    data []byte,
+) NetBIOSResult {
 
-        result := NetBIOSResult{}
+    result := NetBIOSResult{}
 
-        lines := strings.Split(
-                string(data),
-                "\n",
-        )
+    text := string(data)
 
-for _, line := range lines {
+
+    // имя компьютера
+    lines := strings.Split(
+        text,
+        "\n",
+    )
+
+
+    for _, line := range lines {
 
         line = strings.TrimSpace(line)
 
+
         if result.Name == "" &&
-                strings.Contains(line, "<00>") &&
-                !strings.Contains(line, "<GROUP>") {
+            strings.Contains(line, "<00>") &&
+            !strings.Contains(line, "<GROUP>") {
 
-                parts := strings.Fields(line)
+            fields := strings.Fields(line)
 
-                if len(parts) > 0 {
-                        result.Name = parts[0]
-                }
+            if len(fields) > 0 {
+                result.Name = fields[0]
+            }
         }
 
 
         if strings.Contains(line, "MAC Address") {
 
-                parts := strings.Split(
-                        line,
-                        "=",
+            parts := strings.Split(
+                line,
+                "=",
+            )
+
+            if len(parts) == 2 {
+
+                mac := strings.TrimSpace(
+                    parts[1],
                 )
 
-                if len(parts) == 2 {
-
-                        result.MAC = strings.TrimSpace(
-                                parts[1],
-
-                        )
+                if validNetBIOSMAC(mac) {
+                    result.MAC = mac
                 }
+            }
         }
-}
+    }
+
 
     return result
+}
+
+
+func validNetBIOSMAC(mac string) bool {
+
+    if mac == "" {
+        return false
+    }
+
+    if mac == "00-00-00-00-00-00" {
+        return false
+    }
+
+    return true
 }

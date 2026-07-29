@@ -1,8 +1,11 @@
 package scanner
 
 import (
+	"fmt"
 	"net"
 	"time"
+
+	"OrsoNetwork/internal/logger"
 )
 
 
@@ -32,11 +35,27 @@ func ProbeSNMP(
 	defer conn.Close()
 
 
+oid := EncodeOID(
+        OIDSysDescr,
+)
 
-	_, err = conn.Write(
-		snmpRequest,
-	)
+logger.Log.Println(
+        "OID:",
+        oid,
+)
 
+
+request := BuildSNMPRequest(
+        oid,
+)
+
+
+logger.Log.Println(
+        "SNMP REQUEST HEX:",
+        fmt.Sprintf("% X", request),
+)
+
+_, err = conn.Write(request)
 
 	if err != nil {
 
@@ -87,7 +106,10 @@ func ProbeSNMP(
 		}
 	}
 
-
+logger.Log.Println(
+    "SNMP RESPONSE HEX:",
+    fmt.Sprintf("% X", response),
+)
 
 	if response[0] != 0x30 {
 
@@ -113,8 +135,6 @@ func ProbeSNMP(
 			}
 		}
 	}
-
-
 
 	return UDPProbeResult{
 		Found:false,

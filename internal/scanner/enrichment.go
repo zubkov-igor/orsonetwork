@@ -95,53 +95,59 @@ for _, u := range hosts[i].UDPServices {
 
         hosts[i].Hostname = hostname
 
+      hosts[i].Sources = append(
+        hosts[i].Sources,
+        models.DiscoverySource{
+        Type: models.DiscoveryOUI,
+        Value: hosts[i].Vendor,
+    },
+)
+    }
+
+   // NetBIOS enrichment
+netbios, err := LookupNetBIOS(
+    hosts[i].IP,
+)
+
+if err == nil {
+
+    logger.Log.Println(
+        "NETBIOS FOUND:",
+        hosts[i].IP,
+        netbios.Name,
+        netbios.MAC,
+    )
+
+
+    if netbios.Name != "" {
+
+        if hosts[i].Hostname == "" {
+            hosts[i].Hostname = netbios.Name
+        }
+
         hosts[i].Sources = append(
             hosts[i].Sources,
             models.DiscoverySource{
-                Type:  models.DiscoveryReverseDNS,
-                Value: hostname,
+                Type:  models.DiscoveryNetBIOS,
+                Value: netbios.Name,
             },
         )
     }
 
 
-    // NetBIOS fallback
-    if hosts[i].Hostname == "" {
+    if hosts[i].MAC == "" && netbios.MAC != "" {
 
-        netbios, err := LookupNetBIOS(
-            hosts[i].IP,
+        hosts[i].MAC = netbios.MAC
+
+        hosts[i].Sources = append(
+            hosts[i].Sources,
+            models.DiscoverySource{
+                Type:  models.DiscoveryNetBIOS,
+                Value: netbios.MAC,
+            },
         )
-
-        if err == nil {
-
-            if netbios.Name != "" {
-
-                hosts[i].Hostname = netbios.Name
-
-                hosts[i].Sources = append(
-                    hosts[i].Sources,
-                    models.DiscoverySource{
-                        Type: models.DiscoveryNetBIOS,
-                        Value: netbios.Name,
-                    },
-                )
-            }
-
-
-            if hosts[i].MAC == "" && netbios.MAC != "" {
-
-                hosts[i].MAC = netbios.MAC
-
-                hosts[i].Sources = append(
-                    hosts[i].Sources,
-                    models.DiscoverySource{
-                        Type: models.DiscoveryNetBIOS,
-                        Value: netbios.MAC,
-                    },
-                )
-            }
-        }
     }
+}
 
 hosts[i].Ports = ScanPorts(
     hosts[i].IP,
@@ -159,15 +165,11 @@ for _, p := range hosts[i].Ports {
 }
 
 
-
 // Device detection
-device := models.Device{
-    IP:       hosts[i].IP,
-    MAC:      hosts[i].MAC,
-    Hostname: hosts[i].Hostname,
-}
+hosts[i].Type = IdentifyDevice(
+    hosts[i],
+)
 
-hosts[i].Type = IdentifyDevice(device)
 
 logger.Log.Println(
     "DEVICE DETECTED:",

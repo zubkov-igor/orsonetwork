@@ -2,6 +2,9 @@ package models
 
 import "time"
 
+// Host is the main entity produced by discovery pipeline.
+// It contains raw discovery data, enrichment results,
+// and classification information.
 
 type Host struct {
 
@@ -33,3 +36,5 @@ type Host struct {
 
 	RTT time.Duration
 }
+
+

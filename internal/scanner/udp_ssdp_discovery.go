@@ -1,34 +1,30 @@
 package scanner
 
 import (
+	"log"
 	"net"
 	"strings"
 	"time"
-	"log"
 )
 
 
-func ProbeSSDP(
-	ip string,
-) UDPProbeResult {
+func DiscoverSSDP() {
 
 
-	localAddr := &net.UDPAddr{
-		IP:   net.IPv4zero,
+	addr := &net.UDPAddr{
+		IP: net.IPv4zero,
 		Port: 0,
 	}
 
 
 	conn, err := net.ListenUDP(
 		"udp",
-		localAddr,
+		addr,
 	)
 
-	if err != nil {
 
-		return UDPProbeResult{
-			Found:false,
-		}
+	if err != nil {
+		return
 	}
 
 
@@ -62,10 +58,7 @@ func ProbeSSDP(
 
 
 	if err != nil {
-
-		return UDPProbeResult{
-			Found:false,
-		}
+		return
 	}
 
 
@@ -78,7 +71,7 @@ func ProbeSSDP(
 
 
 	deadline := time.Now().Add(
-		2*time.Second,
+		5*time.Second,
 	)
 
 
@@ -91,53 +84,34 @@ func ProbeSSDP(
 		)
 
 
+
 		n, addr, err := conn.ReadFromUDP(
 			buffer,
 		)
 
 
 		if err != nil {
-
-			return UDPProbeResult{
-				Found:false,
-			}
+			break
 		}
 
 
 
-		if addr.IP.String() != ip {
-
-			continue
-		}
-
-
-
-response := strings.ToLower(
-    string(buffer[:n]),
-)
+		response :=
+			strings.ToLower(
+				string(buffer[:n]),
+			)
 
 
-log.Println(
-    "SSDP RESPONSE FROM:",
-    addr.IP,
-)
+		log.Println(
+			"SSDP RESPONSE:",
+			addr.IP,
+		)
 
 
-log.Println(
-    response,
-)
+		log.Println(
+			response,
+		)
 
-
-if strings.Contains(
-    response,
-    "200 ok",
-) {
-
-
-			return UDPProbeResult{
-				Found:true,
-				Info:response,
-			}
-		}
 	}
+
 }

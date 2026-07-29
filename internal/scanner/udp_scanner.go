@@ -23,8 +23,17 @@ func DiscoverUDP(ip string) []models.UDPService {
             result = ProbeMDNS(ip)
 
         case 137:
-            logger.Log.Println("UDP NETBIOS PROBE:", ip)
-            result = ProbeNetBIOS(ip)
+    logger.Log.Println("NETBIOS LOOKUP:", ip)
+
+    nb, err := LookupNetBIOS(ip)
+
+    if err == nil && nb.Name != "" {
+
+        result = UDPProbeResult{
+            Found: true,
+            Info: nb.Name,
+        }
+    }
 
         case 161:
             logger.Log.Println("UDP SNMP PROBE:", ip)
