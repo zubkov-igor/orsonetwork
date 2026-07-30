@@ -36,50 +36,46 @@ func BuildTopology(
 			}
 		}
 
+		for _, host := range network.Hosts {
 
-        for _, host := range network.Hosts {
+			label := host.IP
 
-            label := host.IP
+			if host.Hostname != "" {
+				label = host.Hostname
+			}
 
-            if host.Hostname != "" {
-                label = host.Hostname
-            }
+			topology.Nodes = append(
+				topology.Nodes,
+				models.Node{
+					ID:       NodeID(host),
+					Label:    label,
+					Type:     string(host.Type),
+					IP:       host.IP,
+					MAC:      host.MAC,
+					Hostname: host.Hostname,
+					Vendor:   host.Vendor,
+					Sources:  host.Sources,
+					Online:   host.Online,
+					RTT:      host.RTT,
+				},
+			)
 
-            topology.Nodes = append(
-                topology.Nodes,
-                models.Node{
-                    ID:       NodeID(host),
-                    Label:    label,
-                    Type:     string(host.Type),
-                    IP:       host.IP,
-                    MAC:      host.MAC,
-                    Hostname: host.Hostname,
-                    Vendor:   host.Vendor,
-                    Sources:  host.Sources,
-                    Online:   host.Online,
-                    RTT:      host.RTT,
-                },
-            )
+			if host.IP != network.Gateway && gateway.IP != "" {
 
+				topology.Links = append(
+					topology.Links,
+					models.Link{
+						From: NodeID(gateway),
+						To:   NodeID(host),
+						Type: "network",
+					},
+				)
+			}
+		}
+	}
 
-            if host.IP != network.Gateway && gateway.IP != "" {
-
-                topology.Links = append(
-                    topology.Links,
-                    models.Link{
-                        From: NodeID(gateway),
-                        To:   NodeID(host),
-                        Type: "network",
-                    },
-                )
-            }
-        }
-    }
-
-
-    return topology
+	return topology
 }
-
 
 func NodeID(host models.Host) string {
 

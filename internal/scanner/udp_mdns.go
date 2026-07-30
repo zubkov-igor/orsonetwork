@@ -1,11 +1,11 @@
 package scanner
 
 func ProbeMDNS(
-    ip string,
+	ip string,
 ) UDPProbeResult {
 
-    return UDPProbeResult{
-        Found: false,
-        Info:  "",
-    }
+	return UDPProbeResult{
+		Found: false,
+		Info:  "",
+	}
 }

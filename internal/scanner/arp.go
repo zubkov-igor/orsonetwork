@@ -13,7 +13,6 @@ func (a ARPTable) Lookup(ip string) string {
 
 }
 
-
 func GetARPTable() ARPTable {
 
 	table := make(ARPTable)

@@ -2,55 +2,42 @@ package scanner
 
 import "OrsoNetwork/internal/models"
 
-
 func CalculateConfidence(
-    host models.Host,
+	host models.Host,
 ) int {
 
+	score := 0
 
-    score := 0
+	for _, source := range host.Sources {
 
+		switch source.Type {
 
-    for _, source := range host.Sources {
+		case models.DiscoveryARP:
+			score += 20
 
+		case models.DiscoveryReverseDNS:
+			score += 20
 
-        switch source.Type {
+		case models.DiscoveryNetBIOS:
+			score += 30
 
+		case models.DiscoveryMDNS:
+			score += 25
 
-        case models.DiscoveryARP:
-            score += 20
+		}
+	}
 
+	if host.MAC != "" {
+		score += 10
+	}
 
-        case models.DiscoveryReverseDNS:
-            score += 20
+	if len(host.Ports) > 0 {
+		score += 10
+	}
 
+	if score > 100 {
+		score = 100
+	}
 
-        case models.DiscoveryNetBIOS:
-            score += 30
-
-
-        case models.DiscoveryMDNS:
-            score += 25
-
-
-        }
-    }
-
-
-    if host.MAC != "" {
-        score += 10
-    }
-
-
-    if len(host.Ports) > 0 {
-        score += 10
-    }
-
-
-    if score > 100 {
-        score = 100
-    }
-
-
-    return score
+	return score
 }

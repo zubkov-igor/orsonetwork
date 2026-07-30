@@ -1,76 +1,70 @@
 package scanner
 
 import (
-    "strings"
+	"strings"
 )
 
 func ParseNetBIOSResponse(
-    data []byte,
+	data []byte,
 ) NetBIOSResult {
 
-    result := NetBIOSResult{}
+	result := NetBIOSResult{}
 
-    text := string(data)
+	text := string(data)
 
+	// имя компьютера
+	lines := strings.Split(
+		text,
+		"\n",
+	)
 
-    // имя компьютера
-    lines := strings.Split(
-        text,
-        "\n",
-    )
+	for _, line := range lines {
 
+		line = strings.TrimSpace(line)
 
-    for _, line := range lines {
+		if result.Name == "" &&
+			strings.Contains(line, "<00>") &&
+			!strings.Contains(line, "<GROUP>") {
 
-        line = strings.TrimSpace(line)
+			fields := strings.Fields(line)
 
+			if len(fields) > 0 {
+				result.Name = fields[0]
+			}
+		}
 
-        if result.Name == "" &&
-            strings.Contains(line, "<00>") &&
-            !strings.Contains(line, "<GROUP>") {
+		if strings.Contains(line, "MAC Address") {
 
-            fields := strings.Fields(line)
+			parts := strings.Split(
+				line,
+				"=",
+			)
 
-            if len(fields) > 0 {
-                result.Name = fields[0]
-            }
-        }
+			if len(parts) == 2 {
 
+				mac := strings.TrimSpace(
+					parts[1],
+				)
 
-        if strings.Contains(line, "MAC Address") {
+				if validNetBIOSMAC(mac) {
+					result.MAC = mac
+				}
+			}
+		}
+	}
 
-            parts := strings.Split(
-                line,
-                "=",
-            )
-
-            if len(parts) == 2 {
-
-                mac := strings.TrimSpace(
-                    parts[1],
-                )
-
-                if validNetBIOSMAC(mac) {
-                    result.MAC = mac
-                }
-            }
-        }
-    }
-
-
-    return result
+	return result
 }
-
 
 func validNetBIOSMAC(mac string) bool {
 
-    if mac == "" {
-        return false
-    }
+	if mac == "" {
+		return false
+	}
 
-    if mac == "00-00-00-00-00-00" {
-        return false
-    }
+	if mac == "00-00-00-00-00-00" {
+		return false
+	}
 
-    return true
+	return true
 }

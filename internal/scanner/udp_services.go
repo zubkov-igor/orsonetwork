@@ -4,9 +4,8 @@ package scanner
 // Used for UDP discovery and later fingerprinting.
 var UDPServices = map[int]string{
 
-    137:  "netbios",
-    161:  "snmp",
-    1900: "ssdp",
-    5353: "mdns",
-
+	137:  "netbios",
+	161:  "snmp",
+	1900: "ssdp",
+	5353: "mdns",
 }

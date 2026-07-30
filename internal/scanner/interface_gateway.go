@@ -15,7 +15,6 @@ func GatewayForInterface(
 		iface.Name,
 	)
 
-
 	for _, gw := range gateways {
 
 		logger.Log.Println(
@@ -35,25 +34,24 @@ func GatewayForInterface(
 		}
 	}
 
-    for i := range gateways {
+	for i := range gateways {
 
-        logger.Log.Println(
-            "CHECK GATEWAY:",
-            gateways[i].IP,
-            gateways[i].Interface,
-        )
+		logger.Log.Println(
+			"CHECK GATEWAY:",
+			gateways[i].IP,
+			gateways[i].Interface,
+		)
 
-        if gateways[i].Interface == iface.Name {
+		if gateways[i].Interface == iface.Name {
 
-            logger.Log.Println(
-                "GATEWAY MATCH:",
-                gateways[i].IP,
-            )
+			logger.Log.Println(
+				"GATEWAY MATCH:",
+				gateways[i].IP,
+			)
 
-            return &gateways[i]
-        }
-    }
-
+			return &gateways[i]
+		}
+	}
 
 	logger.Log.Println(
 		"GATEWAY NOT FOUND",

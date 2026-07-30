@@ -7,13 +7,13 @@ type DeviceType string
 const (
 	DeviceUnknown DeviceType = "unknown"
 
-	DeviceRouter DeviceType = "router"
+	DeviceRouter  DeviceType = "router"
 	DeviceGateway DeviceType = "gateway"
 
 	DeviceComputer DeviceType = "computer"
-	DeviceServer DeviceType = "server"
+	DeviceServer   DeviceType = "server"
 
-	DevicePhone DeviceType = "phone"
+	DevicePhone  DeviceType = "phone"
 	DeviceTablet DeviceType = "tablet"
 
 	DevicePrinter DeviceType = "printer"
@@ -22,12 +22,10 @@ const (
 
 	DeviceNAS DeviceType = "nas"
 
-	DeviceTV DeviceType = "tv"
+	DeviceTV      DeviceType = "tv"
 	DeviceConsole DeviceType = "console"
 
 	DeviceAccessPoint DeviceType = "access_point"
 
 	DeviceIoT DeviceType = "iot"
 )
-
-

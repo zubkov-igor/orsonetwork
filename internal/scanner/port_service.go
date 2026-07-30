@@ -7,15 +7,15 @@ var PortServices = map[int]string{
 
 	53: "dns",
 
-	80: "http",
+	80:  "http",
 	443: "https",
 
 	135: "msrpc",
 	139: "netbios",
 	445: "smb",
 
-	515: "lpd-printer",
-	631: "ipp-printer",
+	515:  "lpd-printer",
+	631:  "ipp-printer",
 	9100: "raw-printer",
 
 	554: "rtsp",
@@ -34,7 +34,6 @@ var PortServices = map[int]string{
 	8080: "http-alt",
 	8443: "https-alt",
 }
-
 
 func DetectPortService(port int) string {
 

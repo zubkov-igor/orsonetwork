@@ -4,7 +4,7 @@ package scanner
 // extracted from NetBIOS discovery.
 
 type NetBIOSResult struct {
-    Name      string
-    Workgroup string
-    MAC       string
+	Name      string
+	Workgroup string
+	MAC       string
 }

@@ -1,8 +1,7 @@
 package scanner
 
 type UDPProbeResult struct {
+	Found bool
 
-    Found bool
-
-    Info string
+	Info string
 }

@@ -1,11 +1,11 @@
 package scanner
 
 import (
-    "fmt"
-    "net"
-    "time"
-    "OrsoNetwork/internal/logger"
-    "OrsoNetwork/internal/models"
+	"OrsoNetwork/internal/logger"
+	"OrsoNetwork/internal/models"
+	"fmt"
+	"net"
+	"time"
 )
 
 func ScanPorts(
@@ -15,9 +15,9 @@ func ScanPorts(
 	var ports []models.Port
 
 	logger.Log.Println(
-    "PORT SCAN START:",
-    ip,
-)
+		"PORT SCAN START:",
+		ip,
+	)
 
 	for _, port := range CommonPorts {
 
@@ -36,10 +36,10 @@ func ScanPorts(
 	}
 
 	logger.Log.Println(
-    "PORT SCAN FINISHED:",
-    ip,
-    len(ports),
-)
+		"PORT SCAN FINISHED:",
+		ip,
+		len(ports),
+	)
 
 	return ports
 }

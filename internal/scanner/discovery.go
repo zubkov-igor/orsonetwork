@@ -1,121 +1,155 @@
 package scanner
 
 import (
-    "sync"
-    "time"
+	"sort"
+	"sync"
+	"time"
 
-    "OrsoNetwork/internal/logger"
-    "OrsoNetwork/internal/models"
+	"OrsoNetwork/internal/logger"
+	"OrsoNetwork/internal/models"
 )
+
+// Number of concurrent ping workers.
+//
+// Controls scan speed and CPU/network load.
 
 const pingWorkers = 24
 const pingTimeout = 200 * time.Millisecond
 
+// DiscoverHosts scans a network using ICMP echo requests.
+//
+// Pipeline:
+//
+// CIDR
+//     ↓
+// Generate IPs
+//     ↓
+// Remove own IP
+//     ↓
+// Worker pool
+//     ↓
+// Alive hosts
+//
+// Returns only hosts that responded.
 
 func DiscoverHosts(
-    cidr string,
-    ownIP string,
+	cidr string,
+	ownIP string,
 ) []models.Host {
 
-    hosts := []models.Host{}
+	hosts := []models.Host{}
 
-    start := time.Now()
+	start := time.Now()
 
-    ips := HostsFromCIDR(cidr)
+	// Generate every host address
+	// inside the network.
 
-    logger.Log.Println(
-        "CIDR HOSTS GENERATED:",
-        len(ips),
-        time.Since(start),
-    )
+	ips := HostsFromCIDR(cidr)
 
+	logger.Log.Println(
+		"CIDR HOSTS GENERATED:",
+		len(ips),
+		time.Since(start),
+	)
 
-    filteredIPs := make([]string, 0, len(ips))
+	// Never ping ourselves.
 
-    for _, ip := range ips {
+	filteredIPs := make([]string, 0, len(ips))
 
-        if ip == ownIP {
+	for _, ip := range ips {
 
-            logger.Log.Println(
-                "SKIP OWN IP:",
-                ip,
-            )
+		if ip == ownIP {
 
-            continue
-        }
+			logger.Log.Println(
+				"SKIP OWN IP:",
+				ip,
+			)
 
-        filteredIPs = append(
-            filteredIPs,
-            ip,
-        )
-    }
+			continue
+		}
 
+		filteredIPs = append(
+			filteredIPs,
+			ip,
+		)
+	}
 
-    ips = filteredIPs
+	ips = filteredIPs
 
+	logger.Log.Println(
+		"CIDR HOSTS AFTER FILTER:",
+		len(ips),
+		time.Since(start),
+	)
 
-    logger.Log.Println(
-        "CIDR HOSTS AFTER FILTER:",
-        len(ips),
-        time.Since(start),
-    )
+	// jobs
+	// IPs waiting to be scanned.
+	//
+	// results
+	// Alive hosts discovered by workers.
 
+	jobs := make(chan string)
+	results := make(chan models.Host)
 
-    jobs := make(chan string)
-    results := make(chan models.Host)
+	// Wait until every worker
+	// finishes processing.
 
+	var wg sync.WaitGroup
 
-    var wg sync.WaitGroup
+	wg.Add(pingWorkers)
 
-    wg.Add(pingWorkers)
+	for i := 0; i < pingWorkers; i++ {
 
+		go pingWorker(
+			jobs,
+			results,
+			&wg,
+			pingTimeout,
+		)
+	}
 
-    for i := 0; i < pingWorkers; i++ {
+	// Feed every IP into the worker pool.
 
-        go pingWorker(
-            jobs,
-            results,
-            &wg,
-            pingTimeout,
-        )
-    }
+	go func() {
 
+		for _, ip := range ips {
+			jobs <- ip
+		}
 
-    go func() {
+		close(jobs)
 
-        for _, ip := range ips {
-            jobs <- ip
-        }
+	}()
 
-        close(jobs)
+	// Close result channel
+	// after all workers finish.
 
-    }()
+	go func() {
 
+		wg.Wait()
 
-    go func() {
+		close(results)
 
-        wg.Wait()
+	}()
 
-        close(results)
+	// Collect alive hosts.
 
-    }()
+	for host := range results {
 
+		hosts = append(
+			hosts,
+			host,
+		)
+	}
 
-    for host := range results {
+	sort.Slice(hosts, func(i, j int) bool {
+		return hosts[i].IP < hosts[j].IP
+	})
 
-        hosts = append(
-            hosts,
-            host,
-        )
-    }
+	logger.Log.Println(
+		"PING DISCOVERY FINISHED:",
+		len(hosts),
+		time.Since(start),
+	)
 
-
-    logger.Log.Println(
-        "PING DISCOVERY FINISHED:",
-        len(hosts),
-        time.Since(start),
-    )
-
-
-    return hosts
+	return hosts
 }

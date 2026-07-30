@@ -21,107 +21,99 @@ func TestMDNS(t *testing.T) {
 		"_smb._tcp",
 	}
 
-for _, service := range services {
+	for _, service := range services {
 
-    log.Println(
-        "SEARCH MDNS:",
-        service,
-    )
+		log.Println(
+			"SEARCH MDNS:",
+			service,
+		)
 
-    resolver, err := zeroconf.NewResolver(nil)
+		resolver, err := zeroconf.NewResolver(nil)
 
-    if err != nil {
-        t.Fatal(err)
-    }
+		if err != nil {
+			t.Fatal(err)
+		}
 
-    entries := make(chan *zeroconf.ServiceEntry)
+		entries := make(chan *zeroconf.ServiceEntry)
 
-    go func() {
-        for entry := range entries {
+		go func() {
+			for entry := range entries {
 
-            log.Println(
-                "MDNS ENTRY:",
-                entry.Instance,
-                entry.HostName,
-                entry.AddrIPv4,
-            )
-        }
-    }()
+				log.Println(
+					"MDNS ENTRY:",
+					entry.Instance,
+					entry.HostName,
+					entry.AddrIPv4,
+				)
+			}
+		}()
 
+		ctx, cancel := context.WithTimeout(
+			context.Background(),
+			3*time.Second,
+		)
 
-    ctx, cancel := context.WithTimeout(
-        context.Background(),
-        3*time.Second,
-    )
+		err = resolver.Browse(
+			ctx,
+			service,
+			"local.",
+			entries,
+		)
 
+		if err != nil {
+			t.Log(
+				"MDNS ERROR:",
+				service,
+				err,
+			)
+		}
 
-    err = resolver.Browse(
-        ctx,
-        service,
-        "local.",
-        entries,
-    )
+		<-ctx.Done()
 
-    if err != nil {
-        t.Log(
-            "MDNS ERROR:",
-            service,
-            err,
-        )
-    }
-
-    <-ctx.Done()
-
-    cancel()
-}
+		cancel()
+	}
 }
 
 func TestMDNSLookup(t *testing.T) {
 
-    resolver, err := zeroconf.NewResolver(nil)
+	resolver, err := zeroconf.NewResolver(nil)
 
-    if err != nil {
-        t.Fatal(err)
-    }
+	if err != nil {
+		t.Fatal(err)
+	}
 
+	entries := make(chan *zeroconf.ServiceEntry)
 
-    entries := make(chan *zeroconf.ServiceEntry)
+	go func() {
 
+		for entry := range entries {
 
-    go func() {
+			log.Println(
+				"LOOKUP ENTRY:",
+				entry.Instance,
+				entry.HostName,
+				entry.AddrIPv4,
+			)
+		}
 
-        for entry := range entries {
+	}()
 
-            log.Println(
-                "LOOKUP ENTRY:",
-                entry.Instance,
-                entry.HostName,
-                entry.AddrIPv4,
-            )
-        }
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		3*time.Second,
+	)
 
-    }()
+	defer cancel()
 
+	err = resolver.Lookup(
+		ctx,
+		"iPhone.local",
+		entries,
+	)
 
-    ctx, cancel := context.WithTimeout(
-        context.Background(),
-        3*time.Second,
-    )
+	if err != nil {
+		t.Fatal(err)
+	}
 
-    defer cancel()
-
-
-    err = resolver.Lookup(
-        ctx,
-        "iPhone.local",
-        entries,
-    )
-
-
-    if err != nil {
-        t.Fatal(err)
-    }
-
-
-    <-ctx.Done()
+	<-ctx.Done()
 }

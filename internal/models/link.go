@@ -5,7 +5,8 @@ package models
 // Link information may be discovered
 // from ARP, SNMP, LLDP or topology analysis.
 
-type Link struct {	From    string  `json:"from"`
+type Link struct {
+	From    string  `json:"from"`
 	To      string  `json:"to"`
 	Type    string  `json:"type"`
 	Latency float64 `json:"latency"`

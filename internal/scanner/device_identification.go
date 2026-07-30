@@ -6,27 +6,22 @@ import (
 	"OrsoNetwork/internal/models"
 )
 
-
 func IdentifyDevice(
 	host models.Host,
 ) models.DeviceType {
-
 
 	hostname := strings.ToLower(
 		host.Hostname,
 	)
 
-
 	vendor := strings.ToLower(
 		host.Vendor,
 	)
-
 
 	// Gateway
 	if host.IP == "192.168.0.1" {
 		return models.DeviceGateway
 	}
-
 
 	// Routers by vendor
 	if strings.Contains(vendor, "eltex") ||
@@ -36,7 +31,6 @@ func IdentifyDevice(
 		return models.DeviceRouter
 	}
 
-
 	// Windows computers
 	if strings.HasPrefix(hostname, "desktop") ||
 		strings.Contains(hostname, "win") ||
@@ -45,14 +39,12 @@ func IdentifyDevice(
 		return models.DeviceComputer
 	}
 
-
 	// Phones
 	if strings.Contains(hostname, "iphone") ||
 		strings.Contains(hostname, "android") {
 
 		return models.DevicePhone
 	}
-
 
 	// SMB ports
 	for _, port := range host.Ports {
@@ -63,7 +55,6 @@ func IdentifyDevice(
 			return models.DeviceComputer
 		}
 	}
-
 
 	// mDNS mobile hints
 	for _, udp := range host.UDPServices {
@@ -76,7 +67,6 @@ func IdentifyDevice(
 			return models.DevicePhone
 		}
 	}
-
 
 	return models.DeviceUnknown
 }

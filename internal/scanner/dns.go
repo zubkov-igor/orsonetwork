@@ -32,10 +32,10 @@ func LookupReverseDNS(ip string) string {
 	}
 
 	logger.Log.Println(
-    "REVERSE DNS:",
-    ip,
-    names,
-)
+		"REVERSE DNS:",
+		ip,
+		names,
+	)
 
 	if len(names) == 0 {
 		return ""

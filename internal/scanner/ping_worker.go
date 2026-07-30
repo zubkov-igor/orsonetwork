@@ -7,16 +7,14 @@ import (
 	"OrsoNetwork/internal/models"
 )
 
-
 func pingWorker(
-    jobs <-chan string,
-    results chan<- models.Host,
-    wg *sync.WaitGroup,
-    timeout time.Duration,
+	jobs <-chan string,
+	results chan<- models.Host,
+	wg *sync.WaitGroup,
+	timeout time.Duration,
 ) {
 
 	defer wg.Done()
-
 
 	for ip := range jobs {
 
@@ -24,7 +22,6 @@ func pingWorker(
 			ip,
 			timeout,
 		)
-
 
 		if host.Online {
 

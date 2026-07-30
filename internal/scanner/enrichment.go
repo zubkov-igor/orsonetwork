@@ -1,185 +1,244 @@
 package scanner
 
 import (
-    "OrsoNetwork/internal/logger"
-    "OrsoNetwork/internal/models"
+	"OrsoNetwork/internal/logger"
+	"OrsoNetwork/internal/models"
 )
+
+// EnrichHosts collects additional information
+// for every discovered host.
+//
+// Discovery pipeline:
+//
+// mDNS
+// ARP
+// UDP
+// Reverse DNS
+// NetBIOS
+// Port Scan
+// Device Identification
 
 func EnrichHosts(
-    hosts []models.Host,
+	hosts []models.Host,
 ) []models.Host {
 
+	// Discover mDNS services
+	mdnsRecords := DiscoverMDNS()
 
-    mdnsRecords := DiscoverMDNS()
+	logger.Log.Println(
+		"MDNS FOUND:",
+		len(mdnsRecords),
+	)
 
-    logger.Log.Println(
-        "MDNS FOUND:",
-        len(mdnsRecords),
-    )
+	// Resolve MAC addresses using ARP
+	arpHosts := ARPDiscovery(
+		hosts,
+	)
 
+	// Build fast lookup table:
+	// IP -> ARP result
 
-    arpHosts := ARPDiscovery(
-        hosts,
-    )
+	arpMap := make(
+		map[string]models.Host,
+	)
 
-    arpMap := make(
-        map[string]models.Host,
-    )
+	for _, h := range arpHosts {
+		arpMap[h.IP] = h
+	}
 
-    for _, h := range arpHosts {
-        arpMap[h.IP] = h
-    }
+	for i := range hosts {
 
+		// ==========================
+		// mDNS enrichment
+		// ==========================
 
-    for i := range hosts {
+		for _, mdns := range mdnsRecords {
 
+			if mdns.IP == hosts[i].IP {
 
-        // MDNS
-        for _, mdns := range mdnsRecords {
+				hosts[i].MDNS = append(
+					hosts[i].MDNS,
+					mdns,
+				)
 
-            if mdns.IP == hosts[i].IP {
+				hosts[i].Sources = append(
+					hosts[i].Sources,
+					models.DiscoverySource{
+						Type:  models.DiscoveryMDNS,
+						Value: mdns.Name,
+					},
+				)
+			}
+		}
 
-                hosts[i].MDNS = append(
-                    hosts[i].MDNS,
-                    mdns,
-                )
+		// ==========================
+		// ARP enrichment
+		// MAC + Vendor
+		// ==========================
 
+		if arpHost, ok := arpMap[hosts[i].IP]; ok {
 
-                hosts[i].Sources = append(
-                    hosts[i].Sources,
-                    models.DiscoverySource{
-                        Type: models.DiscoveryMDNS,
-                        Value: mdns.Name,
-                    },
-                )
-            }
-        }
+			if arpHost.MAC != "" {
 
+				hosts[i].MAC = arpHost.MAC
 
+				hosts[i].Sources = append(
+					hosts[i].Sources,
+					models.DiscoverySource{
+						Type:  models.DiscoveryARP,
+						Value: arpHost.MAC,
+					},
+				)
 
-        // ARP
-        if arpHost, ok := arpMap[hosts[i].IP]; ok {
+				hosts[i].Vendor = LookupVendor(
+					arpHost.MAC,
+				)
 
-            if arpHost.MAC != "" {
+				if hosts[i].Vendor != "" {
 
-                hosts[i].MAC = arpHost.MAC
+					hosts[i].Sources = append(
+						hosts[i].Sources,
+						models.DiscoverySource{
+							Type:  models.DiscoveryOUI,
+							Value: hosts[i].Vendor,
+						},
+					)
+				}
+			}
+		}
 
-                hosts[i].Vendor = LookupVendor(
-                    arpHost.MAC,
-                )
-            }
-        }
+		// ==========================
+		// UDP Discovery
+		// ==========================
 
-hosts[i].UDPServices = DiscoverUDP(
-    hosts[i].IP,
-)
+		hosts[i].UDPServices = DiscoverUDP(
+			hosts[i].IP,
+		)
 
+		for _, u := range hosts[i].UDPServices {
 
-for _, u := range hosts[i].UDPServices {
+			logger.Log.Println(
+				"UDP SERVICE:",
+				hosts[i].IP,
+				u.Port,
+				u.Service,
+			)
+		}
 
-    logger.Log.Println(
-        "UDP SERVICE:",
-        hosts[i].IP,
-        u.Port,
-        u.Service,
-    )
-}
+		// ==========================
+		// Reverse DNS
+		// ==========================
 
+		hostname := LookupReverseDNS(
+			hosts[i].IP,
+		)
 
-    // Reverse DNS
-    hostname := LookupReverseDNS(
-        hosts[i].IP,
-    )
+		if hostname != "" {
 
-    if hostname != "" {
+			hosts[i].Hostname = hostname
 
-        hosts[i].Hostname = hostname
+			hosts[i].Sources = append(
+				hosts[i].Sources,
+				models.DiscoverySource{
+					Type:  models.DiscoveryReverseDNS,
+					Value: hostname,
+				},
+			)
+		}
 
-      hosts[i].Sources = append(
-        hosts[i].Sources,
-        models.DiscoverySource{
-        Type: models.DiscoveryOUI,
-        Value: hosts[i].Vendor,
-    },
-)
-    }
+		// ==========================
+		// NetBIOS
+		// ==========================
 
-   // NetBIOS enrichment
-netbios, err := LookupNetBIOS(
-    hosts[i].IP,
-)
+		netbios, err := LookupNetBIOS(
+			hosts[i].IP,
+		)
 
-if err == nil {
+		if err == nil {
 
-    logger.Log.Println(
-        "NETBIOS FOUND:",
-        hosts[i].IP,
-        netbios.Name,
-        netbios.MAC,
-    )
+			logger.Log.Println(
+				"NETBIOS FOUND:",
+				hosts[i].IP,
+				netbios.Name,
+				netbios.MAC,
+			)
 
+			if netbios.Name != "" {
 
-    if netbios.Name != "" {
+				if hosts[i].Hostname == "" {
 
-        if hosts[i].Hostname == "" {
-            hosts[i].Hostname = netbios.Name
-        }
+					hosts[i].Hostname =
+						netbios.Name
+				}
 
-        hosts[i].Sources = append(
-            hosts[i].Sources,
-            models.DiscoverySource{
-                Type:  models.DiscoveryNetBIOS,
-                Value: netbios.Name,
-            },
-        )
-    }
+				hosts[i].Sources = append(
+					hosts[i].Sources,
+					models.DiscoverySource{
+						Type:  models.DiscoveryNetBIOS,
+						Value: netbios.Name,
+					},
+				)
+			}
 
+			// NetBIOS MAC fallback
 
-    if hosts[i].MAC == "" && netbios.MAC != "" {
+			if hosts[i].MAC == "" &&
+				netbios.MAC != "" {
 
-        hosts[i].MAC = netbios.MAC
+				hosts[i].MAC =
+					netbios.MAC
 
-        hosts[i].Sources = append(
-            hosts[i].Sources,
-            models.DiscoverySource{
-                Type:  models.DiscoveryNetBIOS,
-                Value: netbios.MAC,
-            },
-        )
-    }
-}
+				hosts[i].Vendor =
+					LookupVendor(
+						netbios.MAC,
+					)
 
-hosts[i].Ports = ScanPorts(
-    hosts[i].IP,
-)
+				hosts[i].Sources = append(
+					hosts[i].Sources,
+					models.DiscoverySource{
+						Type:  models.DiscoveryNetBIOS,
+						Value: netbios.MAC,
+					},
+				)
+			}
+		}
 
-for _, p := range hosts[i].Ports {
+		// ==========================
+		// TCP Port scan
+		// ==========================
 
-    logger.Log.Println(
-        "OPEN PORT:",
-        hosts[i].IP,
-        p.Number,
-        p.Protocol,
-        p.Service,
-    )
-}
+		hosts[i].Ports = ScanPorts(
+			hosts[i].IP,
+		)
 
+		for _, p := range hosts[i].Ports {
 
-// Device detection
-hosts[i].Type = IdentifyDevice(
-    hosts[i],
-)
+			logger.Log.Println(
+				"OPEN PORT:",
+				hosts[i].IP,
+				p.Number,
+				p.Protocol,
+				p.Service,
+			)
+		}
 
+		// ==========================
+		// Device identification
+		// ==========================
 
-logger.Log.Println(
-    "DEVICE DETECTED:",
-    hosts[i].IP,
-    hosts[i].Hostname,
-    hosts[i].Vendor,
-    hosts[i].Type,
-)
+		hosts[i].Type =
+			IdentifyDevice(
+				hosts[i],
+			)
 
-}
+		logger.Log.Println(
+			"DEVICE DETECTED:",
+			hosts[i].IP,
+			hosts[i].Hostname,
+			hosts[i].Vendor,
+			hosts[i].Type,
+		)
+	}
 
 	return hosts
 }
