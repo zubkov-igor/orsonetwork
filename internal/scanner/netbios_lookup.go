@@ -1,16 +1,14 @@
 package scanner
 
-func LookupNetBIOS(ip string) (NetBIOSResult, error) {
+func LookupNetBIOS(
+	ip string,
+) (NetBIOSResult, error) {
 
-	raw, err := ProbeNetBIOS(
-		ip,
-	)
+	data, err := ProbeNetBIOS(ip)
 
 	if err != nil {
 		return NetBIOSResult{}, err
 	}
 
-	return ParseNetBIOSResponse(
-		raw,
-	), nil
+	return ParseNetBIOSResponse(data), nil
 }

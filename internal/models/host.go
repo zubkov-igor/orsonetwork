@@ -7,25 +7,32 @@ import "time"
 // and classification information.
 
 type Host struct {
-	IP string `json:"ip"`
 
-	MAC string `json:"mac"`
+    IP string `json:"ip"`
 
-	Hostname string `json:"hostname"`
+    MAC string `json:"mac"`
 
-	Vendor string `json:"vendor"`
+    Hostname string `json:"hostname"`
 
-	Ports []Port `json:"ports"`
+    Vendor string `json:"vendor"`
 
-	MDNS []MDNSService `json:"mdns"`
 
-	UDPServices []UDPService `json:"udp"`
+    Ports []Port `json:"ports"`
 
-	Type DeviceType `json:"deviceType"`
+    MDNS []MDNSService `json:"mdns"`
 
-	Sources []DiscoverySource `json:"sources"`
+    UDPServices []UDPService `json:"udp"`
 
-	Online bool
 
-	RTT time.Duration
+    Type DeviceType `json:"deviceType"`
+
+    Confidence int `json:"confidence"`
+
+
+    Sources []DiscoverySource `json:"sources"`
+
+
+    Online bool
+
+    RTT time.Duration
 }

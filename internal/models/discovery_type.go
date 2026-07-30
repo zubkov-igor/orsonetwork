@@ -5,13 +5,22 @@ package models
 type DiscoveryType string
 
 const (
-	DiscoveryARP DiscoveryType = "arp"
-	DiscoveryOUI DiscoveryType = "oui"
 
-	DiscoveryReverseDNS DiscoveryType = "reverse_dns"
-	DiscoveryNetBIOS    DiscoveryType = "netbios"
-	DiscoveryMDNS       DiscoveryType = "mdns"
+    DiscoveryARP DiscoveryType = "arp"
 
-	DiscoverySNMP DiscoveryType = "snmp"
-	DiscoverySSDP DiscoveryType = "ssdp"
+    DiscoveryOUI DiscoveryType = "oui"
+
+    DiscoveryReverseDNS DiscoveryType = "reverse_dns"
+
+    DiscoveryNetBIOS DiscoveryType = "netbios"
+
+    DiscoveryMDNS DiscoveryType = "mdns"
+
+    DiscoverySNMP DiscoveryType = "snmp"
+
+    DiscoverySSDP DiscoveryType = "ssdp"
+
+    DiscoveryTCP DiscoveryType = "tcp"
+
+    DiscoveryUDP DiscoveryType = "udp"
 )

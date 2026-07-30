@@ -83,6 +83,7 @@ export namespace models {
 	    mdns: MDNSService[];
 	    udp: UDPService[];
 	    deviceType: string;
+	    confidence: number;
 	    sources: DiscoverySource[];
 	    Online: boolean;
 	    RTT: number;
@@ -101,6 +102,7 @@ export namespace models {
 	        this.mdns = this.convertValues(source["mdns"], MDNSService);
 	        this.udp = this.convertValues(source["udp"], UDPService);
 	        this.deviceType = source["deviceType"];
+	        this.confidence = source["confidence"];
 	        this.sources = this.convertValues(source["sources"], DiscoverySource);
 	        this.Online = source["Online"];
 	        this.RTT = source["RTT"];
