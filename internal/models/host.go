@@ -26,6 +26,7 @@ type Host struct {
 
     Type DeviceType `json:"deviceType"`
 
+
     Confidence int `json:"confidence"`
 
 

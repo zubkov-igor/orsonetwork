@@ -1,159 +1,120 @@
 package scanner
 
 import (
-	"bufio"
-	"bytes"
-	_ "embed"
-	"encoding/json"
-	"strings"
-	"sync"
+    "bufio"
+    "bytes"
+    _ "embed"
+    "strings"
+    "sync"
 
-	"OrsoNetwork/internal/logger"
+    "OrsoNetwork/internal/logger"
 )
 
-//go:embed data/macaddress.io-db.json
-var vendorJSON []byte
+//go:embed data/ieee-oui.txt
+var vendorTXT []byte
 
-var vendorOnce sync.Once
-var legacyOnce sync.Once
-
-var vendors = make(map[string]string)
-var legacyVendors = make(map[string]string)
-
-type VendorRecord struct {
-	OUI         string `json:"oui"`
-	CompanyName string `json:"companyName"`
-}
+var (
+    vendorOnce sync.Once
+    vendors    = make(map[string]string)
+    dbLoaded   bool // чтобы можно было явно проверить состояние, если нужно
+)
 
 func LookupVendor(mac string) string {
+    if mac == "" {
+        return ""
+    }
 
-	logger.Log.Println(
-		"VENDOR LOOKUP START:",
-		mac,
-	)
+    vendorOnce.Do(loadVendorDB)
 
-	defer logger.Log.Println(
-		"VENDOR LOOKUP END:",
-		mac,
-	)
+    prefix := normalizeMAC(mac)
+    if prefix == "" {
+        return "Unknown"
+    }
 
-	if mac == "" {
-		return ""
-	}
-
-	vendorOnce.Do(func() {
-		loadVendorDB()
-	})
-
-	legacyOnce.Do(func() {
-		loadLegacyVendorDB()
-	})
-
-	prefix := normalizeMAC(mac)
-
-	vendor, ok := vendors[prefix]
-
-	if ok {
-
-		if !strings.Contains(
-			vendor,
-			"REDACTED",
-		) {
-			return vendor
-		}
-
-	}
-
-	legacyVendor, ok := legacyVendors[prefix]
-
-	if ok {
-		return legacyVendor
-	}
-
-	return "Unknown"
+    if vendor, ok := vendors[prefix]; ok {
+        return vendor
+    }
+    return "Unknown"
 }
 
 func loadVendorDB() {
+    vendors = make(map[string]string)
 
-	logger.Log.Println(
-		"LOADING VENDOR DB BYTES:",
-		len(vendorJSON),
-	)
+    logger.Log.Printf("Vendor file bytes: %d", len(vendorTXT))
 
-	vendors = make(
-		map[string]string,
-	)
+    if len(vendorTXT) == 0 {
+        logger.Log.Println("WARNING: vendorTXT is empty")
+        dbLoaded = true
+        return
+    }
 
-	scanner := bufio.NewScanner(
-		bytes.NewReader(vendorJSON),
-	)
+    scanner := bufio.NewScanner(bytes.NewReader(vendorTXT))
+    count := 0
+    skipped := 0
 
-	count := 0
+    for scanner.Scan() {
+        line := strings.TrimSpace(scanner.Text())
 
-	for scanner.Scan() {
+        // Пропускаем пустые строки и комментарии
+        if line == "" || strings.HasPrefix(line, "#") {
+            continue
+        }
 
-		var record VendorRecord
+        fields := strings.Fields(line)
+        if len(fields) < 2 {
+            skipped++
+            continue
+        }
 
-		err := json.Unmarshal(
-			scanner.Bytes(),
-			&record,
-		)
+        rawPrefix := fields[0]
+        prefix := normalizePrefix(rawPrefix)
 
-		if err != nil {
-			logger.Log.Println(
-				"VENDOR JSON ERROR:",
-				err.Error(),
-			)
-			continue
-		}
+        if prefix == "" {
+            skipped++
+            continue
+        }
 
-		prefix := normalizePrefix(
-			record.OUI,
-		)
+        // В manuf: [префикс] [короткое имя] [полное имя...]
+        // Мы хотим полное имя (начиная со 2-го поля).
+        // Но если вдруг короткое имя совпадает с полным — тоже ок.
+        vendor := strings.Join(fields[2:], " ") // берём полное имя
+        if vendor == "" {
+            vendor = fields[1] // запасной вариант: короткое имя
+        }
 
-		if prefix == "" {
-			continue
-		}
+        vendors[prefix] = vendor
+        count++
 
-		vendors[prefix] = record.CompanyName
+        // Раскомментируй для отладки:
+        logger.Log.Printf("[OUI-DEBUG] RAW: %q -> KEY: %s | VENDOR: %s", rawPrefix, prefix, vendor)
+    }
 
-		count++
-	}
+    if err := scanner.Err(); err != nil {
+        logger.Log.Printf("Scanner error: %v", err)
+    }
 
-	if err := scanner.Err(); err != nil {
-
-		logger.Log.Println(
-			"VENDOR SCANNER ERROR:",
-			err.Error(),
-		)
-
-		panic(err)
-	}
-
-	logger.Log.Println(
-		"VENDOR DB LOADED:",
-		count,
-		"MAP SIZE:",
-		len(vendors),
-	)
+    logger.Log.Printf("IEEE OUI LOADED: %d entries, skipped %d lines, map size: %d", count, skipped, len(vendors))
+    dbLoaded = true
 }
 
+
 func normalizeMAC(mac string) string {
+    mac = strings.ToUpper(mac)
+    mac = strings.ReplaceAll(mac, ":", "")
+    mac = strings.ReplaceAll(mac, "-", "")
+    mac = strings.ReplaceAll(mac, ".", "")
 
-	mac = strings.ToUpper(mac)
+    if len(mac) < 6 {
+        return ""
+    }
 
-	mac = strings.ReplaceAll(mac, ":", "")
-	mac = strings.ReplaceAll(mac, "-", "")
-	mac = strings.ReplaceAll(mac, ".", "")
-
-	if len(mac) < 6 {
-		return ""
-	}
-
-	return mac[:6]
+    return mac[:6]
 }
 
 func normalizePrefix(prefix string) string {
-
-	return normalizeMAC(prefix)
+    p := normalizeMAC(prefix)
+    if len(p) >= 6 {
+        return p[:6]
+    }
+    return ""
 }

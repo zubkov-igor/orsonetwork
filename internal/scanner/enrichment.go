@@ -7,45 +7,52 @@ import (
 
 // EnrichHosts collects additional information
 // for every discovered host.
+
 func EnrichHosts(
     hosts []models.Host,
 ) []models.Host {
 
-    hosts = EnrichARP(
-        hosts,
-    )
 
-    hosts = EnrichNetBIOS(
-        hosts,
-    )
-
-    hosts = EnrichMDNS(
-        hosts,
-    )
-
-    hosts = EnrichUDP(
-        hosts,
-    )
-
-    hosts = EnrichReverseDNS(
-        hosts,
-    )
-
-    hosts = EnrichPorts(
-        hosts,
-    )
+    logger.Section("ARP ENRICHMENT")
+    hosts = EnrichARP(hosts)
 
 
-    // ==========================
-    // Final host state
-    // ==========================
+    logger.Section("NETBIOS ENRICHMENT")
+    hosts = EnrichNetBIOS(hosts)
+
+
+    logger.Section("MDNS DISCOVERY")
+    hosts = EnrichMDNS(hosts)
+
+
+    logger.Section("UDP DISCOVERY")
+    hosts = EnrichUDP(hosts)
+
+
+    logger.Section("REVERSE DNS")
+    hosts = EnrichReverseDNS(hosts)
+
+
+    logger.Section("TCP PORT SCAN")
+    hosts = EnrichPorts(hosts)
+
+
+
+    logger.Section("CONFIDENCE CALCULATION")
+
 
     for i := range hosts {
+
+        hosts[i].Type =
+            IdentifyDevice(
+        hosts[i],
+    )
 
         hosts[i].Confidence =
             CalculateConfidence(
                 hosts[i],
             )
+
 
         logger.Log.Println(
             "HOST FINAL:",

@@ -29,3 +29,30 @@ func Init() {
 		"LOGGER STARTED",
 	)
 }
+
+
+func Separator(title string) {
+
+	Log.Println(
+		"========================================",
+	)
+
+	Log.Println(
+		title,
+	)
+
+	Log.Println(
+		"========================================",
+	)
+
+}
+
+func Section(title string) {
+
+	Log.Println()
+	Log.Println(
+		"----------",
+		title,
+		"----------",
+	)
+}

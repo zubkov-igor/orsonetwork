@@ -1,72 +1,170 @@
 package scanner
 
 import (
-	"strings"
+    "strings"
 
-	"OrsoNetwork/internal/models"
+    "OrsoNetwork/internal/models"
 )
 
 func IdentifyDevice(
-	host models.Host,
+    host models.Host,
 ) models.DeviceType {
 
-	hostname := strings.ToLower(
-		host.Hostname,
-	)
+    hostname := strings.ToLower(
+        host.Hostname,
+    )
 
-	vendor := strings.ToLower(
-		host.Vendor,
-	)
+    vendor := strings.ToLower(
+        host.Vendor,
+    )
 
-	// Gateway
-	if host.IP == "192.168.0.1" {
-		return models.DeviceGateway
-	}
 
-	// Routers by vendor
-	if strings.Contains(vendor, "eltex") ||
-		strings.Contains(vendor, "tp-link") ||
-		strings.Contains(vendor, "xiaomi") {
+    // =========================
+    // Router / Gateway
+    // =========================
 
-		return models.DeviceRouter
-	}
+    if containsAny(
+        hostname,
+        "router",
+        "gateway",
+        "mikrotik",
+        "openwrt",
+    ) {
+        return models.DeviceRouter
+    }
 
-	// Windows computers
-	if strings.HasPrefix(hostname, "desktop") ||
-		strings.Contains(hostname, "win") ||
-		strings.Contains(hostname, "pc-") {
 
-		return models.DeviceComputer
-	}
+    if containsAny(
+        vendor,
+        "d-link",
+        "eltex",
+        "mikrotik",
+        "ubiquiti",
+        "cisco",
+        "netgear",
+    ) {
+        return models.DeviceRouter
+    }
 
-	// Phones
-	if strings.Contains(hostname, "iphone") ||
-		strings.Contains(hostname, "android") {
 
-		return models.DevicePhone
-	}
+    // =========================
+    // Camera
+    // =========================
 
-	// SMB ports
-	for _, port := range host.Ports {
+    if containsAny(
+        hostname,
+        "camera",
+        "cam",
+        "ipc",
+        "nvr",
+    ) {
+        return models.DeviceCamera
+    }
 
-		if port.Number == 445 ||
-			port.Number == 139 {
 
-			return models.DeviceComputer
-		}
-	}
+    // =========================
+    // Printer
+    // =========================
 
-	// mDNS mobile hints
-	for _, udp := range host.UDPServices {
+    if containsAny(
+        hostname,
+        "printer",
+        "print",
+    ) {
+        return models.DevicePrinter
+    }
 
-		if strings.Contains(
-			strings.ToLower(udp.Service),
-			"airplay",
-		) {
 
-			return models.DevicePhone
-		}
-	}
+    // =========================
+    // NAS
+    // =========================
 
-	return models.DeviceUnknown
+    if containsAny(
+        hostname,
+        "nas",
+        "storage",
+        "synology",
+        "qnap",
+    ) {
+        return models.DeviceNAS
+    }
+
+
+    // =========================
+    // Computer
+    // =========================
+
+    if containsAny(
+        hostname,
+        "desktop",
+        "pc",
+        "laptop",
+        "computer",
+        "workstation",
+    ) {
+        return models.DeviceComputer
+    }
+
+
+    // =========================
+    // Server
+    // =========================
+
+    for _, port := range host.Ports {
+
+        switch port.Number {
+
+        case 22:
+            return models.DeviceServer
+
+        case 3389:
+            return models.DeviceComputer
+
+        case 80, 443:
+
+            if containsAny(
+                hostname,
+                "server",
+            ) {
+                return models.DeviceServer
+            }
+        }
+    }
+
+
+    // =========================
+    // IoT
+    // =========================
+
+    if containsAny(
+        vendor,
+        "shenzhen",
+        "esp",
+        "tuya",
+        "sonoff",
+    ) {
+        return models.DeviceIoT
+    }
+
+
+    return models.DeviceUnknown
+}
+
+
+func containsAny(
+    value string,
+    items ...string,
+) bool {
+
+    for _, item := range items {
+
+        if strings.Contains(
+            value,
+            item,
+        ) {
+            return true
+        }
+    }
+
+    return false
 }
