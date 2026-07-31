@@ -85,8 +85,7 @@ func loadVendorDB() {
         vendors[prefix] = vendor
         count++
 
-        // Раскомментируй для отладки:
-        logger.Log.Printf("[OUI-DEBUG] RAW: %q -> KEY: %s | VENDOR: %s", rawPrefix, prefix, vendor)
+       // logger.Log.Printf("[OUI-DEBUG] RAW: %q -> KEY: %s | VENDOR: %s", rawPrefix, prefix, vendor)
     }
 
     if err := scanner.Err(); err != nil {

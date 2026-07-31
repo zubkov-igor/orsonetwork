@@ -14,6 +14,34 @@ export namespace models {
 	        this.Value = source["Value"];
 	    }
 	}
+	export class HTTPInfo {
+	    port: number;
+	    scheme: string;
+	    server: string;
+	    title: string;
+	    statusCode: number;
+	    contentType: string;
+	    scripts: string[];
+	    keywords: string[];
+	    fingerprint: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new HTTPInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.port = source["port"];
+	        this.scheme = source["scheme"];
+	        this.server = source["server"];
+	        this.title = source["title"];
+	        this.statusCode = source["statusCode"];
+	        this.contentType = source["contentType"];
+	        this.scripts = source["scripts"];
+	        this.keywords = source["keywords"];
+	        this.fingerprint = source["fingerprint"];
+	    }
+	}
 	export class UDPService {
 	    ip: string;
 	    port: number;
@@ -80,6 +108,7 @@ export namespace models {
 	    hostname: string;
 	    vendor: string;
 	    ports: Port[];
+	    http: HTTPInfo[];
 	    mdns: MDNSService[];
 	    udp: UDPService[];
 	    deviceType: string;
@@ -99,6 +128,7 @@ export namespace models {
 	        this.hostname = source["hostname"];
 	        this.vendor = source["vendor"];
 	        this.ports = this.convertValues(source["ports"], Port);
+	        this.http = this.convertValues(source["http"], HTTPInfo);
 	        this.mdns = this.convertValues(source["mdns"], MDNSService);
 	        this.udp = this.convertValues(source["udp"], UDPService);
 	        this.deviceType = source["deviceType"];

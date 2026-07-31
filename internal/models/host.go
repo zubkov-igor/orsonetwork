@@ -19,6 +19,8 @@ type Host struct {
 
     Ports []Port `json:"ports"`
 
+    HTTP []HTTPInfo `json:"http"`
+
     MDNS []MDNSService `json:"mdns"`
 
     UDPServices []UDPService `json:"udp"`
