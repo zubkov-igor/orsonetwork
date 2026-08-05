@@ -1,22 +1,28 @@
 package scanner
 
-func EncodeLength(
-	length int,
-) []byte {
+func EncodeLength(length int) []byte {
 
 	if length < 128 {
-
 		return []byte{
 			byte(length),
 		}
-
 	}
 
-	return []byte{
-		0x81,
-		byte(length),
+	bytes := []byte{}
+
+	for length > 0 {
+	bytes = append(
+    []byte{byte(length & 0xff)},
+    bytes...,
+)
+
+		length >>= 8
 	}
 
+	return append(
+		[]byte{0x80 | byte(len(bytes))},
+		bytes...,
+	)
 }
 
 func WrapBER(

@@ -42,6 +42,26 @@ export namespace models {
 	        this.fingerprint = source["fingerprint"];
 	    }
 	}
+	export class SNMPInfo {
+	    Version: string;
+	    Community: string;
+	    SysDescr: string;
+	    SysName: string;
+	    SysLocation: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SNMPInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Version = source["Version"];
+	        this.Community = source["Community"];
+	        this.SysDescr = source["SysDescr"];
+	        this.SysName = source["SysName"];
+	        this.SysLocation = source["SysLocation"];
+	    }
+	}
 	export class UDPService {
 	    ip: string;
 	    port: number;
@@ -103,17 +123,18 @@ export namespace models {
 	    }
 	}
 	export class Host {
-	    ip: string;
-	    mac: string;
-	    hostname: string;
-	    vendor: string;
-	    ports: Port[];
-	    http: HTTPInfo[];
-	    mdns: MDNSService[];
-	    udp: UDPService[];
-	    deviceType: string;
-	    confidence: number;
-	    sources: DiscoverySource[];
+	    IP: string;
+	    MAC: string;
+	    Hostname: string;
+	    Vendor: string;
+	    Ports: Port[];
+	    HTTP: HTTPInfo[];
+	    MDNS: MDNSService[];
+	    UDPServices: UDPService[];
+	    SNMP: SNMPInfo[];
+	    Type: string;
+	    Confidence: number;
+	    Sources: DiscoverySource[];
 	    Online: boolean;
 	    RTT: number;
 	
@@ -123,17 +144,18 @@ export namespace models {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.ip = source["ip"];
-	        this.mac = source["mac"];
-	        this.hostname = source["hostname"];
-	        this.vendor = source["vendor"];
-	        this.ports = this.convertValues(source["ports"], Port);
-	        this.http = this.convertValues(source["http"], HTTPInfo);
-	        this.mdns = this.convertValues(source["mdns"], MDNSService);
-	        this.udp = this.convertValues(source["udp"], UDPService);
-	        this.deviceType = source["deviceType"];
-	        this.confidence = source["confidence"];
-	        this.sources = this.convertValues(source["sources"], DiscoverySource);
+	        this.IP = source["IP"];
+	        this.MAC = source["MAC"];
+	        this.Hostname = source["Hostname"];
+	        this.Vendor = source["Vendor"];
+	        this.Ports = this.convertValues(source["Ports"], Port);
+	        this.HTTP = this.convertValues(source["HTTP"], HTTPInfo);
+	        this.MDNS = this.convertValues(source["MDNS"], MDNSService);
+	        this.UDPServices = this.convertValues(source["UDPServices"], UDPService);
+	        this.SNMP = this.convertValues(source["SNMP"], SNMPInfo);
+	        this.Type = source["Type"];
+	        this.Confidence = source["Confidence"];
+	        this.Sources = this.convertValues(source["Sources"], DiscoverySource);
 	        this.Online = source["Online"];
 	        this.RTT = source["RTT"];
 	    }
@@ -261,6 +283,7 @@ export namespace models {
 		    return a;
 		}
 	}
+	
 	
 	export class Topology {
 	    nodes: Node[];

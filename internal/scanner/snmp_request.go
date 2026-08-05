@@ -1,82 +1,123 @@
 package scanner
 
+// BuildSNMPRequest builds SNMPv1 GET request.
+//
+// Request:
+//   - Version: SNMPv1 (0)
+//   - Community: public
+//   - PDU: GetRequest
+//   - VarBind: OID + NULL
+//
+// Used for querying values like:
+// 1.3.6.1.2.1.1.1.0 (sysDescr)
+
 func BuildSNMPRequest(
-	oid []byte,
+	oid []int,
 ) []byte {
 
-	// OID
-	oidField := WrapBER(
-		0x06,
+
+	// VarBind:
+	// SEQUENCE {
+	//     OBJECT IDENTIFIER,
+	//     NULL
+	// }
+
+	varBind := EncodeVarBind(
 		oid,
 	)
 
-	// NULL value
-	nullField := []byte{
-		0x05,
+
+	// VarBind list:
+	// SEQUENCE {
+	//     VarBind
+	// }
+
+	varBindList := EncodeSequence(
+		varBind,
+	)
+
+
+	// GET REQUEST PDU
+	//
+	// PDU {
+	//     request-id
+	//     error
+	//     error-index
+	//     varbind-list
+	// }
+
+	pduData := []byte{
+
+		// request-id INTEGER 1
+		0x02,
+		0x04,
+		0x00,
+		0x00,
+		0x00,
+		0x01,
+
+
+		// error INTEGER 0
+		0x02,
+		0x01,
+		0x00,
+
+
+		// error-index INTEGER 0
+		0x02,
+		0x01,
 		0x00,
 	}
 
-	// VarBind
-	varBind := append(
-		oidField,
-		nullField...,
-	)
 
-	varBind = WrapBER(
-		0x30,
-		varBind,
-	)
-
-	// VarBind list
-	varBindList := WrapBER(
-		0x30,
-		varBind,
-	)
-
-	// GET REQUEST PDU
-	pdu := []byte{
-
-		0x02, 0x04,
-		0x00, 0x00, 0x00, 0x01,
-
-		0x02, 0x01, 0x00,
-
-		0x02, 0x01, 0x00,
-	}
-
-	pdu = append(
-		pdu,
+	pduData = append(
+		pduData,
 		varBindList...,
 	)
 
-	pdu = WrapBER(
-		0xA0,
-		pdu,
+
+	pdu := EncodePDU(
+		PDUGetRequest,
+		pduData,
 	)
 
-	// SNMP message body
+
+
+	// SNMP message:
+	//
+	// SEQUENCE {
+	//     version
+	//     community
+	//     PDU
+	// }
 
 	message := []byte{
 
-		0x02, 0x01, 0x00,
+		// version INTEGER 0
+		0x02,
+		0x01,
+		0x00,
 
+
+		// community OCTET STRING
 		0x04,
 		byte(len(SNMPCommunity)),
 	}
+
 
 	message = append(
 		message,
 		[]byte(SNMPCommunity)...,
 	)
 
+
 	message = append(
 		message,
 		pdu...,
 	)
 
-	return WrapBER(
-		0x30,
+
+	return EncodeSequence(
 		message,
 	)
-
 }

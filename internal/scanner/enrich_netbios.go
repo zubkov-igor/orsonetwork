@@ -5,19 +5,19 @@ import (
     "OrsoNetwork/internal/models"
 )
 
-
 func EnrichNetBIOS(
     hosts []models.Host,
 ) []models.Host {
 
+    logger.Log.Println(
+        "NETBIOS ENRICHMENT START",
+    )
 
     for i := range hosts {
-
 
         netbios, err := LookupNetBIOS(
             hosts[i].IP,
         )
-
 
         if err != nil {
             continue
@@ -32,6 +32,9 @@ func EnrichNetBIOS(
         )
 
 
+
+        // Hostname enrichment
+
         if netbios.Name != "" {
 
 
@@ -42,19 +45,22 @@ func EnrichNetBIOS(
             }
 
 
-            hosts[i].Sources = append(
-                hosts[i].Sources,
-                models.DiscoverySource{
-                    Type: models.DiscoveryNetBIOS,
-                    Value: netbios.Name,
-                },
-            )
+            hosts[i].Sources =
+                append(
+                    hosts[i].Sources,
+                    models.DiscoverySource{
+                        Type:  models.DiscoveryNetBIOS,
+                        Value: netbios.Name,
+                    },
+                )
         }
 
 
-        // fallback MAC
-        // если ARP не дал MAC,
-        // но NetBIOS дал
+
+        // MAC fallback
+        //
+        // ARP has priority.
+        // NetBIOS fills missing MAC.
 
         if hosts[i].MAC == "" &&
             netbios.MAC != "" {
@@ -64,21 +70,42 @@ func EnrichNetBIOS(
                 netbios.MAC
 
 
+            hosts[i].Sources =
+                append(
+                    hosts[i].Sources,
+                    models.DiscoverySource{
+                        Type:  models.DiscoveryNetBIOS,
+                        Value: netbios.MAC,
+                    },
+                )
+
+
+
+            // Vendor lookup from MAC
+
             hosts[i].Vendor =
                 LookupVendor(
                     netbios.MAC,
                 )
 
 
-            hosts[i].Sources = append(
-                hosts[i].Sources,
-                models.DiscoverySource{
-                    Type: models.DiscoveryNetBIOS,
-                    Value: netbios.MAC,
-                },
-            )
+        if hosts[i].Vendor != "" {
+
+    hosts[i].Sources = append(
+        hosts[i].Sources,
+        models.DiscoverySource{
+            Type: models.DiscoveryOUI,
+            Value: hosts[i].Vendor,
+        },
+    )
+}
         }
     }
+
+
+    logger.Log.Println(
+        "NETBIOS ENRICHMENT FINISHED",
+    )
 
 
     return hosts

@@ -1,49 +1,79 @@
 package scanner
 
 import (
+	"net/http"
 	"strings"
 
 	"OrsoNetwork/internal/models"
 )
 
+type HTTPFingerprintRule struct {
+	Needle      string
+	Fingerprint string
+}
 
 func AnalyzeHTTPFingerprint(
-	info *models.HTTPInfo,
-	html string,
+    info *models.HTTPInfo,
+    headers http.Header,
+    html string,
 ) {
 
-	lower := strings.ToLower(html)
+    lowerHTML := strings.ToLower(html)
+
+    lowerServer := strings.ToLower(
+        headers.Get("Server"),
+    )
+
+    for _, rule := range httpFingerprintRules {
+
+        if strings.Contains(
+            lowerHTML,
+            rule.Needle,
+        ) {
+
+            if !containsString(
+                info.Fingerprint,
+                rule.Fingerprint,
+            ) {
+
+                info.Fingerprint = append(
+                    info.Fingerprint,
+                    rule.Fingerprint,
+                )
+            }
+        }
+
+        if strings.Contains(
+            lowerServer,
+            rule.Needle,
+        ) {
+
+            if !containsString(
+                info.Fingerprint,
+                rule.Fingerprint,
+            ) {
+
+                info.Fingerprint = append(
+                    info.Fingerprint,
+                    rule.Fingerprint,
+                )
+            }
+        }
+    }
+}
 
 
-	rules := map[string]string{
+func containsString(
+	values []string,
+	value string,
+) bool {
 
-		"boardtype": "router-ui",
-		"softwareversion": "router-firmware",
-		"firmwareversion": "router-firmware",
+	for _, item := range values {
 
-		"signin": "router-login",
-
-		"lighttpd": "embedded-web-server",
-
-		"keenetic": "keenetic-router",
-		"tplink": "tp-link-router",
-		"zyxel": "zyxel-router",
-		"huawei": "huawei-router",
-		"zte": "zte-router",
-
-	}
-
-
-	for word, fingerprint := range rules {
-
-		if strings.Contains(lower, word) {
-
-			info.Fingerprint = append(
-				info.Fingerprint,
-				fingerprint,
-			)
-
+		if item == value {
+			return true
 		}
 	}
 
+	return false
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"time"
+	"bytes"
 
 	"OrsoNetwork/internal/logger"
 )
@@ -29,23 +30,19 @@ func ProbeSNMP(
 
 	defer conn.Close()
 
-	oid := EncodeOID(
-		OIDSysDescr,
-	)
+logger.Log.Println(
+    "OID:",
+    OIDSysDescr,
+)
 
-	logger.Log.Println(
-		"OID:",
-		oid,
-	)
+request := BuildSNMPRequest(
+    OIDSysDescr,
+)
 
-	request := BuildSNMPRequest(
-		oid,
-	)
-
-	logger.Log.Println(
-		"SNMP REQUEST HEX:",
-		fmt.Sprintf("% X", request),
-	)
+logger.Log.Println(
+	"SNMP REQUEST HEX:",
+	fmt.Sprintf("% X", request),
+)
 
 	_, err = conn.Write(request)
 
@@ -67,52 +64,52 @@ func ProbeSNMP(
 		),
 	)
 
-	n, err := conn.Read(
-		buffer,
-	)
+n, err := conn.Read(
+	buffer,
+)
 
-	if err != nil {
-
-		return UDPProbeResult{
-			Found: false,
-		}
+if err != nil {
+	return UDPProbeResult{
+		Found: false,
 	}
+}
 
-	response := buffer[:n]
+response := buffer[:n]
 
-	if len(response) < 2 {
+logger.Log.Println(
+	"SNMP RESPONSE SIZE:",
+	len(response),
+)
 
-		return UDPProbeResult{
-			Found: false,
-		}
-	}
+logger.Log.Println(
+	"SNMP RESPONSE HEX:",
+	fmt.Sprintf("% X", response),
+)
 
-	logger.Log.Println(
-		"SNMP RESPONSE HEX:",
-		fmt.Sprintf("% X", response),
-	)
+logger.Log.Println(
+	"SNMP RESPONSE STRING:",
+	string(response),
+)
 
-	if response[0] != 0x30 {
-
-		return UDPProbeResult{
-			Found: false,
-		}
-	}
-
-	for i := 0; i < len(response); i++ {
-
-		if response[i] == 0xA2 {
-
-			info := string(response)
-
-			return UDPProbeResult{
-				Found: true,
-				Info:  info,
-			}
-		}
-	}
+if response[0] != 0x30 {
 
 	return UDPProbeResult{
 		Found: false,
 	}
+}
+
+
+if bytes.Contains(response, []byte{0xA2}) {
+
+	return UDPProbeResult{
+		Found: true,
+		Info: "SNMP response",
+		Raw: response,
+	}
+}
+
+
+return UDPProbeResult{
+	Found: false,
+}
 }

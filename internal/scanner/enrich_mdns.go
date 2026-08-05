@@ -10,6 +10,12 @@ func EnrichMDNS(
 ) []models.Host {
 
 
+    logger.Log.Println(
+        "MDNS ENRICHMENT START",
+    )
+
+
+
     mdnsRecords := DiscoverMDNS()
 
 
@@ -19,29 +25,54 @@ func EnrichMDNS(
     )
 
 
+
     for i := range hosts {
+
 
         for _, mdns := range mdnsRecords {
 
-            if mdns.IP == hosts[i].IP {
+
+            if mdns.IP != hosts[i].IP {
+                continue
+            }
 
 
-                hosts[i].MDNS = append(
+
+            logger.Log.Println(
+                "MDNS MATCH:",
+                hosts[i].IP,
+                mdns.Name,
+            )
+
+
+
+            hosts[i].MDNS =
+                append(
                     hosts[i].MDNS,
                     mdns,
                 )
 
 
-                hosts[i].Sources = append(
-                    hosts[i].Sources,
-                    models.DiscoverySource{
-                        Type: models.DiscoveryMDNS,
-                        Value: mdns.Name,
-                    },
-                )
+
+            if mdns.Name != "" {
+
+                hosts[i].Sources =
+                    append(
+                        hosts[i].Sources,
+                        models.DiscoverySource{
+                            Type:  models.DiscoveryMDNS,
+                            Value: mdns.Name,
+                        },
+                    )
             }
         }
     }
+
+
+
+    logger.Log.Println(
+        "MDNS ENRICHMENT FINISHED",
+    )
 
 
     return hosts

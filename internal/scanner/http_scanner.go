@@ -37,45 +37,27 @@ info.Server = resp.Header.Get("Server")
 info.StatusCode = resp.StatusCode
 info.ContentType = resp.Header.Get("Content-Type")
 
-	body, err := io.ReadAll(
-		io.LimitReader(resp.Body, 32768),
-	)
+body, err := io.ReadAll(
+    io.LimitReader(resp.Body, 32768),
+)
 
-	if err != nil {
-		return info
-	}
+if err != nil {
+    return info
+}
 
 html := string(body)
 lowerHTML := strings.ToLower(html)
 
-keywords := []string{
-    "boardtype",
-    "softwareversion",
-    "firmwareversion",
-    "keenetic",
-    "tplink",
-    "zyxel",
-    "huawei",
-    "zte",
-}
-
-
 AnalyzeHTTPFingerprint(
     &info,
+    resp.Header,
     html,
 )
 
-
-for _, word := range keywords {
-
-    if strings.Contains(lowerHTML, word) {
-
-        info.Keywords = append(
-            info.Keywords,
-            word,
-        )
-    }
-}
+AnalyzeHTTPKeywords(
+    &info,
+    html,
+)
 
 scriptPattern := regexp.MustCompile(
     `(?is)<script[^>]*>`,

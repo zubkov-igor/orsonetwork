@@ -10,15 +10,25 @@ func EnrichUDP(
 ) []models.Host {
 
 
+    logger.Log.Println(
+        "UDP ENRICHMENT START",
+    )
+
+
     for i := range hosts {
 
 
-        hosts[i].UDPServices = DiscoverUDP(
+        services := DiscoverUDP(
             hosts[i].IP,
         )
 
 
-        for _, u := range hosts[i].UDPServices {
+        hosts[i].UDPServices = services
+
+
+
+        for _, u := range services {
+
 
             logger.Log.Println(
                 "UDP SERVICE:",
@@ -26,20 +36,24 @@ func EnrichUDP(
                 u.Port,
                 u.Service,
             )
-        }
 
 
-        if len(hosts[i].UDPServices) > 0 {
 
-            hosts[i].Sources = append(
-                hosts[i].Sources,
-                models.DiscoverySource{
-                    Type: models.DiscoveryUDP,
-                    Value: "UDP discovery",
-                },
-            )
+          hosts[i].Sources = append(
+    hosts[i].Sources,
+    models.DiscoverySource{
+        Type: models.DiscoveryUDP,
+        Value: u.Service,
+    },
+)
         }
     }
+
+
+
+    logger.Log.Println(
+        "UDP ENRICHMENT FINISHED",
+    )
 
 
     return hosts

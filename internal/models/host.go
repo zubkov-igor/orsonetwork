@@ -8,34 +8,30 @@ import "time"
 
 type Host struct {
 
-    IP string `json:"ip"`
-
-    MAC string `json:"mac"`
-
-    Hostname string `json:"hostname"`
-
-    Vendor string `json:"vendor"`
+IP string
+MAC string
+Hostname string
+Vendor string
 
 
-    Ports []Port `json:"ports"`
+Ports []Port
 
-    HTTP []HTTPInfo `json:"http"`
+HTTP []HTTPInfo
 
-    MDNS []MDNSService `json:"mdns"`
+MDNS []MDNSService
 
-    UDPServices []UDPService `json:"udp"`
+UDPServices []UDPService
 
-
-    Type DeviceType `json:"deviceType"`
-
-
-    Confidence int `json:"confidence"`
+SNMP []SNMPInfo
 
 
-    Sources []DiscoverySource `json:"sources"`
+Type DeviceType
 
+Confidence int
 
-    Online bool
+Sources []DiscoverySource
 
-    RTT time.Duration
+Online bool
+
+RTT time.Duration
 }

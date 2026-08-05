@@ -1,6 +1,8 @@
 package scanner
 
 import (
+	"fmt"
+
 	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 )
@@ -9,15 +11,27 @@ func EnrichPorts(
 	hosts []models.Host,
 ) []models.Host {
 
+
+	logger.Log.Println(
+		"PORT ENRICHMENT START",
+	)
+
+
+
 	for i := range hosts {
+
 
 		ports := ScanPorts(
 			hosts[i].IP,
 		)
 
+
 		hosts[i].Ports = ports
 
+
+
 		for _, p := range ports {
+
 
 			logger.Log.Println(
 				"OPEN PORT:",
@@ -27,22 +41,47 @@ func EnrichPorts(
 				p.Service,
 			)
 
+
+
+			hosts[i].Sources =
+				append(
+					hosts[i].Sources,
+					models.DiscoverySource{
+						Type: models.DiscoveryTCP,
+						Value: fmt.Sprintf(
+							"%s:%d:%s",
+							p.Protocol,
+							p.Number,
+							p.Service,
+						),
+					},
+				)
+
+
+
 			if p.Service == "http" {
+
 
 				httpInfo := ScanHTTP(
 					hosts[i].IP,
 					p.Number,
 				)
 
+
+
 				if httpInfo.Server != "" ||
 					httpInfo.Title != "" ||
 					len(httpInfo.Scripts) > 0 ||
 					len(httpInfo.Keywords) > 0 {
 
-					hosts[i].HTTP = append(
-						hosts[i].HTTP,
-						httpInfo,
-					)
+
+					hosts[i].HTTP =
+						append(
+							hosts[i].HTTP,
+							httpInfo,
+						)
+
+
 
 					logger.Log.Println(
 						"HTTP ENRICHED:",
@@ -55,20 +94,14 @@ func EnrichPorts(
 				}
 			}
 		}
-
-		// здесь заканчивается цикл по портам
-
-		if len(ports) > 0 {
-
-			hosts[i].Sources = append(
-				hosts[i].Sources,
-				models.DiscoverySource{
-					Type:  models.DiscoveryTCP,
-					Value: "TCP ports",
-				},
-			)
-		}
 	}
+
+
+
+	logger.Log.Println(
+		"PORT ENRICHMENT FINISHED",
+	)
+
 
 	return hosts
 }

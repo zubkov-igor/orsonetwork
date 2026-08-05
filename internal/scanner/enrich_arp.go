@@ -20,68 +20,62 @@ func EnrichARP(
 		"ARP ENRICHMENT START",
 	)
 
-	arpHosts := ARPDiscovery(
-		hosts,
-	)
+	arpHosts := ARPDiscovery(hosts)
 
 	arpMap := make(
 		map[string]models.Host,
 	)
 
-	for _, host := range arpHosts {
-		arpMap[host.IP] = host
+	for _, h := range arpHosts {
+		arpMap[h.IP] = h
 	}
 
 
 	for i := range hosts {
 
-		arpHost, ok := arpMap[hosts[i].IP]
+		if arpHost, ok := arpMap[hosts[i].IP]; ok {
 
-		if !ok {
-			continue
-		}
-
-
-		if arpHost.MAC == "" {
-			continue
-		}
+			if arpHost.MAC == "" {
+				continue
+			}
 
 
-		hosts[i].MAC = arpHost.MAC
+			hosts[i].MAC = arpHost.MAC
 
-
-		hosts[i].Sources = append(
-			hosts[i].Sources,
-			models.DiscoverySource{
-				Type:  models.DiscoveryARP,
-				Value: arpHost.MAC,
-			},
-		)
-
-
-		hosts[i].Vendor = LookupVendor(
-			arpHost.MAC,
-		)
-
-
-		if hosts[i].Vendor != "" {
 
 			hosts[i].Sources = append(
 				hosts[i].Sources,
 				models.DiscoverySource{
-					Type:  models.DiscoveryOUI,
-					Value: hosts[i].Vendor,
+					Type: models.DiscoveryARP,
+					Value: arpHost.MAC,
 				},
 			)
+
+
+			hosts[i].Vendor = LookupVendor(
+				arpHost.MAC,
+			)
+
+
+			if hosts[i].Vendor != "" {
+
+				hosts[i].Sources = append(
+					hosts[i].Sources,
+					models.DiscoverySource{
+						Type: models.DiscoveryOUI,
+						Value: hosts[i].Vendor,
+					},
+				)
+			}
+
+
+			logger.Log.Println(
+				"ARP ENRICHED:",
+				hosts[i].IP,
+				hosts[i].MAC,
+				hosts[i].Vendor,
+			)
 		}
-
-
-		logger.Log.Println(
-			"ARP ENRICHED:",
-			hosts[i].IP,
-			hosts[i].MAC,
-			hosts[i].Vendor,
-		)
 	}
 
 

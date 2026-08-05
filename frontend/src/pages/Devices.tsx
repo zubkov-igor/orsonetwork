@@ -117,7 +117,6 @@ export default function Devices() {
                             <th>MAC</th>
                             <th>Vendor</th>
                             <th>Hostname</th>
-                            <th>Sources</th>
                         </tr>
                     </thead>
 
@@ -183,12 +182,6 @@ export default function Devices() {
                                         {device.hostname || "—"}
                                     </td>
 
-                                    <td>
-                                         
-    {device.sources?.length
-        ? device.sources.join(", ")
-        : "—"}
-                                    </td>
 
                                 </tr>
 
