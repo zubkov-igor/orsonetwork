@@ -16,7 +16,7 @@ var vendorTXT []byte
 var (
     vendorOnce sync.Once
     vendors    = make(map[string]string)
-    dbLoaded   bool // чтобы можно было явно проверить состояние, если нужно
+    dbLoaded   bool
 )
 
 func LookupVendor(mac string) string {
@@ -74,12 +74,10 @@ func loadVendorDB() {
             continue
         }
 
-        // В manuf: [префикс] [короткое имя] [полное имя...]
-        // Мы хотим полное имя (начиная со 2-го поля).
-        // Но если вдруг короткое имя совпадает с полным — тоже ок.
-        vendor := strings.Join(fields[2:], " ") // берём полное имя
+      
+        vendor := strings.Join(fields[2:], " ") 
         if vendor == "" {
-            vendor = fields[1] // запасной вариант: короткое имя
+            vendor = fields[1]
         }
 
         vendors[prefix] = vendor

@@ -4,8 +4,6 @@ import (
 	"net"
 )
 
-// Преобразует CIDR-сеть в список IP-адресов хостов.
-// Адрес сети и broadcast исключаются.
 
 func HostsFromCIDR(cidr string) []string {
 
@@ -19,7 +17,6 @@ func HostsFromCIDR(cidr string) []string {
 
 	for ip := ip.Mask(network.Mask); network.Contains(ip); incIP(ip) {
 
-		// пропускаем network
 		if ip.Equal(network.IP) {
 			continue
 		}
@@ -30,7 +27,7 @@ func HostsFromCIDR(cidr string) []string {
 		)
 	}
 
-	// убираем последний адрес (broadcast)
+	
 	if len(hosts) > 0 {
 
 		hosts = hosts[:len(hosts)-1]
