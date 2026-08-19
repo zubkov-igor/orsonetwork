@@ -1,57 +1,50 @@
 package scanner
 
 import (
-    "OrsoNetwork/internal/models"
+	"OrsoNetwork/internal/models"
 )
 
 func EnrichHosts(
-    hosts []models.Host,
+	hosts []models.Host,
+	iface models.Interface,
 ) []models.Host {
 
+	hosts = EnrichARP(
+		hosts,
+	)
 
-    hosts = EnrichARP(
-        hosts,
-    )
+	hosts = EnrichNetBIOS(
+		hosts,
+	)
 
+	hosts = EnrichMDNS(
+		hosts,
+	)
 
-    hosts = EnrichNetBIOS(
-        hosts,
-    )
+	hosts = EnrichUDP(
+		hosts,
+		iface,
+	)
 
+	hosts = EnrichReverseDNS(
+		hosts,
+	)
 
-    hosts = EnrichMDNS(
-        hosts,
-    )
+	hosts = EnrichPorts(
+		hosts,
+	)
 
+	for i := range hosts {
 
-    hosts = EnrichUDP(
-        hosts,
-    )
+		hosts[i].Type = IdentifyDevice(
+			hosts[i],
+		)
 
+		hosts[i].Confidence =
+			CalculateConfidence(
+				hosts[i],
+			)
+	}
 
-    hosts = EnrichReverseDNS(
-        hosts,
-    )
-
-
-    hosts = EnrichPorts(
-        hosts,
-    )
-
-
-    for i := range hosts {
-
-        hosts[i].Type = IdentifyDevice(
-            hosts[i],
-        )
-
-
-        hosts[i].Confidence =
-            CalculateConfidence(
-                hosts[i],
-            )
-    }
-
-
-    return hosts
+	return hosts
 }

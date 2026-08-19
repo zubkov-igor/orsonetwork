@@ -30,7 +30,6 @@ func EnrichARP(
 		arpMap[h.IP] = h
 	}
 
-
 	for i := range hosts {
 
 		if arpHost, ok := arpMap[hosts[i].IP]; ok {
@@ -39,35 +38,30 @@ func EnrichARP(
 				continue
 			}
 
-
 			hosts[i].MAC = arpHost.MAC
-
 
 			hosts[i].Sources = append(
 				hosts[i].Sources,
 				models.DiscoverySource{
-					Type: models.DiscoveryARP,
+					Type:  models.DiscoveryARP,
 					Value: arpHost.MAC,
 				},
 			)
 
-
 			hosts[i].Vendor = LookupVendor(
 				arpHost.MAC,
 			)
-
 
 			if hosts[i].Vendor != "" {
 
 				hosts[i].Sources = append(
 					hosts[i].Sources,
 					models.DiscoverySource{
-						Type: models.DiscoveryOUI,
+						Type:  models.DiscoveryOUI,
 						Value: hosts[i].Vendor,
 					},
 				)
 			}
-
 
 			logger.Log.Println(
 				"ARP ENRICHED:",
@@ -78,11 +72,9 @@ func EnrichARP(
 		}
 	}
 
-
 	logger.Log.Println(
 		"ARP ENRICHMENT FINISHED",
 	)
-
 
 	return hosts
 }

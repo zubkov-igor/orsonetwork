@@ -20,7 +20,7 @@ var httpFingerprintRules = []HTTPFingerprintRule{
 	},
 
 	{
-    Needle: "lighttpd",
-    Fingerprint: "embedded-web-server",
+		Needle:      "lighttpd",
+		Fingerprint: "embedded-web-server",
 	},
 }

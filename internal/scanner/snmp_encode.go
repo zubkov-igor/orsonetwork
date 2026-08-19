@@ -21,10 +21,10 @@ func EncodePDU(
 
 // EncodeVarBind builds
 //
-// SEQUENCE {
-//     OBJECT IDENTIFIER
-//     NULL
-// }
+//	SEQUENCE {
+//	    OBJECT IDENTIFIER
+//	    NULL
+//	}
 //
 // GET request always sends NULL value.
 func EncodeVarBind(
@@ -43,6 +43,61 @@ func EncodeVarBind(
 	)
 
 	return EncodeSequence(
+		data,
+	)
+}
+
+func EncodeVarBindList(
+	oid []int,
+) []byte {
+
+	varBind := EncodeVarBind(
+		oid,
+	)
+
+	return EncodeSequence(
+		varBind,
+	)
+}
+
+func EncodeGetRequest(
+	requestID int,
+	oid []int,
+) []byte {
+
+	requestIDBytes := EncodeInteger(
+		requestID,
+	)
+
+	errorStatus := EncodeInteger(
+		0,
+	)
+
+	errorIndex := EncodeInteger(
+		0,
+	)
+
+	varBindList := EncodeVarBindList(
+		oid,
+	)
+
+	data := append(
+		requestIDBytes,
+		errorStatus...,
+	)
+
+	data = append(
+		data,
+		errorIndex...,
+	)
+
+	data = append(
+		data,
+		varBindList...,
+	)
+
+	return EncodePDU(
+		PDUGetRequest,
 		data,
 	)
 }

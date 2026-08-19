@@ -5,8 +5,15 @@ import (
 	"OrsoNetwork/internal/models"
 )
 
-func DiscoverUDP(ip string) []models.UDPService {
-	logger.Log.Println("UDP DISCOVERY START:", ip)
+func DiscoverUDP(
+	ip string,
+	iface models.Interface,
+) []models.UDPService {
+
+	logger.Log.Println(
+		"UDP DISCOVERY START:",
+		ip,
+	)
 
 	var services []models.UDPService
 
@@ -24,23 +31,48 @@ func DiscoverUDP(ip string) []models.UDPService {
 		var result UDPProbeResult
 
 		switch port {
+
 		case 1900:
-			logger.Log.Println("UDP SSDP PROBE:", ip)
-			result = ProbeSSDP(ip)
+
+			logger.Log.Println(
+				"UDP SSDP PROBE:",
+				ip,
+			)
+
+			result = ProbeSSDP(
+				ip,
+				iface,
+			)
 
 		case 5353:
-			logger.Log.Println("UDP MDNS PROBE:", ip)
-			result = ProbeMDNS(ip)
+
+			logger.Log.Println(
+				"UDP MDNS PROBE:",
+				ip,
+			)
+
+			result = ProbeMDNS(
+				ip,
+				iface,
+			)
 
 		case 161:
-			logger.Log.Println("UDP SNMP PROBE:", ip)
-			result = ProbeSNMP(ip)
+
+			logger.Log.Println(
+				"UDP SNMP PROBE:",
+				ip,
+			)
+
+			result = ProbeSNMP(
+				ip,
+			)
 
 		default:
 			continue
 		}
 
 		if result.Found {
+
 			logger.Log.Println(
 				"UDP SERVICE FOUND:",
 				ip,
@@ -48,16 +80,24 @@ func DiscoverUDP(ip string) []models.UDPService {
 				service,
 			)
 
-			services = append(services, models.UDPService{
-				IP:       ip,
-				Port:     port,
-				Service:  service,
-				Protocol: "udp",
-				Info:     result.Info,
-			})
+			services = append(
+				services,
+				models.UDPService{
+					IP:       ip,
+					Port:     port,
+					Service:  service,
+					Protocol: "udp",
+					Info:     result.Info,
+				},
+			)
 		}
 	}
 
-	logger.Log.Println("UDP DISCOVERY FINISHED:", ip, len(services))
+	logger.Log.Println(
+		"UDP DISCOVERY FINISHED:",
+		ip,
+		len(services),
+	)
+
 	return services
 }

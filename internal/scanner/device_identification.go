@@ -1,170 +1,160 @@
 package scanner
 
 import (
-    "strings"
+	"strings"
 
-    "OrsoNetwork/internal/models"
+	"OrsoNetwork/internal/models"
 )
 
 func IdentifyDevice(
-    host models.Host,
+	host models.Host,
 ) models.DeviceType {
 
-    hostname := strings.ToLower(
-        host.Hostname,
-    )
+	hostname := strings.ToLower(
+		host.Hostname,
+	)
 
-    vendor := strings.ToLower(
-        host.Vendor,
-    )
+	vendor := strings.ToLower(
+		host.Vendor,
+	)
 
+	// =========================
+	// Router / Gateway
+	// =========================
 
-    // =========================
-    // Router / Gateway
-    // =========================
+	if containsAny(
+		hostname,
+		"router",
+		"gateway",
+		"mikrotik",
+		"openwrt",
+	) {
+		return models.DeviceRouter
+	}
 
-    if containsAny(
-        hostname,
-        "router",
-        "gateway",
-        "mikrotik",
-        "openwrt",
-    ) {
-        return models.DeviceRouter
-    }
+	if containsAny(
+		vendor,
+		"d-link",
+		"eltex",
+		"mikrotik",
+		"ubiquiti",
+		"cisco",
+		"netgear",
+	) {
+		return models.DeviceRouter
+	}
 
+	// =========================
+	// Camera
+	// =========================
 
-    if containsAny(
-        vendor,
-        "d-link",
-        "eltex",
-        "mikrotik",
-        "ubiquiti",
-        "cisco",
-        "netgear",
-    ) {
-        return models.DeviceRouter
-    }
+	if containsAny(
+		hostname,
+		"camera",
+		"cam",
+		"ipc",
+		"nvr",
+	) {
+		return models.DeviceCamera
+	}
 
+	// =========================
+	// Printer
+	// =========================
 
-    // =========================
-    // Camera
-    // =========================
+	if containsAny(
+		hostname,
+		"printer",
+		"print",
+	) {
+		return models.DevicePrinter
+	}
 
-    if containsAny(
-        hostname,
-        "camera",
-        "cam",
-        "ipc",
-        "nvr",
-    ) {
-        return models.DeviceCamera
-    }
+	// =========================
+	// NAS
+	// =========================
 
+	if containsAny(
+		hostname,
+		"nas",
+		"storage",
+		"synology",
+		"qnap",
+	) {
+		return models.DeviceNAS
+	}
 
-    // =========================
-    // Printer
-    // =========================
+	// =========================
+	// Computer
+	// =========================
 
-    if containsAny(
-        hostname,
-        "printer",
-        "print",
-    ) {
-        return models.DevicePrinter
-    }
+	if containsAny(
+		hostname,
+		"desktop",
+		"pc",
+		"laptop",
+		"computer",
+		"workstation",
+	) {
+		return models.DeviceComputer
+	}
 
+	// =========================
+	// Server
+	// =========================
 
-    // =========================
-    // NAS
-    // =========================
+	for _, port := range host.Ports {
 
-    if containsAny(
-        hostname,
-        "nas",
-        "storage",
-        "synology",
-        "qnap",
-    ) {
-        return models.DeviceNAS
-    }
+		switch port.Number {
 
+		case 22:
+			return models.DeviceServer
 
-    // =========================
-    // Computer
-    // =========================
+		case 3389:
+			return models.DeviceComputer
 
-    if containsAny(
-        hostname,
-        "desktop",
-        "pc",
-        "laptop",
-        "computer",
-        "workstation",
-    ) {
-        return models.DeviceComputer
-    }
+		case 80, 443:
 
+			if containsAny(
+				hostname,
+				"server",
+			) {
+				return models.DeviceServer
+			}
+		}
+	}
 
-    // =========================
-    // Server
-    // =========================
+	// =========================
+	// IoT
+	// =========================
 
-    for _, port := range host.Ports {
+	if containsAny(
+		vendor,
+		"shenzhen",
+		"esp",
+		"tuya",
+		"sonoff",
+	) {
+		return models.DeviceIoT
+	}
 
-        switch port.Number {
-
-        case 22:
-            return models.DeviceServer
-
-        case 3389:
-            return models.DeviceComputer
-
-        case 80, 443:
-
-            if containsAny(
-                hostname,
-                "server",
-            ) {
-                return models.DeviceServer
-            }
-        }
-    }
-
-
-    // =========================
-    // IoT
-    // =========================
-
-    if containsAny(
-        vendor,
-        "shenzhen",
-        "esp",
-        "tuya",
-        "sonoff",
-    ) {
-        return models.DeviceIoT
-    }
-
-
-    return models.DeviceUnknown
+	return models.DeviceUnknown
 }
 
-
 func containsAny(
-    value string,
-    items ...string,
+	value string,
+	items ...string,
 ) bool {
 
-    for _, item := range items {
+	for _, item := range items {
 
-        if strings.Contains(
-            value,
-            item,
-        ) {
-            return true
-        }
-    }
+		if strings.Contains(
+			value,
+			item,
+		) {
+			return true
+		}
+	}
 
-    return false
+	return false
 }

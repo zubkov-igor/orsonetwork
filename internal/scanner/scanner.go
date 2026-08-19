@@ -39,115 +39,101 @@ func New() *Scanner {
 
 func (s *Scanner) Scan() []models.Network {
 
-    logger.Separator(
-        "NEW SCAN START",
-    )
+	logger.Separator(
+		"NEW SCAN START",
+	)
 
-    logger.Section(
-    "NETWORK DISCOVERY",
-)
+	logger.Section(
+		"NETWORK DISCOVERY",
+	)
 
-    var networks []models.Network
+	var networks []models.Network
 
+	// Discover available network interfaces.
 
-    // Discover available network interfaces.
+	interfaces := GetInterfaces()
 
-    interfaces := GetInterfaces()
+	logger.Log.Println(
+		"SCANNER INTERFACES:",
+		len(interfaces),
+	)
 
-    logger.Log.Println(
-        "SCANNER INTERFACES:",
-        len(interfaces),
-    )
+	gateways := GetGateways()
 
+	logger.Log.Println(
+		"SCANNER GATEWAYS:",
+		len(gateways),
+	)
 
-    gateways := GetGateways()
+	logger.Log.Println(
+		"SCANNER LOOP START",
+	)
 
-    logger.Log.Println(
-        "SCANNER GATEWAYS:",
-        len(gateways),
-    )
+	for _, iface := range interfaces {
 
+		logger.Log.Println(
+			"PROCESS INTERFACE:",
+			iface.Name,
+		)
 
-    logger.Log.Println(
-        "SCANNER LOOP START",
-    )
+		gw := GatewayForInterface(
+			iface,
+			gateways,
+		)
 
+		if gw == nil {
 
-    for _, iface := range interfaces {
+			logger.Log.Println(
+				"NO GATEWAY FOR INTERFACE:",
+				iface.Name,
+			)
 
-        logger.Log.Println(
-            "PROCESS INTERFACE:",
-            iface.Name,
-        )
+			continue
+		}
 
+		logger.Log.Println(
+			"GATEWAY FOUND:",
+			iface.Name,
+			gw.IP,
+		)
 
-        gw := GatewayForInterface(
-            iface,
-            gateways,
-        )
+		network := BuildNetwork(
+			iface,
+			gw,
+		)
 
+		logger.Log.Println(
+			"NETWORK BUILT:",
+			network.CIDR,
+		)
 
-        if gw == nil {
+		network.Hosts = DiscoverHosts(
+			network.CIDR,
+			iface.IP,
+		)
 
-            logger.Log.Println(
-                "NO GATEWAY FOR INTERFACE:",
-                iface.Name,
-            )
+		logger.Log.Println(
+			"HOSTS DISCOVERED:",
+			len(network.Hosts),
+		)
 
-            continue
-        }
+		network.Hosts = EnrichHosts(
+			network.Hosts,
+			iface,
+		)
 
+		logger.Log.Println(
+			"HOSTS ENRICHED:",
+			len(network.Hosts),
+		)
 
-        logger.Log.Println(
-            "GATEWAY FOUND:",
-            iface.Name,
-            gw.IP,
-        )
+		networks = append(
+			networks,
+			network,
+		)
+	}
 
-
-        network := BuildNetwork(
-            iface,
-            gw,
-        )
-
-
-        logger.Log.Println(
-            "NETWORK BUILT:",
-            network.CIDR,
-        )
-
-
-        network.Hosts = DiscoverHosts(
-            network.CIDR,
-            iface.IP,
-        )
-
-
-        logger.Log.Println(
-            "HOSTS DISCOVERED:",
-            len(network.Hosts),
-        )
-
-
-        network.Hosts = EnrichHosts(
-            network.Hosts,
-        )
-
-
-        logger.Log.Println(
-            "HOSTS ENRICHED:",
-            len(network.Hosts),
-        )
-
-
-        networks = append(
-            networks,
-            network,
-        )
-    }
-
-
-    return networks
+	return networks
 }
 
 // Topology builds a graph representation

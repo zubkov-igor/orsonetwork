@@ -1,10 +1,10 @@
 package scanner
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"time"
-	"bytes"
 
 	"OrsoNetwork/internal/logger"
 )
@@ -15,6 +15,11 @@ func ProbeSNMP(
 
 	addr := ip + ":161"
 
+	logger.Log.Println(
+		"SNMP CONNECT:",
+		addr,
+	)
+
 	conn, err := net.DialTimeout(
 		"udp",
 		addr,
@@ -23,6 +28,12 @@ func ProbeSNMP(
 
 	if err != nil {
 
+		logger.Log.Println(
+			"SNMP CONNECT ERROR:",
+			ip,
+			err,
+		)
+
 		return UDPProbeResult{
 			Found: false,
 		}
@@ -30,86 +41,148 @@ func ProbeSNMP(
 
 	defer conn.Close()
 
-logger.Log.Println(
-    "OID:",
-    OIDSysDescr,
-)
+	logger.Log.Println(
+		"OID:",
+		OIDSysDescr,
+	)
 
-request := BuildSNMPRequest(
-    OIDSysDescr,
-)
+	request := BuildSNMPRequest(
+		OIDSysDescr,
+	)
 
-logger.Log.Println(
-	"SNMP REQUEST HEX:",
-	fmt.Sprintf("% X", request),
-)
+	logger.Log.Println(
+		"SNMP REQUEST HEX:",
+		fmt.Sprintf("% X", request),
+	)
+
+	logger.Log.Println(
+		"SNMP SEND:",
+		addr,
+	)
 
 	_, err = conn.Write(request)
 
 	if err != nil {
+
+		logger.Log.Println(
+			"SNMP WRITE ERROR:",
+			ip,
+			err,
+		)
 
 		return UDPProbeResult{
 			Found: false,
 		}
 	}
 
+	logger.Log.Println(
+		"SNMP WAIT:",
+		ip,
+	)
+
 	buffer := make(
 		[]byte,
 		2048,
 	)
 
-	conn.SetReadDeadline(
+	err = conn.SetReadDeadline(
 		time.Now().Add(
 			2 * time.Second,
 		),
 	)
 
-n, err := conn.Read(
-	buffer,
-)
+	if err != nil {
 
-if err != nil {
+		logger.Log.Println(
+			"SNMP DEADLINE ERROR:",
+			ip,
+			err,
+		)
+
+		return UDPProbeResult{
+			Found: false,
+		}
+	}
+
+	n, err := conn.Read(
+		buffer,
+	)
+
+	if err != nil {
+
+		logger.Log.Println(
+			"SNMP READ ERROR:",
+			ip,
+			err,
+		)
+
+		return UDPProbeResult{
+			Found: false,
+		}
+	}
+
+	response := buffer[:n]
+
+	logger.Log.Println(
+		"SNMP RESPONSE SIZE:",
+		len(response),
+	)
+
+	logger.Log.Println(
+		"SNMP RESPONSE HEX:",
+		fmt.Sprintf("% X", response),
+	)
+
+	logger.Log.Println(
+		"SNMP RESPONSE STRING:",
+		string(response),
+	)
+
+	if len(response) == 0 {
+
+		logger.Log.Println(
+			"SNMP EMPTY RESPONSE:",
+			ip,
+		)
+
+		return UDPProbeResult{
+			Found: false,
+		}
+	}
+
+	if response[0] != 0x30 {
+
+		logger.Log.Println(
+			"SNMP INVALID BER RESPONSE:",
+			ip,
+			response[0],
+		)
+
+		return UDPProbeResult{
+			Found: false,
+		}
+	}
+
+	if bytes.Contains(response, []byte{0xA2}) {
+
+		logger.Log.Println(
+			"SNMP RESPONSE FOUND:",
+			ip,
+		)
+
+		return UDPProbeResult{
+			Found: true,
+			Info:  "SNMP response",
+			Raw:   response,
+		}
+	}
+
+	logger.Log.Println(
+		"SNMP RESPONSE WITHOUT GETRESPONSE PDU:",
+		ip,
+	)
+
 	return UDPProbeResult{
 		Found: false,
 	}
-}
-
-response := buffer[:n]
-
-logger.Log.Println(
-	"SNMP RESPONSE SIZE:",
-	len(response),
-)
-
-logger.Log.Println(
-	"SNMP RESPONSE HEX:",
-	fmt.Sprintf("% X", response),
-)
-
-logger.Log.Println(
-	"SNMP RESPONSE STRING:",
-	string(response),
-)
-
-if response[0] != 0x30 {
-
-	return UDPProbeResult{
-		Found: false,
-	}
-}
-
-
-if bytes.Contains(response, []byte{0xA2}) {
-
-	return UDPProbeResult{
-		Found: true,
-		Info: "SNMP response",
-		Raw: response,
-	}
-}
-
-
-return UDPProbeResult{
-	Found: false,
-}
 }

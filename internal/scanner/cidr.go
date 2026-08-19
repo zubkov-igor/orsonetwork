@@ -4,7 +4,6 @@ import (
 	"net"
 )
 
-
 func HostsFromCIDR(cidr string) []string {
 
 	var hosts []string
@@ -27,7 +26,6 @@ func HostsFromCIDR(cidr string) []string {
 		)
 	}
 
-	
 	if len(hosts) > 0 {
 
 		hosts = hosts[:len(hosts)-1]

@@ -8,10 +8,10 @@ const (
 )
 
 type SNMPRequest struct {
-    Version   SNMPVersion
-    Community string
+	Version   SNMPVersion
+	Community string
 
-    RequestID int
+	RequestID int
 
-    OID []int
+	OID []int
 }

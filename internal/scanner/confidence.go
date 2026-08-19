@@ -8,7 +8,6 @@ func CalculateConfidence(
 
 	score := 0
 
-
 	for _, source := range host.Sources {
 
 		switch source.Type {
@@ -28,20 +27,17 @@ func CalculateConfidence(
 		}
 	}
 
-
 	// MAC address found
 
 	if host.MAC != "" {
 		score += 10
 	}
 
-
 	// Open ports found
 
 	if len(host.Ports) > 0 {
 		score += 10
 	}
-
 
 	// Device fingerprint confidence
 
@@ -69,11 +65,9 @@ func CalculateConfidence(
 		score += 15
 	}
 
-
 	if score > 100 {
 		score = 100
 	}
-
 
 	return score
 }

@@ -15,7 +15,6 @@ func BuildSNMPRequest(
 	oid []int,
 ) []byte {
 
-
 	// VarBind:
 	// SEQUENCE {
 	//     OBJECT IDENTIFIER,
@@ -26,7 +25,6 @@ func BuildSNMPRequest(
 		oid,
 	)
 
-
 	// VarBind list:
 	// SEQUENCE {
 	//     VarBind
@@ -35,7 +33,6 @@ func BuildSNMPRequest(
 	varBindList := EncodeSequence(
 		varBind,
 	)
-
 
 	// GET REQUEST PDU
 	//
@@ -46,42 +43,32 @@ func BuildSNMPRequest(
 	//     varbind-list
 	// }
 
-	pduData := []byte{
+	pduData := []byte{}
 
-		// request-id INTEGER 1
-		0x02,
-		0x04,
-		0x00,
-		0x00,
-		0x00,
-		0x01,
+	pduData = append(
+		pduData,
+		EncodeInteger(1)...,
+	)
 
+	pduData = append(
+		pduData,
+		EncodeInteger(0)...,
+	)
 
-		// error INTEGER 0
-		0x02,
-		0x01,
-		0x00,
-
-
-		// error-index INTEGER 0
-		0x02,
-		0x01,
-		0x00,
-	}
-
+	pduData = append(
+		pduData,
+		EncodeInteger(0)...,
+	)
 
 	pduData = append(
 		pduData,
 		varBindList...,
 	)
 
-
 	pdu := EncodePDU(
 		PDUGetRequest,
 		pduData,
 	)
-
-
 
 	// SNMP message:
 	//
@@ -98,24 +85,20 @@ func BuildSNMPRequest(
 		0x01,
 		0x00,
 
-
 		// community OCTET STRING
 		0x04,
 		byte(len(SNMPCommunity)),
 	}
-
 
 	message = append(
 		message,
 		[]byte(SNMPCommunity)...,
 	)
 
-
 	message = append(
 		message,
 		pdu...,
 	)
-
 
 	return EncodeSequence(
 		message,

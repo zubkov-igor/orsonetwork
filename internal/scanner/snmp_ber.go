@@ -11,10 +11,10 @@ func EncodeLength(length int) []byte {
 	bytes := []byte{}
 
 	for length > 0 {
-	bytes = append(
-    []byte{byte(length & 0xff)},
-    bytes...,
-)
+		bytes = append(
+			[]byte{byte(length & 0xff)},
+			bytes...,
+		)
 
 		length >>= 8
 	}
@@ -47,17 +47,39 @@ func WrapBER(
 	return result
 }
 
-func EncodeInteger(
-	value byte,
-) []byte {
-
+func EncodeInteger(value int) []byte {
 	return WrapBER(
 		0x02,
 		[]byte{
-			value,
+			byte(value),
 		},
 	)
 
+	var result []byte
+
+	for value > 0 {
+		result = append(
+			[]byte{byte(value & 0xFF)},
+			result...,
+		)
+
+		value >>= 8
+	}
+
+	// INTEGER is signed in BER.
+	// If the highest bit is 1,
+	// prepend 0x00 to keep the number positive.
+	if result[0]&0x80 != 0 {
+		result = append(
+			[]byte{0x00},
+			result...,
+		)
+	}
+
+	return WrapBER(
+		0x02,
+		result,
+	)
 }
 
 func EncodeOctetString(

@@ -1,112 +1,98 @@
 package scanner
 
 import (
-    "OrsoNetwork/internal/logger"
-    "OrsoNetwork/internal/models"
+	"OrsoNetwork/internal/logger"
+	"OrsoNetwork/internal/models"
 )
 
 func EnrichNetBIOS(
-    hosts []models.Host,
+	hosts []models.Host,
 ) []models.Host {
 
-    logger.Log.Println(
-        "NETBIOS ENRICHMENT START",
-    )
+	logger.Log.Println(
+		"NETBIOS ENRICHMENT START",
+	)
 
-    for i := range hosts {
+	for i := range hosts {
 
-        netbios, err := LookupNetBIOS(
-            hosts[i].IP,
-        )
+		netbios, err := LookupNetBIOS(
+			hosts[i].IP,
+		)
 
-        if err != nil {
-            continue
-        }
+		if err != nil {
+			continue
+		}
 
+		logger.Log.Println(
+			"NETBIOS FOUND:",
+			hosts[i].IP,
+			netbios.Name,
+			netbios.MAC,
+		)
 
-        logger.Log.Println(
-            "NETBIOS FOUND:",
-            hosts[i].IP,
-            netbios.Name,
-            netbios.MAC,
-        )
+		// Hostname enrichment
 
+		if netbios.Name != "" {
 
+			if hosts[i].Hostname == "" {
 
-        // Hostname enrichment
+				hosts[i].Hostname =
+					netbios.Name
+			}
 
-        if netbios.Name != "" {
+			hosts[i].Sources =
+				append(
+					hosts[i].Sources,
+					models.DiscoverySource{
+						Type:  models.DiscoveryNetBIOS,
+						Value: netbios.Name,
+					},
+				)
+		}
 
+		// MAC fallback
+		//
+		// ARP has priority.
+		// NetBIOS fills missing MAC.
 
-            if hosts[i].Hostname == "" {
+		if hosts[i].MAC == "" &&
+			netbios.MAC != "" {
 
-                hosts[i].Hostname =
-                    netbios.Name
-            }
+			hosts[i].MAC =
+				netbios.MAC
 
+			hosts[i].Sources =
+				append(
+					hosts[i].Sources,
+					models.DiscoverySource{
+						Type:  models.DiscoveryNetBIOS,
+						Value: netbios.MAC,
+					},
+				)
 
-            hosts[i].Sources =
-                append(
-                    hosts[i].Sources,
-                    models.DiscoverySource{
-                        Type:  models.DiscoveryNetBIOS,
-                        Value: netbios.Name,
-                    },
-                )
-        }
+			// Vendor lookup from MAC
 
+			hosts[i].Vendor =
+				LookupVendor(
+					netbios.MAC,
+				)
 
+			if hosts[i].Vendor != "" {
 
-        // MAC fallback
-        //
-        // ARP has priority.
-        // NetBIOS fills missing MAC.
+				hosts[i].Sources = append(
+					hosts[i].Sources,
+					models.DiscoverySource{
+						Type:  models.DiscoveryOUI,
+						Value: hosts[i].Vendor,
+					},
+				)
+			}
+		}
+	}
 
-        if hosts[i].MAC == "" &&
-            netbios.MAC != "" {
+	logger.Log.Println(
+		"NETBIOS ENRICHMENT FINISHED",
+	)
 
-
-            hosts[i].MAC =
-                netbios.MAC
-
-
-            hosts[i].Sources =
-                append(
-                    hosts[i].Sources,
-                    models.DiscoverySource{
-                        Type:  models.DiscoveryNetBIOS,
-                        Value: netbios.MAC,
-                    },
-                )
-
-
-
-            // Vendor lookup from MAC
-
-            hosts[i].Vendor =
-                LookupVendor(
-                    netbios.MAC,
-                )
-
-
-        if hosts[i].Vendor != "" {
-
-    hosts[i].Sources = append(
-        hosts[i].Sources,
-        models.DiscoverySource{
-            Type: models.DiscoveryOUI,
-            Value: hosts[i].Vendor,
-        },
-    )
-}
-        }
-    }
-
-
-    logger.Log.Println(
-        "NETBIOS ENRICHMENT FINISHED",
-    )
-
-
-    return hosts
+	return hosts
 }

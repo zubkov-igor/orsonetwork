@@ -17,7 +17,6 @@ var httpKeywords = []string{
 	"zte",
 }
 
-
 func AnalyzeHTTPKeywords(
 	info *models.HTTPInfo,
 	html string,
