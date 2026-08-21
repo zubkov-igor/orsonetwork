@@ -7,31 +7,28 @@ import "time"
 // and classification information.
 
 type Host struct {
+	IP       string
+	MAC      string
+	Hostname string
+	Vendor   string
 
-IP string
-MAC string
-Hostname string
-Vendor string
+	Ports []Port
 
+	HTTP []HTTPInfo
 
-Ports []Port
+	MDNS []MDNSService
 
-HTTP []HTTPInfo
+	UDPServices []UDPService
 
-MDNS []MDNSService
+	SNMP []SNMPInfo
 
-UDPServices []UDPService
+	Type DeviceType
 
-SNMP []SNMPInfo
+	Confidence int
 
+	Sources []DiscoverySource
 
-Type DeviceType
+	Online bool
 
-Confidence int
-
-Sources []DiscoverySource
-
-Online bool
-
-RTT time.Duration
+	RTT time.Duration
 }

@@ -1,13 +1,15 @@
 module OrsoNetwork
 
-go 1.23.0
+go 1.25.0
 
 require (
 	github.com/go-ping/ping v1.2.0
 	github.com/grandcat/zeroconf v1.0.0
 	github.com/mdlayher/arp v0.0.0-20260528070854-93566ba168e9
+	github.com/miekg/dns v1.1.73
 	github.com/vishvananda/netlink v1.3.1
 	github.com/wailsapp/wails/v2 v2.12.0
+	golang.org/x/net v0.58.0
 )
 
 require (
@@ -31,7 +33,6 @@ require (
 	github.com/mdlayher/ethernet v0.0.0-20220221185849-529eae5b6118 // indirect
 	github.com/mdlayher/packet v1.1.2 // indirect
 	github.com/mdlayher/socket v0.4.1 // indirect
-	github.com/miekg/dns v1.1.27 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
@@ -42,11 +43,10 @@ require (
 	github.com/vishvananda/netns v0.0.5 // indirect
 	github.com/wailsapp/go-webview2 v1.0.22 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sync v0.12.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/crypto v0.55.0 // indirect
+	golang.org/x/sync v0.22.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
 )
 
 // replace github.com/wailsapp/wails/v2 v2.12.0 => /home/winny/go/pkg/mod

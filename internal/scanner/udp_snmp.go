@@ -1,7 +1,7 @@
 package scanner
 
 import (
-	"bytes"
+	"encoding/hex"
 	"fmt"
 	"net"
 	"time"
@@ -134,8 +134,8 @@ func ProbeSNMP(
 	)
 
 	logger.Log.Println(
-		"SNMP RESPONSE STRING:",
-		string(response),
+		"SNMP RESPONSE HEX COMPACT:",
+		hex.EncodeToString(response),
 	)
 
 	if len(response) == 0 {
@@ -163,26 +163,35 @@ func ProbeSNMP(
 		}
 	}
 
-	if bytes.Contains(response, []byte{0xA2}) {
+	parsed := ParseSNMPResponse(
+		response,
+	)
+	if err != nil {
 
 		logger.Log.Println(
-			"SNMP RESPONSE FOUND:",
+			"SNMP PARSE ERROR:",
 			ip,
+			err,
 		)
 
 		return UDPProbeResult{
-			Found: true,
-			Info:  "SNMP response",
-			Raw:   response,
+			Found: false,
 		}
 	}
 
 	logger.Log.Println(
-		"SNMP RESPONSE WITHOUT GETRESPONSE PDU:",
-		ip,
+		"SNMP OID:",
+		parsed.OID,
+	)
+
+	logger.Log.Println(
+		"SNMP VALUE:",
+		parsed.Value,
 	)
 
 	return UDPProbeResult{
-		Found: false,
+		Found: true,
+		Info:  "SNMP response",
+		Raw:   response,
 	}
 }

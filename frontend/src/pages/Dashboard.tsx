@@ -5,38 +5,6 @@ export default function Dashboard() {
     return (
         <div class="dashboard">
             <h1>Dashboard</h1>
-
-            <div class="dashboard__stats">
-                <div class="stat-card">
-                    <span class="stat-card__label">
-                        Nodes
-                    </span>
-
-                    <strong class="stat-card__value">
-                        {topology()?.nodes.length ?? 0}
-                    </strong>
-                </div>
-
-                <div class="stat-card">
-                    <span class="stat-card__label">
-                        Links
-                    </span>
-
-                    <strong class="stat-card__value">
-                        {topology()?.links.length ?? 0}
-                    </strong>
-                </div>
-
-                <div class="stat-card">
-                    <span class="stat-card__label">
-                        Networks
-                    </span>
-
-                    <strong class="stat-card__value">
-                        {topology()?.networks.length ?? 0}
-                    </strong>
-                </div>
-            </div>
             <div class="dashboard__topology">
     <h2>Network Topology</h2>
 

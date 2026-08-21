@@ -30,7 +30,6 @@ func Init() {
 	)
 }
 
-
 func Separator(title string) {
 
 	Log.Println(

@@ -112,6 +112,64 @@ func (s *Scanner) Scan() []models.Network {
 			iface.IP,
 		)
 
+		mdnsIPs := ProbeMDNS(
+			iface,
+		)
+
+		logger.Log.Println(
+			"MDNS IPS:",
+			mdnsIPs,
+		)
+
+		// Merge mDNS discovered hosts
+		// with hosts discovered by ICMP.
+
+		knownHosts := make(
+			map[string]bool,
+		)
+
+		for _, host := range network.Hosts {
+
+			knownHosts[host.IP] = true
+		}
+
+		for _, ip := range mdnsIPs {
+
+			// Never add our own host.
+
+			if ip == iface.IP {
+				continue
+			}
+
+			// Host already discovered by ICMP.
+
+			if knownHosts[ip] {
+				continue
+			}
+
+			network.Hosts = append(
+				network.Hosts,
+				models.Host{
+					IP: ip,
+				},
+			)
+
+			knownHosts[ip] = true
+		}
+
+		logger.Log.Println(
+			"HOSTS AFTER MDNS MERGE:",
+			len(network.Hosts),
+		)
+
+		for _, host := range network.Hosts {
+
+			logger.Log.Println(
+				"HOST:",
+				host.IP,
+			)
+		}
+
 		logger.Log.Println(
 			"HOSTS DISCOVERED:",
 			len(network.Hosts),
@@ -121,7 +179,6 @@ func (s *Scanner) Scan() []models.Network {
 			network.Hosts,
 			iface,
 		)
-
 		logger.Log.Println(
 			"HOSTS ENRICHED:",
 			len(network.Hosts),

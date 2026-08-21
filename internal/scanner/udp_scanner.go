@@ -21,7 +21,6 @@ func DiscoverUDP(
 		137,
 		161,
 		1900,
-		5353,
 	}
 
 	for _, port := range udpPorts {
@@ -40,18 +39,6 @@ func DiscoverUDP(
 			)
 
 			result = ProbeSSDP(
-				ip,
-				iface,
-			)
-
-		case 5353:
-
-			logger.Log.Println(
-				"UDP MDNS PROBE:",
-				ip,
-			)
-
-			result = ProbeMDNS(
 				ip,
 				iface,
 			)

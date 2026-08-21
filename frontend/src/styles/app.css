@@ -280,39 +280,30 @@
   margin-bottom: 1rem;
 }
 
-.stat-card {
-  background-color: var(--color-block);
-  border: 1px solid var(--color-accent);
-  border-radius: 8px;
-  padding: 0.75rem;
-  height: 90px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  transition:
-    transform var(--transition-fast) ease,
-    box-shadow var(--transition-fast) ease;
+
+.header__stats {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-left: auto;
+    margin-right: 2rem;
 }
 
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px var(--color-shadow);
+.header__stat {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
 }
 
-.stat-card__label {
-  color: var(--color-light);
-  opacity: 0.7;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.header__stat-label {
+    font-size: 1.2rem;
+    opacity: 0.9;
 }
 
-.stat-card__value {
-  margin-top: 0.25rem;
-  color: var(--color-light);
-  font-size: 1.5rem;
-  font-weight: 700;
+.header__stat-value {
+    font-size: 1.2rem;
 }
+
 
 .node-card {
   display: flex;

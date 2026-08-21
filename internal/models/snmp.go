@@ -1,7 +1,6 @@
 package models
 
 type SNMPInfo struct {
-
 	Version string
 
 	Community string
@@ -11,5 +10,4 @@ type SNMPInfo struct {
 	SysName string
 
 	SysLocation string
-
 }
