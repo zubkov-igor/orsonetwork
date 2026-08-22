@@ -185,7 +185,7 @@ func ProbeMDNS(
 	)
 
 	deadline := time.Now().Add(
-		5 * time.Second,
+		30 * time.Second,
 	)
 
 	found := make(

@@ -7,28 +7,32 @@ import {
     setTopology,
 } from "../store/topology";
 
+const [scanDuration, setScanDuration] =
+    createSignal(0);
+
 export default function Header() {
     const [scanning, setScanning] = createSignal(false);
 
-    const handleScan = async () => {
-        if (scanning()) {
-            return;
-        }
+const handleScan = async () => {
+    if (scanning()) {
+        return;
+    }
 
-        setScanning(true);
+    setScanning(true);
 
-        try {
-            const result = await GetTopology();
+    try {
+        const result = await GetTopology();
 
-            setTopology(result);
+        setTopology(result.topology);
+        setScanDuration(result.duration);
 
-            console.log("Topology received:", result);
-        } catch (error) {
-            console.error("Scan failed:", error);
-        } finally {
-            setScanning(false);
-        }
-    };
+        console.log("Topology received:", result);
+    } catch (error) {
+        console.error("Scan failed:", error);
+    } finally {
+        setScanning(false);
+    }
+};
 
     return (
 <header class="header">
@@ -47,9 +51,10 @@ export default function Header() {
         </div>
 
         <div class="header__stats">
+
             <div class="header__stat">
                 <span class="header__stat-label">
-                    Nodes
+                    Nodes:
                 </span>
 
                 <strong class="header__stat-value">
@@ -59,7 +64,7 @@ export default function Header() {
 
             <div class="header__stat">
                 <span class="header__stat-label">
-                    Links
+                    Links:
                 </span>
 
                 <strong class="header__stat-value">
@@ -69,13 +74,26 @@ export default function Header() {
 
             <div class="header__stat">
                 <span class="header__stat-label">
-                    Networks
+                    Networks:
                 </span>
 
                 <strong class="header__stat-value">
                     {topology()?.networks.length ?? 0}
                 </strong>
             </div>
+
+            <div class="header__stat">
+                <span class="header__stat-label">
+                    Scan duration:
+                </span>
+
+                <strong class="header__stat-value">
+                       {scanDuration() > 0
+    ? `${(scanDuration() / 1000).toFixed(1)}s`
+    : "—"}
+                </strong>
+            </div>
+
         </div>
 
         <button

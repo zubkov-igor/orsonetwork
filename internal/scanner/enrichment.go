@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 )
 
@@ -14,12 +15,25 @@ func EnrichHosts(
 	)
 
 	hosts = EnrichNetBIOS(
-		hosts,
-	)
+    hosts,
+)
 
-	hosts = EnrichMDNS(
-		hosts,
-	)
+logger.Log.Println(
+    "HOSTS BEFORE MDNS:",
+    len(hosts),
+)
+
+for _, host := range hosts {
+
+    logger.Log.Println(
+        "HOST BEFORE MDNS:",
+        host.IP,
+    )
+}
+
+hosts = EnrichMDNS(
+    hosts,
+)
 
 	hosts = EnrichUDP(
 		hosts,

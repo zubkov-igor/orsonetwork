@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-
+	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 	"OrsoNetwork/internal/scanner"
 )
@@ -21,15 +21,15 @@ func (a *App) startup(ctx context.Context) {
 
 }
 
-func (a *App) GetTopology() models.Topology {
+func (a *App) GetTopology() models.ScanResult {
 
 	topology := a.scanner.Topology()
 
-	println(
-		"WAILS:",
-		len(topology.Nodes),
-		len(topology.Links),
-		len(topology.Networks),
+	logger.Log.Println(
+		"TOPOLOGY:",
+		len(topology.Topology.Nodes),
+		len(topology.Topology.Links),
+		len(topology.Topology.Networks),
 	)
 
 	return topology

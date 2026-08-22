@@ -6,57 +6,55 @@ import (
 )
 
 func EnrichMDNS(
-	hosts []models.Host,
+  hosts []models.Host,
 ) []models.Host {
 
-	logger.Log.Println(
-		"MDNS ENRICHMENT START",
-	)
+  logger.Log.Println(
+    "MDNS ENRICHMENT START",
+  )
 
-	mdnsRecords := DiscoverMDNS()
+  mdnsRecords := DiscoverMDNS()
 
-	logger.Log.Println(
-		"MDNS FOUND:",
-		len(mdnsRecords),
-	)
+  logger.Log.Println(
+    "MDNS FOUND:",
+    len(mdnsRecords),
+  )
 
-	for i := range hosts {
 
-		for _, mdns := range mdnsRecords {
 
-			if mdns.IP != hosts[i].IP {
-				continue
-			}
+  for i := range hosts {
 
-			logger.Log.Println(
-				"MDNS MATCH:",
-				hosts[i].IP,
-				mdns.Name,
-			)
+    for _, mdns := range mdnsRecords {
 
-			hosts[i].MDNS =
-				append(
-					hosts[i].MDNS,
-					mdns,
-				)
+    	 logger.Log.Println(
+    "MDNS COMPARE:",
+    "host=", hosts[i].IP,
+    "mdns=", mdns.IP,
+)
 
-			if mdns.Name != "" {
+      if mdns.IP != hosts[i].IP {
+        continue
+      }
 
-				hosts[i].Sources =
-					append(
-						hosts[i].Sources,
-						models.DiscoverySource{
-							Type:  models.DiscoveryMDNS,
-							Value: mdns.Name,
-						},
-					)
-			}
-		}
-	}
+      hosts[i].MDNS = append(
+        hosts[i].MDNS,
+        mdns,
+      )
 
-	logger.Log.Println(
-		"MDNS ENRICHMENT FINISHED",
-	)
+      logger.Log.Println(
+        "MDNS MATCH:",
+        hosts[i].IP,
+        mdns.Name,
+        mdns.Service,
+        mdns.Host,
+        mdns.Port,
+      )
+    }
+  }
 
-	return hosts
+  logger.Log.Println(
+    "MDNS ENRICHMENT FINISHED",
+  )
+
+  return hosts
 }

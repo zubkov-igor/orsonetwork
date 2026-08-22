@@ -2,9 +2,12 @@ package scanner
 
 import (
 	"context"
+	"sync"
+	"time"
 
 	"github.com/grandcat/zeroconf"
 
+	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 )
 
@@ -20,9 +23,24 @@ func DiscoverMDNS() []models.MDNSService {
 
 	entries := make(chan *zeroconf.ServiceEntry)
 
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+
 	go func() {
 
+		defer wg.Done()
+
 		for entry := range entries {
+
+			logger.Log.Println(
+				"MDNS SERVICE:",
+				entry.Instance,
+				entry.Service,
+				entry.HostName,
+				entry.Port,
+				entry.AddrIPv4,
+			)
 
 			for _, ip := range entry.AddrIPv4 {
 
@@ -38,22 +56,23 @@ func DiscoverMDNS() []models.MDNSService {
 				)
 			}
 		}
-
 	}()
 
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
-		5,
+		5*time.Second,
 	)
 
 	defer cancel()
 
 	_ = resolver.Browse(
 		ctx,
-		"_services._dns-sd._udp",
+		"_dosvc._tcp",
 		"local",
 		entries,
 	)
+
+	wg.Wait()
 
 	return records
 }

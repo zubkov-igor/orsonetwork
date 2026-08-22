@@ -206,7 +206,9 @@ func (s *Scanner) Scan() []models.Network {
 //     ↓
 // Update link latency and status
 
-func (s *Scanner) Topology() models.Topology {
+func (s *Scanner) Topology() models.ScanResult {
+
+	start := time.Now()
 
 	networks := s.Scan()
 
@@ -265,5 +267,8 @@ func (s *Scanner) Topology() models.Topology {
 		}
 	}
 
-	return topology
+	return models.ScanResult{
+		Topology: topology,
+		Duration: time.Since(start).Milliseconds(),
+	}
 }
