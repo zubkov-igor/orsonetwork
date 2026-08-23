@@ -235,40 +235,74 @@ func (s *Scanner) Topology() models.ScanResult {
 		node.RTT = result.RTT
 	}
 
-	for i := range topology.Links {
+	nodeIPs := make(map[string]string)
 
-		result :=
-			pingResults[topology.Links[i].To]
+for _, node := range topology.Nodes {
+    nodeIPs[node.ID] = node.IP
+}
 
-		if result.Online {
+for i := range topology.Links {
 
-			latency :=
-				result.RTT.Seconds() * 1000
+    ip := nodeIPs[topology.Links[i].To]
 
-			topology.Links[i].Latency = latency
+    result := pingResults[ip]
 
-			switch {
+    if result.Online {
 
-			case latency < 10:
-				topology.Links[i].Status = "good"
+        latency :=
+            result.RTT.Seconds() * 1000
 
-			case latency < 50:
-				topology.Links[i].Status = "warning"
+        topology.Links[i].Latency = latency
 
-			default:
-				topology.Links[i].Status = "critical"
-			}
+        switch {
 
-		} else {
+        case latency < 10:
+            topology.Links[i].Status = "good"
 
-			topology.Links[i].Latency = 0
+        case latency < 50:
+            topology.Links[i].Status = "warning"
 
-			topology.Links[i].Status = "timeout"
-		}
-	}
+        default:
+            topology.Links[i].Status = "critical"
+        }
+
+    } else {
+
+        topology.Links[i].Latency = 0
+
+        topology.Links[i].Status = "timeout"
+    }
+}
+
+	for _, node := range topology.Nodes {
+
+    logger.Log.Println(
+        "FINAL NODE:",
+        node.IP,
+        "ONLINE:",
+        node.Online,
+        "RTT:",
+        node.RTT,
+    )
+}
+
+for _, link := range topology.Links {
+
+    logger.Log.Println(
+        "FINAL LINK:",
+        link.From,
+        "->",
+        link.To,
+        "LATENCY:",
+        link.Latency,
+        "STATUS:",
+        link.Status,
+    )
+}
 
 	return models.ScanResult{
 		Topology: topology,
 		Duration: time.Since(start).Milliseconds(),
+		LastScan: time.Now().Unix(),
 	}
 }

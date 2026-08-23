@@ -10,6 +10,9 @@ import {
 const [scanDuration, setScanDuration] =
     createSignal(0);
 
+const [lastScan, setLastScan] =
+    createSignal<number | null>(null);
+
 export default function Header() {
     const [scanning, setScanning] = createSignal(false);
 
@@ -25,6 +28,7 @@ const handleScan = async () => {
 
         setTopology(result.topology);
         setScanDuration(result.duration);
+        setLastScan(result.lastScan);
 
         console.log("Topology received:", result);
     } catch (error) {
@@ -93,6 +97,22 @@ const handleScan = async () => {
     : "—"}
                 </strong>
             </div>
+            <div class="header__stat">
+    <span class="header__stat-label">
+        Last scan
+    </span>
+
+    <strong class="header__stat-value">
+       {lastScan() !== null
+    ? new Date(lastScan()! * 1000).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+    })
+    : "—"}
+    </strong>
+</div>
 
         </div>
 

@@ -40,6 +40,16 @@
 --color-latency-critical: #c084fc;
 --color-latency-timeout: #64748b;
 
+    --color-switch: #27ae60;
+    --color-switch-border: #1e8449;
+    --color-server: #8e44ad;
+    --color-server-border: #6c3483;
+    --color-ap: #f39c12;
+    --color-ap-border: #b9770e;
+    --color-host: #7f8c8d;
+    --color-host-border: #566573;
+
+
 --color-latency-label: #f8fafc;
 --color-latency-label-bg: #1e293b;
 }

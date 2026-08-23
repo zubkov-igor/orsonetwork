@@ -322,6 +322,7 @@ export namespace models {
 	export class ScanResult {
 	    topology: Topology;
 	    duration: number;
+	    lastScan: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new ScanResult(source);
@@ -331,6 +332,7 @@ export namespace models {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.topology = this.convertValues(source["topology"], Topology);
 	        this.duration = source["duration"];
+	        this.lastScan = source["lastScan"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

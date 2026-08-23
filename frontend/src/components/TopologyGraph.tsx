@@ -12,7 +12,6 @@ import {
     setSelectedDevice,
 } from "../store/topology";
 
-
 interface TopologyGraphProps {
     compact?: boolean;
 }
@@ -24,313 +23,431 @@ export default function TopologyGraph(
 
     let cy: cytoscape.Core | undefined;
 
-onMount(() => {
-    if (!container) {
-        return;
-    }
-
     const latencyGood = 10;
     const latencyWarning = 50;
-    
-    const styles = getComputedStyle(
-        document.documentElement
-    );
 
-    const colorNode = styles
-        .getPropertyValue("--color-node")
-        .trim();
+    function runLayout(compact: boolean) {
+        if (!cy) return;
 
-    const colorNodeBorder = styles
-        .getPropertyValue("--color-node-border")
-        .trim();
+        const roots = cy.nodes('node[type = "gateway"]');
 
-    const colorGateway = styles
-        .getPropertyValue("--color-gateway")
-        .trim();
-
-    const colorGatewayBorder = styles
-        .getPropertyValue("--color-gateway-border")
-        .trim();
-
-    const colorLight = styles
-        .getPropertyValue("--color-light")
-        .trim();
-
-    const colorLatencyGood = styles
-    .getPropertyValue("--color-latency-good")
-    .trim();
-
-    const colorLatencyWarning = styles
-    .getPropertyValue("--color-latency-warning")
-    .trim();
-
-    const colorLatencyCritical = styles
-    .getPropertyValue("--color-latency-critical")
-    .trim();
-
-    const colorLatencyTimeout = styles
-    .getPropertyValue("--color-latency-timeout")
-    .trim();
-
-    const colorLatencyLabelBg = styles
-    .getPropertyValue("--color-latency-label-bg")
-    .trim();
-
-cy = cytoscape({
-    container,
-
-style: [
-    {
-        selector: "node",
-
-        style: {
-            "background-color": colorNode,
-            width: 70,
-            height: 70,
-            label: "data(label)",
-            color: colorLight,
-            "text-valign": "center",
-            "text-halign": "center",
-            "font-size": 11,
-            "font-weight": "bold",
-            "text-wrap": "wrap",
-            "text-max-width": "80px",
-            "border-width": 2,
-            "border-color": colorNodeBorder,
-        },
-    },
-
-    {
-        selector: "node.node--selected",
-
-        style: {
-            "border-width": 5,
-            "border-color": colorGatewayBorder,
-            "overlay-color": colorGatewayBorder,
-            "overlay-opacity": 0.25,
-            "overlay-padding": 8,
-        },
-    },
-
-    {
-        selector: 'node[type = "gateway"]',
-
-        style: {
-            "background-color": colorGateway,
-            width: 90,
-            height: 90,
-            "border-width": 3,
-            "border-color": colorGatewayBorder,
-            "font-size": 12,
-        },
-    },
-
-        {
-            selector: 'node[type = "host"]',
-
-            style: {
-                "background-color": colorNode,
-
-                width: 70,
-                height: 70,
-
-                "border-color": colorNodeBorder,
-            },
-        },
-
-        {
-            selector: "edge",
-
-            style: {
-                width: 2,
-
-                label: "data(latencyLabel)",
-
-                color: colorLight,
-
-                "text-background-color": colorLatencyLabelBg,
-
-                "text-background-opacity": 1,
-   
-                "line-color": colorNodeBorder,
-
-                "target-arrow-color": colorNodeBorder,
-
-                "target-arrow-shape": "triangle",
-
-                "curve-style": "bezier",
-            },
-        },
-        {
-    selector: 'edge[status = "good"]',
-
-    style: {
-        "line-color": colorLatencyGood,
-        "target-arrow-color": colorLatencyGood,
-    },
-},
-
-{
-    selector: 'edge[status = "warning"]',
-
-    style: {
-        "line-color": colorLatencyWarning,
-        "target-arrow-color": colorLatencyWarning,
-    },
-},
-
-{
-    selector: 'edge[status = "critical"]',
-
-    style: {
-        "line-color": colorLatencyCritical,
-        "target-arrow-color": colorLatencyCritical,
-    },
-},
-
-{
-    selector: 'edge[status = "timeout"]',
-
-    style: {
-        "line-color": colorLatencyTimeout,
-        "target-arrow-color": colorLatencyTimeout,
-    },
-},
-    ],
-
-    layout: {
-        name: "breadthfirst",
-        directed: true,
-        padding: 30,
-    },
-});
-
-cy.on("tap", "node", (event) => {
-
-    const node = event.target;
-
-    const currentTopology = topology();
-
-    if (!currentTopology) {
-        return;
+        cy.layout({
+            name: "breadthfirst",
+            directed: true,
+            roots: roots.length > 0
+                ? roots.map((n) => n.id())
+                : undefined,
+            padding: compact ? 20 : 40,
+            spacingFactor: 1.25,
+            circle: false,
+            fit: true,
+            animate: true,
+            animationDuration: 300,
+        }).run();
     }
 
-    const device =
-        currentTopology.nodes.find(
-            (item) => item.id === node.id()
+    onMount(() => {
+        if (!container) {
+            return;
+        }
+
+        const styles = getComputedStyle(
+            document.documentElement
         );
 
-    if (!device) {
-        return;
-    }
+        const colorNode = styles
+            .getPropertyValue("--color-node")
+            .trim();
 
-    setSelectedDevice(device);
-});
+        const colorNodeBorder = styles
+            .getPropertyValue("--color-node-border")
+            .trim();
 
-requestAnimationFrame(() => {
+        const colorGateway = styles
+            .getPropertyValue("--color-gateway")
+            .trim();
 
-    cy?.resize();
+        const colorGatewayBorder = styles
+            .getPropertyValue("--color-gateway-border")
+            .trim();
 
-    cy?.layout({
-        name: "breadthfirst",
-        directed: true,
-        padding: props.compact ? 20 : 40,
-    }).run();
+        const colorLight = styles
+            .getPropertyValue("--color-light")
+            .trim();
 
-});
+        const colorSwitch = styles
+            .getPropertyValue("--color-switch")
+            .trim();
 
-createEffect(() => {
-    const currentTopology = topology();
+        const colorSwitchBorder = styles
+            .getPropertyValue("--color-switch-border")
+            .trim();
 
-    if (!currentTopology || !cy) {
-        return;
-    }
+        const colorServer = styles
+            .getPropertyValue("--color-server")
+            .trim();
 
-    cy.elements().remove();
+        const colorServerBorder = styles
+            .getPropertyValue("--color-server-border")
+            .trim();
 
-    const nodes = currentTopology.nodes ?? [];
-    const links = currentTopology.links ?? [];
+        const colorAP = styles
+            .getPropertyValue("--color-ap")
+            .trim();
 
-    cy.add([
-        ...nodes.map((node) => ({
+        const colorAPBorder = styles
+            .getPropertyValue("--color-ap-border")
+            .trim();
+
+        const colorLatencyGood = styles
+            .getPropertyValue("--color-latency-good")
+            .trim();
+
+        const colorLatencyWarning = styles
+            .getPropertyValue("--color-latency-warning")
+            .trim();
+
+        const colorLatencyCritical = styles
+            .getPropertyValue("--color-latency-critical")
+            .trim();
+
+        const colorLatencyTimeout = styles
+            .getPropertyValue("--color-latency-timeout")
+            .trim();
+
+        const colorLatencyLabelBg = styles
+            .getPropertyValue("--color-latency-label-bg")
+            .trim();
+
+        cy = cytoscape({
+            container,
+
+            style: [
+                // Базовый стиль узла
+                {
+                    selector: "node",
+                    style: {
+                        "background-color": colorNode,
+                        width: 70,
+                        height: 70,
+                        label: "data(label)",
+                        color: colorLight,
+                        "text-valign": "center",
+                        "text-halign": "center",
+                        "font-size": 11,
+                        "font-weight": "bold",
+                        "text-wrap": "wrap",
+                        "text-max-width": "80px",
+                        "border-width": 2,
+                        "border-color": colorNodeBorder,
+                    },
+                },
+
+                // Выделенный узел
+                {
+                    selector: "node.node--selected",
+                    style: {
+                        "border-width": 5,
+                        "border-color": colorGatewayBorder,
+                        "overlay-color": colorGatewayBorder,
+                        "overlay-opacity": 0.25,
+                        "overlay-padding": 8,
+                    },
+                },
+
+                // Hover на узле
+                {
+                    selector: "node.node--hover",
+                    style: {
+                        "border-width": 4,
+                        "border-color": "#e74c3c",
+                        "z-index": 999,
+                    },
+                },
+
+                // Gateway — крупный, сверху
+                {
+                    selector: 'node[type = "gateway"]',
+                    style: {
+                        "background-color": colorGateway,
+                        shape: "round-rectangle",
+                        width: 90,
+                        height: 90,
+                        "border-width": 3,
+                        "border-color": colorGatewayBorder,
+                        "font-size": 12,
+                    },
+                },
+
+                // Switch — прямоугольник
+                {
+                    selector: 'node[type = "switch"]',
+                    style: {
+                        "background-color": colorSwitch,
+                        shape: "rectangle",
+                        width: 70,
+                        height: 50,
+                        "border-color": colorSwitchBorder,
+                    },
+                },
+
+                // Server — barrel
+                {
+                    selector: 'node[type = "server"]',
+                    style: {
+                        "background-color": colorServer,
+                        shape: "barrel",
+                        width: 60,
+                        height: 80,
+                        "border-color": colorServerBorder,
+                    },
+                },
+
+                // AP — треугольник
+                {
+                    selector: 'node[type = "ap"]',
+                    style: {
+                        "background-color": colorAP,
+                        shape: "triangle",
+                        width: 60,
+                        height: 60,
+                        "border-color": colorAPBorder,
+                    },
+                },
+
+                // Host — круг
+                {
+                    selector: 'node[type = "host"]',
+                    style: {
+                        "background-color": colorNode,
+                        shape: "ellipse",
+                        width: 70,
+                        height: 70,
+                        "border-color": colorNodeBorder,
+                    },
+                },
+
+                // Базовый стиль ребра
+                {
+                    selector: "edge",
+                    style: {
+                        width: 2,
+                        label: "data(latencyLabel)",
+                        color: colorLight,
+                        "text-background-color": colorLatencyLabelBg,
+                        "text-background-opacity": 1,
+                        "text-background-padding": "2",
+                        "line-color": colorNodeBorder,
+                        "target-arrow-color": colorNodeBorder,
+                        "target-arrow-shape": "triangle",
+                        "curve-style": "bezier",
+                        "text-rotation": "autorotate",
+                        "font-size": "9px",
+                    },
+                },
+
+                // Hover на ребре
+                {
+                    selector: "edge.edge--hover",
+                    style: {
+                        width: 5,
+                        "line-color": "#e74c3c",
+                        "target-arrow-color": "#e74c3c",
+                        "z-index": 999,
+                    },
+                },
+
+                // Физический линк — сплошная
+                {
+                    selector: 'edge[type = "physical"]',
+                    style: {
+                        "line-style": "solid",
+                        width: 3,
+                    },
+                },
+
+                // Туннель / VPN — пунктир
+                {
+                    selector: 'edge[type = "tunnel"]',
+                    style: {
+                        "line-style": "dashed",
+                        "line-dash-pattern": [8, 4],
+                        width: 2,
+                    },
+                },
+
+                // Wi-Fi — точечная, без стрелки
+                {
+                    selector: 'edge[type = "wireless"]',
+                    style: {
+                        "line-style": "dotted",
+                        width: 2,
+                        "target-arrow-shape": "none",
+                    },
+                },
+
+                // Trunk — толще
+                {
+                    selector: 'edge[type = "trunk"]',
+                    style: {
+                        width: 4,
+                    },
+                },
+
+                // Статусы по задержке
+                {
+                    selector: 'edge[status = "good"]',
+                    style: {
+                        "line-color": colorLatencyGood,
+                        "target-arrow-color": colorLatencyGood,
+                    },
+                },
+                {
+                    selector: 'edge[status = "warning"]',
+                    style: {
+                        "line-color": colorLatencyWarning,
+                        "target-arrow-color": colorLatencyWarning,
+                    },
+                },
+                {
+                    selector: 'edge[status = "critical"]',
+                    style: {
+                        "line-color": colorLatencyCritical,
+                        "target-arrow-color": colorLatencyCritical,
+                    },
+                },
+                {
+                    selector: 'edge[status = "timeout"]',
+                    style: {
+                        "line-color": colorLatencyTimeout,
+                        "target-arrow-color": colorLatencyTimeout,
+                    },
+                },
+            ],
+
+            layout: {
+                name: "breadthfirst",
+                directed: true,
+                padding: 30,
+            },
+        });
+
+        // Клик по узлу — выбор устройства
+        cy.on("tap", "node", (event) => {
+            const node = event.target;
+
+            const currentTopology = topology();
+
+            if (!currentTopology) {
+                return;
+            }
+
+            const device = currentTopology.nodes.find(
+                (item) => item.id === node.id()
+            );
+
+            if (!device) {
+                return;
+            }
+
+            setSelectedDevice(device);
+        });
+
+        // Hover на узел
+        cy.on("mouseover", "node", (event) => {
+            event.target.addClass("node--hover");
+        });
+
+        cy.on("mouseout", "node", (event) => {
+            event.target.removeClass("node--hover");
+        });
+
+        // Hover на ребро
+        cy.on("mouseover", "edge", (event) => {
+            event.target.addClass("edge--hover");
+        });
+
+        cy.on("mouseout", "edge", (event) => {
+            event.target.removeClass("edge--hover");
+        });
+    });
+
+    createEffect(() => {
+        const currentTopology = topology();
+
+        if (!currentTopology || !cy) {
+            return;
+        }
+
+        const nodes = currentTopology.nodes ?? [];
+        const links = currentTopology.links ?? [];
+
+        cy.json({
+            elements: {
+          nodes: nodes.map((node) => ({
             data: {
-                id: node.id,
-                label: `${node.type.toUpperCase()}\n${node.ip}`,
-                type: node.type,
-                ip: node.ip,
-                mac: node.mac,
-                vendor: node.vendor,
-                hostname: node.hostname,
-                sources: node.sources,
+            id: node.id,
+            label: node.ip,
+            type: node.type,
+            ip: node.ip,
+            mac: node.mac,
+            vendor: node.vendor,
+            hostname: node.hostname,
+            sources: node.sources,
+            online: node.online,
+            rtt: node.rtt,
             },
         })),
+                edges: links.map((link, index) => ({
+                    data: {
+                        id: `link-${index}`,
+                        source: link.from,
+                        target: link.to,
+                        type: link.type,
+                        latencyLabel:
+                            link.latency > 0
+                                ? `${link.latency.toFixed(1)} ms`
+                                : "—",
+                        status:
+                            link.latency <= 0
+                                ? "timeout"
+                                : link.latency < latencyGood
+                                    ? "good"
+                                    : link.latency <= latencyWarning
+                                        ? "warning"
+                                        : "critical",
+                    },
+                })),
+            },
+        });
 
-      ...links.map((link, index) => ({
-    data: {
-        id: `link-${index}`,
-        source: link.from,
-        target: link.to,
-        type: link.type,
+        cy.resize();
+        runLayout(props.compact ?? false);
+    });
 
-        latencyLabel:
-            link.latency > 0
-                ? `${link.latency.toFixed(1)} ms`
-                : "—",
+    createEffect(() => {
+        const selected = selectedDevice();
 
-        latencyStatus:
-            link.latency <= 0
-                ? "timeout"
-                : link.latency < latencyGood
-                    ? "good"
-                    : link.latency <= latencyWarning
-                        ? "warning"
-                        : "critical",
-    },
-})),
-    ]);
+        if (!cy) {
+            return;
+        }
 
-    cy.resize();
+        cy.nodes().removeClass("node--selected");
 
-    cy.layout({
-        name: "breadthfirst",
-        directed: true,
-        padding: props.compact ? 20 : 40,
-    }).run();
-});
+        if (!selected) {
+            return;
+        }
 
+        const node = cy.getElementById(selected.id);
 
-createEffect(() => {
-    const selected = selectedDevice();
-
-    if (!cy) {
-        return;
-    }
-
-    cy.nodes().removeClass(
-        "node--selected"
-    );
-
-    if (!selected) {
-        return;
-    }
-
-    const node =
-        cy.getElementById(selected.id);
-
-    if (node.length > 0) {
-        node.addClass(
-            "node--selected"
-        );
-    }
-});
-
-
+        if (node.length > 0) {
+            node.addClass("node--selected");
+        }
+    });
 
     onCleanup(() => {
         cy?.destroy();
     });
-
-});
 
     return (
         <div
