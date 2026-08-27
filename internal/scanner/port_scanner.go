@@ -1,38 +1,74 @@
 package scanner
 
 import (
-	"OrsoNetwork/internal/logger"
-	"OrsoNetwork/internal/models"
 	"fmt"
 	"net"
+	"sync"
 	"time"
+
+	"OrsoNetwork/internal/logger"
+	"OrsoNetwork/internal/models"
 )
 
 func ScanPorts(
 	ip string,
 ) []models.Port {
 
-	var ports []models.Port
-
 	logger.Log.Println(
 		"PORT SCAN START:",
 		ip,
 	)
 
-	for _, port := range CommonPorts {
+	const workers = 5
 
-		if IsPortOpen(ip, port) {
+	jobs := make(chan int)
+	results := make(chan models.Port)
 
-			ports = append(
-				ports,
-				models.Port{
-					Number:   port,
-					Protocol: "tcp",
-					Service:  DetectPortService(port),
-					Open:     true,
-				},
-			)
+	var wg sync.WaitGroup
+
+	// Start workers.
+
+	for i := 0; i < workers; i++ {
+
+		wg.Add(1)
+
+		go scanPortWorker(
+			ip,
+			jobs,
+			results,
+			&wg,
+		)
+	}
+
+	// Send ports to workers.
+
+	go func() {
+
+		for _, port := range CommonPorts {
+			jobs <- port
 		}
+
+		close(jobs)
+
+	}()
+
+	// Close results after all workers finish.
+
+	go func() {
+
+		wg.Wait()
+		close(results)
+
+	}()
+
+	var ports []models.Port
+
+	for port := range results {
+
+		ports = append(
+			ports,
+			port,
+		)
 	}
 
 	logger.Log.Println(
@@ -42,6 +78,33 @@ func ScanPorts(
 	)
 
 	return ports
+}
+
+func scanPortWorker(
+	ip string,
+	jobs <-chan int,
+	results chan<- models.Port,
+	wg *sync.WaitGroup,
+) {
+
+	defer wg.Done()
+
+	for port := range jobs {
+
+		if !IsPortOpen(
+			ip,
+			port,
+		) {
+			continue
+		}
+
+		results <- models.Port{
+			Number:   port,
+			Protocol: "tcp",
+			Service:  DetectPortService(port),
+			Open:     true,
+		}
+	}
 }
 
 func IsPortOpen(

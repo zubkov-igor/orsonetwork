@@ -8,7 +8,7 @@ import (
 
 func IdentifyDevice(
 	host models.Host,
-) models.DeviceType {
+) models.DeviceIdentification {
 
 	hostname := strings.ToLower(
 		host.Hostname,
@@ -29,7 +29,10 @@ func IdentifyDevice(
 		"mikrotik",
 		"openwrt",
 	) {
-		return models.DeviceRouter
+		return models.DeviceIdentification{
+			Type:       models.DeviceRouter,
+			Confidence: 80,
+		}
 	}
 
 	if containsAny(
@@ -41,7 +44,10 @@ func IdentifyDevice(
 		"cisco",
 		"netgear",
 	) {
-		return models.DeviceRouter
+		return models.DeviceIdentification{
+			Type:       models.DeviceRouter,
+			Confidence: 50,
+		}
 	}
 
 	// =========================
@@ -55,7 +61,10 @@ func IdentifyDevice(
 		"ipc",
 		"nvr",
 	) {
-		return models.DeviceCamera
+		return models.DeviceIdentification{
+			Type:       models.DeviceCamera,
+			Confidence: 80,
+		}
 	}
 
 	// =========================
@@ -67,7 +76,10 @@ func IdentifyDevice(
 		"printer",
 		"print",
 	) {
-		return models.DevicePrinter
+		return models.DeviceIdentification{
+			Type:       models.DevicePrinter,
+			Confidence: 80,
+		}
 	}
 
 	// =========================
@@ -81,7 +93,10 @@ func IdentifyDevice(
 		"synology",
 		"qnap",
 	) {
-		return models.DeviceNAS
+		return models.DeviceIdentification{
+			Type:       models.DeviceNAS,
+			Confidence: 80,
+		}
 	}
 
 	// =========================
@@ -96,7 +111,10 @@ func IdentifyDevice(
 		"computer",
 		"workstation",
 	) {
-		return models.DeviceComputer
+		return models.DeviceIdentification{
+			Type:       models.DeviceComputer,
+			Confidence: 70,
+		}
 	}
 
 	// =========================
@@ -108,10 +126,16 @@ func IdentifyDevice(
 		switch port.Number {
 
 		case 22:
-			return models.DeviceServer
+			return models.DeviceIdentification{
+				Type:       models.DeviceServer,
+				Confidence: 60,
+			}
 
 		case 3389:
-			return models.DeviceComputer
+			return models.DeviceIdentification{
+				Type:       models.DeviceComputer,
+				Confidence: 60,
+			}
 
 		case 80, 443:
 
@@ -119,7 +143,10 @@ func IdentifyDevice(
 				hostname,
 				"server",
 			) {
-				return models.DeviceServer
+				return models.DeviceIdentification{
+					Type:       models.DeviceServer,
+					Confidence: 70,
+				}
 			}
 		}
 	}
@@ -135,11 +162,18 @@ func IdentifyDevice(
 		"tuya",
 		"sonoff",
 	) {
-		return models.DeviceIoT
+		return models.DeviceIdentification{
+			Type:       models.DeviceIoT,
+			Confidence: 50,
+		}
 	}
 
-	return models.DeviceUnknown
+	return models.DeviceIdentification{
+		Type:       models.DeviceUnknown,
+		Confidence: 0,
+	}
 }
+
 
 func containsAny(
 	value string,

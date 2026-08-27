@@ -34,15 +34,21 @@ export default function TopologyGraph(
         cy.layout({
             name: "breadthfirst",
             directed: true,
+
             roots: roots.length > 0
                 ? roots.map((n) => n.id())
                 : undefined,
-            padding: compact ? 20 : 40,
-            spacingFactor: 1.25,
+
+            padding: compact ? 10 : 40,
+
+            spacingFactor: compact ? 0.8 : 1.25,
+
             circle: false,
+
             fit: true,
-            animate: true,
-            animationDuration: 300,
+
+            animate: !compact,
+            animationDuration: compact ? 0 : 300,
         }).run();
     }
 
@@ -123,25 +129,69 @@ export default function TopologyGraph(
             container,
 
             style: [
-                // Базовый стиль узла
-                {
-                    selector: "node",
-                    style: {
-                        "background-color": colorNode,
-                        width: 70,
-                        height: 70,
-                        label: "data(label)",
-                        color: colorLight,
-                        "text-valign": "center",
-                        "text-halign": "center",
-                        "font-size": 11,
-                        "font-weight": "bold",
-                        "text-wrap": "wrap",
-                        "text-max-width": "80px",
-                        "border-width": 2,
-                        "border-color": colorNodeBorder,
-                    },
-                },
+               // Базовый стиль узла
+{
+    selector: "node",
+    style: {
+        "background-color": colorNode,
+        width: 70,
+        height: 70,
+        label: "data(label)",
+        color: colorLight,
+        "text-valign": "center",
+        "text-halign": "center",
+        "font-size": 11,
+        "font-weight": "bold",
+        "text-wrap": "wrap",
+        "text-max-width": "80px",
+        "border-width": 2,
+        "border-color": colorNodeBorder,
+    },
+},
+
+// =========================
+// Compact Dashboard
+// =========================
+
+    {
+    selector: "node.compact",
+    style: {
+        width: 10,
+        height: 10,
+        "font-size": 8,
+        "border-width": 1,
+
+        "text-valign": "bottom",
+        "text-halign": "center",
+        "text-margin-y": 10,
+    },
+},
+
+{
+selector: 'node.compact[type = "gateway"]',
+    style: {
+        width: 10,
+        height: 10,
+        "font-size": 8,
+        "border-width": 2,
+
+        "text-valign": "bottom",
+        "text-halign": "center",
+        "text-margin-y": 10,
+    },
+},
+
+// Выделенный узел
+{
+    selector: "node.node--selected",
+    style: {
+        "border-width": 5,
+        "border-color": colorGatewayBorder,
+        "overlay-color": colorGatewayBorder,
+        "overlay-opacity": 0.25,
+        "overlay-padding": 8,
+    },
+},
 
                 // Выделенный узел
                 {
@@ -171,13 +221,23 @@ export default function TopologyGraph(
                     style: {
                         "background-color": colorGateway,
                         shape: "round-rectangle",
-                        width: 90,
-                        height: 90,
+                        width: 15,
+                        height: 15,
                         "border-width": 3,
                         "border-color": colorGatewayBorder,
                         "font-size": 12,
                     },
                 },
+
+                {
+    selector: 'node.compact[type = "gateway"]',
+    style: {
+        width: 15,
+        height: 15,
+        "font-size": 8,
+        "border-width": 2,
+    },
+},
 
                 // Switch — прямоугольник
                 {
@@ -221,11 +281,20 @@ export default function TopologyGraph(
                     style: {
                         "background-color": colorNode,
                         shape: "ellipse",
-                        width: 70,
-                        height: 70,
+                        width: 10,
+                        height: 10,
                         "border-color": colorNodeBorder,
                     },
                 },
+
+                {
+    selector: 'node.compact[type = "host"]',
+    style: {
+        width: 18,
+        height: 18,
+        "border-width": 1,
+    },
+},
 
                 // Базовый стиль ребра
                 {
@@ -238,8 +307,6 @@ export default function TopologyGraph(
                         "text-background-opacity": 1,
                         "text-background-padding": "2",
                         "line-color": colorNodeBorder,
-                        "target-arrow-color": colorNodeBorder,
-                        "target-arrow-shape": "triangle",
                         "curve-style": "bezier",
                         "text-rotation": "autorotate",
                         "font-size": "9px",
@@ -379,47 +446,75 @@ export default function TopologyGraph(
             return;
         }
 
-        const nodes = currentTopology.nodes ?? [];
-        const links = currentTopology.links ?? [];
+    const nodes = currentTopology.nodes ?? [];
+    const links = currentTopology.links ?? [];
 
-        cy.json({
-            elements: {
-          nodes: nodes.map((node) => ({
+    const visibleNodes = nodes.filter((node) => {
+    return (
+        node.type === "gateway" ||
+        node.mac ||
+        node.hostname ||
+        node.vendor ||
+        (node.type && node.type !== "unknown")
+    );
+});
+
+const visibleNodeIds = new Set(
+    visibleNodes.map((node) => node.id)
+);
+
+const visibleLinks = links.filter((link) => {
+    return (
+        visibleNodeIds.has(link.from) &&
+        visibleNodeIds.has(link.to)
+    );
+});
+
+cy.json({
+    elements: {
+       nodes: visibleNodes.map((node) => ({
+    data: {
+        id: node.id,
+        label: node.ip,
+        type: node.type,
+        ip: node.ip,
+        mac: node.mac,
+        vendor: node.vendor,
+        hostname: node.hostname,
+        sources: node.sources,
+        online: node.online,
+        rtt: node.rtt,
+    },
+
+    classes: props.compact
+        ? "compact"
+        : "",
+})),
+
+        edges: visibleLinks.map((link, index) => ({
             data: {
-            id: node.id,
-            label: node.ip,
-            type: node.type,
-            ip: node.ip,
-            mac: node.mac,
-            vendor: node.vendor,
-            hostname: node.hostname,
-            sources: node.sources,
-            online: node.online,
-            rtt: node.rtt,
+                id: `link-${index}`,
+                source: link.from,
+                target: link.to,
+                type: link.type,
+                latencyLabel:
+    props.compact
+        ? ""
+        : link.latency > 0
+            ? `${link.latency.toFixed(1)} ms`
+            : "—",
+                status:
+                    link.latency <= 0
+                        ? "timeout"
+                        : link.latency < latencyGood
+                            ? "good"
+                            : link.latency <= latencyWarning
+                                ? "warning"
+                                : "critical",
             },
         })),
-                edges: links.map((link, index) => ({
-                    data: {
-                        id: `link-${index}`,
-                        source: link.from,
-                        target: link.to,
-                        type: link.type,
-                        latencyLabel:
-                            link.latency > 0
-                                ? `${link.latency.toFixed(1)} ms`
-                                : "—",
-                        status:
-                            link.latency <= 0
-                                ? "timeout"
-                                : link.latency < latencyGood
-                                    ? "good"
-                                    : link.latency <= latencyWarning
-                                        ? "warning"
-                                        : "critical",
-                    },
-                })),
-            },
-        });
+    },
+});
 
         cy.resize();
         runLayout(props.compact ?? false);
@@ -460,3 +555,4 @@ export default function TopologyGraph(
         />
     );
 }
+

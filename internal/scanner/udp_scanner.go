@@ -1,9 +1,20 @@
 package scanner
 
 import (
+	"sync"
 	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 )
+
+type UDPDiscoveryJob struct {
+	Index int
+	IP    string
+}
+
+type UDPDiscoveryResult struct {
+	Index    int
+	Services []models.UDPService
+}
 
 func DiscoverUDP(
 	ip string,
@@ -20,7 +31,6 @@ func DiscoverUDP(
 	udpPorts := []int{
 		137,
 		161,
-		1900,
 	}
 
 	for _, port := range udpPorts {
@@ -30,18 +40,6 @@ func DiscoverUDP(
 		var result UDPProbeResult
 
 		switch port {
-
-		case 1900:
-
-			logger.Log.Println(
-				"UDP SSDP PROBE:",
-				ip,
-			)
-
-			result = ProbeSSDP(
-				ip,
-				iface,
-			)
 
 		case 161:
 
@@ -87,4 +85,27 @@ func DiscoverUDP(
 	)
 
 	return services
+}
+
+func udpDiscoveryWorker(
+	jobs <-chan UDPDiscoveryJob,
+	results chan<- UDPDiscoveryResult,
+	iface models.Interface,
+	wg *sync.WaitGroup,
+) {
+
+	defer wg.Done()
+
+	for job := range jobs {
+
+		services := DiscoverUDP(
+			job.IP,
+			iface,
+		)
+
+		results <- UDPDiscoveryResult{
+			Index:    job.Index,
+			Services: services,
+		}
+	}
 }

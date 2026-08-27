@@ -1,22 +1,27 @@
 import {
-    createSignal,
+createSignal,
 } from "solid-js";
 
 import type { models } from "../../wailsjs/go/models";
 
-
 const [topology, setTopology] =
-    createSignal<models.Topology | null>(null);
-
+createSignal<models.Topology | null>(null);
 
 const [selectedDevice, setSelectedDevice] =
-    createSignal<models.Node | null>(null);
+createSignal<models.Node | null>(null);
 
+const [scanning, setScanning] =
+createSignal(false);
 
 export {
-    topology,
-    setTopology,
+topology,
+setTopology,
 
-    selectedDevice,
-    setSelectedDevice,
+selectedDevice,
+setSelectedDevice,
+
+scanning,
+setScanning,
+
+
 };

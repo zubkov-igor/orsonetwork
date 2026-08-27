@@ -3,20 +3,22 @@ import { createSignal } from "solid-js";
 import { GetTopology } from "../../wailsjs/go/main/App";
 
 import {
-    topology,
-    setTopology,
+topology,
+setTopology,
+scanning,
+setScanning,
 } from "../store/topology";
 
 const [scanDuration, setScanDuration] =
-    createSignal(0);
+createSignal(0);
 
 const [lastScan, setLastScan] =
-    createSignal<number | null>(null);
+createSignal<number | null>(null);
 
 export default function Header() {
-    const [scanning, setScanning] = createSignal(false);
 
 const handleScan = async () => {
+
     if (scanning()) {
         return;
     }
@@ -24,107 +26,128 @@ const handleScan = async () => {
     setScanning(true);
 
     try {
+
         const result = await GetTopology();
 
         setTopology(result.topology);
         setScanDuration(result.duration);
         setLastScan(result.lastScan);
 
-        console.log("Topology received:", result);
+        console.log(
+            "Topology received:",
+            result,
+        );
+
     } catch (error) {
-        console.error("Scan failed:", error);
+
+        console.error(
+            "Scan failed:",
+            error,
+        );
+
     } finally {
+
         setScanning(false);
     }
 };
 
-    return (
-<header class="header">
-    <div class="header__body">
+return (
+    <header class="header">
+        <div class="header__body">
 
-        <div class="header__logo-block">
-            <img
-                src="/logo.png"
-                class="header__logo"
-                alt="OrsoNetwork logo"
-            />
+            <div class="header__logo-block">
 
-            <span class="header__brand">
-                OrsoNetwork
-            </span>
+                <img
+                    src="/logo.png"
+                    class="header__logo"
+                    alt="OrsoNetwork logo"
+                />
+
+                <span class="header__brand">
+                    OrsoNetwork
+                </span>
+
+            </div>
+
+            <div class="header__stats">
+
+                <div class="header__stat">
+                    <span class="header__stat-label">
+                        Nodes:
+                    </span>
+
+                    <strong class="header__stat-value">
+                        {topology()?.nodes.length ?? 0}
+                    </strong>
+                </div>
+
+                <div class="header__stat">
+                    <span class="header__stat-label">
+                        Links:
+                    </span>
+
+                    <strong class="header__stat-value">
+                        {topology()?.links.length ?? 0}
+                    </strong>
+                </div>
+
+                <div class="header__stat">
+                    <span class="header__stat-label">
+                        Networks:
+                    </span>
+
+                    <strong class="header__stat-value">
+                        {topology()?.networks.length ?? 0}
+                    </strong>
+                </div>
+
+                <div class="header__stat">
+                    <span class="header__stat-label">
+                        Scan duration:
+                    </span>
+
+                    <strong class="header__stat-value">
+                        {scanDuration() > 0
+                            ? `${(scanDuration() / 1000).toFixed(1)}s`
+                            : "—"}
+                    </strong>
+                </div>
+
+                <div class="header__stat">
+
+                    <span class="header__stat-label">
+                        Last scan
+                    </span>
+
+                    <strong class="header__stat-value">
+                        {lastScan() !== null
+                            ? new Date(
+                                lastScan()! * 1000
+                            ).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                                hour12: false,
+                            })
+                            : "—"}
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <button
+                class="header__scan"
+                onClick={handleScan}
+                disabled={scanning()}
+            >
+                {scanning()
+                    ? "Scanning..."
+                    : "Scan"}
+            </button>
+
         </div>
+    </header>
+);
 
-        <div class="header__stats">
-
-            <div class="header__stat">
-                <span class="header__stat-label">
-                    Nodes:
-                </span>
-
-                <strong class="header__stat-value">
-                    {topology()?.nodes.length ?? 0}
-                </strong>
-            </div>
-
-            <div class="header__stat">
-                <span class="header__stat-label">
-                    Links:
-                </span>
-
-                <strong class="header__stat-value">
-                    {topology()?.links.length ?? 0}
-                </strong>
-            </div>
-
-            <div class="header__stat">
-                <span class="header__stat-label">
-                    Networks:
-                </span>
-
-                <strong class="header__stat-value">
-                    {topology()?.networks.length ?? 0}
-                </strong>
-            </div>
-
-            <div class="header__stat">
-                <span class="header__stat-label">
-                    Scan duration:
-                </span>
-
-                <strong class="header__stat-value">
-                       {scanDuration() > 0
-    ? `${(scanDuration() / 1000).toFixed(1)}s`
-    : "—"}
-                </strong>
-            </div>
-            <div class="header__stat">
-    <span class="header__stat-label">
-        Last scan
-    </span>
-
-    <strong class="header__stat-value">
-       {lastScan() !== null
-    ? new Date(lastScan()! * 1000).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-    })
-    : "—"}
-    </strong>
-</div>
-
-        </div>
-
-        <button
-            class="header__scan"
-            onClick={handleScan}
-            disabled={scanning()}
-        >
-            {scanning() ? "Scanning..." : "Scan"}
-        </button>
-
-    </div>
-</header>
-    );
 }

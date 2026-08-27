@@ -9,10 +9,17 @@ import (
 	"OrsoNetwork/internal/models"
 )
 
+type SSDPResponse struct {
+	IP       string
+	Location string
+	Server   string
+	ST       string
+	USN      string
+}
+
 func ProbeSSDP(
-	ip string,
 	iface models.Interface,
-) UDPProbeResult {
+) []SSDPResponse {
 
 	localAddr := &net.UDPAddr{
 		IP:   net.ParseIP(iface.IP),
@@ -31,9 +38,7 @@ func ProbeSSDP(
 			err,
 		)
 
-		return UDPProbeResult{
-			Found: false,
-		}
+		return nil
 	}
 
 	defer conn.Close()
@@ -41,12 +46,6 @@ func ProbeSSDP(
 	logger.Log.Println(
 		"SSDP LOCAL:",
 		conn.LocalAddr(),
-	)
-
-	logger.Log.Println(
-		"SSDP INTERFACE:",
-		iface.Name,
-		iface.IP,
 	)
 
 	target := &net.UDPAddr{
@@ -74,9 +73,7 @@ func ProbeSSDP(
 			err,
 		)
 
-		return UDPProbeResult{
-			Found: false,
-		}
+		return nil
 	}
 
 	logger.Log.Println(
@@ -86,11 +83,13 @@ func ProbeSSDP(
 		target,
 	)
 
-	buffer := make([]byte, 2048)
+	buffer := make([]byte, 4096)
 
 	deadline := time.Now().Add(
-		2 * time.Second,
+		3 * time.Second,
 	)
+
+	var responses []SSDPResponse
 
 	for {
 
@@ -99,9 +98,7 @@ func ProbeSSDP(
 		)
 
 		if err != nil {
-			return UDPProbeResult{
-				Found: false,
-			}
+			break
 		}
 
 		n, addr, err := conn.ReadFromUDP(
@@ -111,22 +108,20 @@ func ProbeSSDP(
 		if err != nil {
 
 			logger.Log.Println(
-				"SSDP READ ERROR:",
+				"SSDP READ FINISHED:",
 				err,
 			)
 
-			return UDPProbeResult{
-				Found: false,
-			}
+			break
 		}
+
+		response := string(
+			buffer[:n],
+		)
 
 		logger.Log.Println(
 			"SSDP RESPONSE FROM:",
 			addr.IP,
-		)
-
-		response := strings.ToLower(
-			string(buffer[:n]),
 		)
 
 		logger.Log.Println(
@@ -134,32 +129,65 @@ func ProbeSSDP(
 			response,
 		)
 
-		if addr.IP.String() != ip {
+		headers := parseSSDPHeaders(
+			response,
+		)
 
-			logger.Log.Println(
-				"SSDP RESPONSE SKIP:",
-				addr.IP,
-				"EXPECTED:",
-				ip,
-			)
+		responses = append(
+			responses,
+			SSDPResponse{
+				IP:       addr.IP.String(),
+				Location: headers["location"],
+				Server:   headers["server"],
+				ST:       headers["st"],
+				USN:      headers["usn"],
+			},
+		)
+	}
 
+	logger.Log.Println(
+		"SSDP DISCOVERY FOUND:",
+		len(responses),
+	)
+
+	return responses
+}
+
+func parseSSDPHeaders(
+	response string,
+) map[string]string {
+
+	headers := make(
+		map[string]string,
+	)
+
+	lines := strings.Split(
+		response,
+		"\r\n",
+	)
+
+	for _, line := range lines {
+
+		parts := strings.SplitN(
+			line,
+			":",
+			2,
+		)
+
+		if len(parts) != 2 {
 			continue
 		}
 
-		if strings.Contains(
-			response,
-			"200 ok",
-		) {
+		key := strings.ToLower(
+			strings.TrimSpace(parts[0]),
+		)
 
-			logger.Log.Println(
-				"SSDP RESPONSE FOUND:",
-				ip,
-			)
+		value := strings.TrimSpace(
+			parts[1],
+		)
 
-			return UDPProbeResult{
-				Found: true,
-				Info:  response,
-			}
-		}
+		headers[key] = value
 	}
+
+	return headers
 }

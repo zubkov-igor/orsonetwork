@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"sync"
 	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 )
@@ -14,16 +15,66 @@ func EnrichUDP(
 		"UDP ENRICHMENT START",
 	)
 
-	for i := range hosts {
+	workers := 20
 
-		services := DiscoverUDP(
-			hosts[i].IP,
+	jobs := make(
+		chan UDPDiscoveryJob,
+	)
+
+	results := make(
+		chan UDPDiscoveryResult,
+	)
+
+	var wg sync.WaitGroup
+
+	// Start workers.
+
+	for i := 0; i < workers; i++ {
+
+		wg.Add(1)
+
+		go udpDiscoveryWorker(
+			jobs,
+			results,
 			iface,
+			&wg,
 		)
+	}
 
-		hosts[i].UDPServices = services
+	// Send jobs.
 
-		for _, u := range services {
+	go func() {
+
+		for i, host := range hosts {
+
+			jobs <- UDPDiscoveryJob{
+				Index: i,
+				IP:    host.IP,
+			}
+		}
+
+		close(jobs)
+	}()
+
+	// Close results after workers finish.
+
+	go func() {
+
+		wg.Wait()
+
+		close(results)
+	}()
+
+	// Collect results.
+
+	for result := range results {
+
+		i := result.Index
+
+		hosts[i].UDPServices =
+			result.Services
+
+		for _, u := range result.Services {
 
 			logger.Log.Println(
 				"UDP SERVICE:",
@@ -32,15 +83,20 @@ func EnrichUDP(
 				u.Service,
 			)
 
-			hosts[i].Sources = append(
-				hosts[i].Sources,
-				models.DiscoverySource{
-					Type:  models.DiscoveryUDP,
-					Value: u.Service,
-				},
-			)
+			hosts[i].Sources =
+				append(
+					hosts[i].Sources,
+					models.DiscoverySource{
+						Type:  models.DiscoveryUDP,
+						Value: u.Service,
+					},
+				)
 		}
 	}
+
+	// mDNS remains a separate discovery step
+	// for now, even though it is currently called
+	// from this enrichment stage.
 
 	mdnsHosts := ProbeMDNS(
 		iface,

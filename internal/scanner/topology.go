@@ -27,7 +27,7 @@ func BuildTopology(
 
 		var gateway models.Host
 
-		// находим объект шлюза
+		// Находим объект шлюза.
 		for _, h := range network.Hosts {
 
 			if h.IP == network.Gateway {
@@ -37,6 +37,12 @@ func BuildTopology(
 		}
 
 		for _, host := range network.Hosts {
+
+			nodeType := host.Type
+
+if host.IP == network.Gateway {
+	nodeType = models.DeviceGateway
+}
 
 			label := host.IP
 
@@ -49,7 +55,7 @@ func BuildTopology(
 				models.Node{
 					ID:       NodeID(host),
 					Label:    label,
-					Type:     string(host.Type),
+					Type:     string(nodeType),
 					IP:       host.IP,
 					MAC:      host.MAC,
 					Hostname: host.Hostname,

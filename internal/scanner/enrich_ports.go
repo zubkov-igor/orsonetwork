@@ -8,79 +8,82 @@ import (
 )
 
 func EnrichPorts(
-	hosts []models.Host,
+    hosts []models.Host,
 ) []models.Host {
 
-	logger.Log.Println(
-		"PORT ENRICHMENT START",
-	)
+    logger.Log.Println(
+        "PORT ENRICHMENT START",
+    )
 
-	for i := range hosts {
+    for i := range hosts {
 
-		ports := ScanPorts(
-			hosts[i].IP,
-		)
+    logger.Log.Println(
+        "PORT SCAN:",
+        hosts[i].IP,
+    )
 
-		hosts[i].Ports = ports
+    ports := ScanPorts(
+        hosts[i].IP,
+    )
 
-		for _, p := range ports {
+    hosts[i].Ports = ports
 
-			logger.Log.Println(
-				"OPEN PORT:",
-				hosts[i].IP,
-				p.Number,
-				p.Protocol,
-				p.Service,
-			)
+        for _, p := range ports {
 
-			hosts[i].Sources =
-				append(
-					hosts[i].Sources,
-					models.DiscoverySource{
-						Type: models.DiscoveryTCP,
-						Value: fmt.Sprintf(
-							"%s:%d:%s",
-							p.Protocol,
-							p.Number,
-							p.Service,
-						),
-					},
-				)
+            logger.Log.Println(
+                "OPEN PORT:",
+                hosts[i].IP,
+                p.Number,
+                p.Protocol,
+                p.Service,
+            )
 
-			if p.Service == "http" {
+            hosts[i].Sources = append(
+                hosts[i].Sources,
+                models.DiscoverySource{
+                    Type: models.DiscoveryTCP,
+                    Value: fmt.Sprintf(
+                        "%s:%d:%s",
+                        p.Protocol,
+                        p.Number,
+                        p.Service,
+                    ),
+                },
+            )
 
-				httpInfo := ScanHTTP(
-					hosts[i].IP,
-					p.Number,
-				)
+            if p.Service == "http" {
 
-				if httpInfo.Server != "" ||
-					httpInfo.Title != "" ||
-					len(httpInfo.Scripts) > 0 ||
-					len(httpInfo.Keywords) > 0 {
+                httpInfo := ScanHTTP(
+                    hosts[i].IP,
+                    p.Number,
+                )
 
-					hosts[i].HTTP =
-						append(
-							hosts[i].HTTP,
-							httpInfo,
-						)
+                if httpInfo.Server != "" ||
+                    httpInfo.Title != "" ||
+                    len(httpInfo.Scripts) > 0 ||
+                    len(httpInfo.Keywords) > 0 {
 
-					logger.Log.Println(
-						"HTTP ENRICHED:",
-						hosts[i].IP,
-						httpInfo.Port,
-						httpInfo.Server,
-						httpInfo.Title,
-						httpInfo.Keywords,
-					)
-				}
-			}
-		}
-	}
+                    hosts[i].HTTP = append(
+                        hosts[i].HTTP,
+                        httpInfo,
+                    )
 
-	logger.Log.Println(
-		"PORT ENRICHMENT FINISHED",
-	)
+                    logger.Log.Println(
+                        "HTTP ENRICHED:",
+                        hosts[i].IP,
+                        httpInfo.Port,
+                        httpInfo.Server,
+                        httpInfo.Title,
+                        httpInfo.Keywords,
+                    )
+                }
+            }
+        }
+    }
 
-	return hosts
+    logger.Log.Println(
+        "PORT ENRICHMENT FINISHED",
+    )
+
+    return hosts
 }

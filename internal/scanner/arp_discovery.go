@@ -171,3 +171,69 @@ func ARPDiscovery(
 
 	return arpHosts
 }
+
+
+
+func ARPResolve(ip string) string {
+
+	interfaces := GetInterfaces()
+
+	var iface *net.Interface
+
+	for _, i := range interfaces {
+
+		if i.Name == "" {
+			continue
+		}
+
+		found, err := net.InterfaceByName(i.Name)
+
+		if err != nil {
+			continue
+		}
+
+		if IsVirtualInterface(found.Name) {
+			continue
+		}
+
+		iface = found
+		break
+	}
+
+	if iface == nil {
+		return ""
+	}
+
+	client, err := arp.Dial(iface)
+
+	if err != nil {
+		return ""
+	}
+
+	defer client.Close()
+
+	addr, err := netip.ParseAddr(ip)
+
+	if err != nil {
+		return ""
+	}
+
+	err = client.SetReadDeadline(
+    time.Now().Add(
+        300 * time.Millisecond,
+    ),
+)
+
+	if err != nil {
+		return ""
+	}
+
+	mac, err := client.Resolve(addr)
+
+	if err != nil {
+		return ""
+	}
+
+	return mac.String()
+}
+

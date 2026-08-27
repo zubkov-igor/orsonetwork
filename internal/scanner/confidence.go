@@ -39,31 +39,6 @@ func CalculateConfidence(
 		score += 10
 	}
 
-	// Device fingerprint confidence
-
-	switch host.Type {
-
-	case models.DeviceRouter:
-		score += 15
-
-	case models.DeviceGateway:
-		score += 15
-
-	case models.DeviceComputer:
-		score += 10
-
-	case models.DeviceServer:
-		score += 15
-
-	case models.DeviceCamera:
-		score += 15
-
-	case models.DevicePrinter:
-		score += 15
-
-	case models.DeviceNAS:
-		score += 15
-	}
 
 	if score > 100 {
 		score = 100

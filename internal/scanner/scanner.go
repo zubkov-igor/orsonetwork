@@ -107,14 +107,61 @@ func (s *Scanner) Scan() []models.Network {
 			network.CIDR,
 		)
 
-		network.Hosts = DiscoverHosts(
-			network.CIDR,
-			iface.IP,
-		)
+		ips := HostsFromCIDR(
+	network.CIDR,
+)
+
+logger.Log.Println(
+	"HOST IPS GENERATED:",
+	len(ips),
+)
+
+network.Hosts = DiscoverHostsFull(
+    ips,
+    20,
+)
+
+logger.Log.Println(
+    "HOSTS DISCOVERY FULL FINISHED:",
+    len(network.Hosts),
+)
+
+network.Hosts = EnrichHosts(
+    network.Hosts,
+    iface,
+)
+
+logger.Log.Println(
+    "HOSTS ENRICHMENT FINISHED:",
+    len(network.Hosts),
+)
 
 		mdnsIPs := ProbeMDNS(
 			iface,
 		)
+
+		ssdpResponses := ProbeSSDP(iface)
+
+logger.Log.Println(
+    "SSDP RESPONSES:",
+    len(ssdpResponses),
+)
+
+for _, response := range ssdpResponses {
+
+    logger.Log.Println(
+        "SSDP DEVICE:",
+        response.IP,
+        "LOCATION:",
+        response.Location,
+        "SERVER:",
+        response.Server,
+        "ST:",
+        response.ST,
+        "USN:",
+        response.USN,
+    )
+}
 
 		logger.Log.Println(
 			"MDNS IPS:",
@@ -175,14 +222,6 @@ func (s *Scanner) Scan() []models.Network {
 			len(network.Hosts),
 		)
 
-		network.Hosts = EnrichHosts(
-			network.Hosts,
-			iface,
-		)
-		logger.Log.Println(
-			"HOSTS ENRICHED:",
-			len(network.Hosts),
-		)
 
 		networks = append(
 			networks,
@@ -216,89 +255,97 @@ func (s *Scanner) Topology() models.ScanResult {
 		networks,
 	)
 
-	pingResults := make(
-		map[string]models.Host,
+	logger.Log.Println(
+	"TOPOLOGY NODES:",
+	len(topology.Nodes),
+)
+
+for _, node := range topology.Nodes {
+
+	logger.Log.Println(
+		"TOPOLOGY NODE:",
+		node.IP,
+		"TYPE:",
+		node.Type,
+		"MAC:",
+		node.MAC,
 	)
-
-	for i := range topology.Nodes {
-
-		node := &topology.Nodes[i]
-
-		result := PingHost(
-			node.IP,
-			2*time.Second,
-		)
-
-		pingResults[node.IP] = result
-
-		node.Online = result.Online
-		node.RTT = result.RTT
-	}
+}
 
 	nodeIPs := make(map[string]string)
 
-for _, node := range topology.Nodes {
-    nodeIPs[node.ID] = node.IP
-}
+	for _, node := range topology.Nodes {
+		nodeIPs[node.ID] = node.IP
+	}
 
-for i := range topology.Links {
+	for i := range topology.Links {
 
-    ip := nodeIPs[topology.Links[i].To]
+		ip := nodeIPs[topology.Links[i].To]
 
-    result := pingResults[ip]
+		var result models.Host
 
-    if result.Online {
+		for _, node := range topology.Nodes {
 
-        latency :=
-            result.RTT.Seconds() * 1000
+			if node.IP == ip {
 
-        topology.Links[i].Latency = latency
+				result.Online = node.Online
+				result.RTT = node.RTT
 
-        switch {
+				break
+			}
+		}
 
-        case latency < 10:
-            topology.Links[i].Status = "good"
+		if result.Online {
 
-        case latency < 50:
-            topology.Links[i].Status = "warning"
+			latency :=
+				result.RTT.Seconds() * 1000
 
-        default:
-            topology.Links[i].Status = "critical"
-        }
+			topology.Links[i].Latency = latency
 
-    } else {
+			switch {
 
-        topology.Links[i].Latency = 0
+			case latency < 10:
+				topology.Links[i].Status = "good"
 
-        topology.Links[i].Status = "timeout"
-    }
-}
+			case latency < 50:
+				topology.Links[i].Status = "warning"
+
+			default:
+				topology.Links[i].Status = "critical"
+			}
+
+		} else {
+
+			topology.Links[i].Latency = 0
+			topology.Links[i].Status = "timeout"
+		}
+	}
 
 	for _, node := range topology.Nodes {
 
-    logger.Log.Println(
-        "FINAL NODE:",
-        node.IP,
-        "ONLINE:",
-        node.Online,
-        "RTT:",
-        node.RTT,
-    )
-}
+		logger.Log.Println(
+			"FINAL NODE:",
+			node.IP,
+			"ONLINE:",
+			node.Online,
+			"RTT:",
+			node.RTT,
+		)
+	}
 
-for _, link := range topology.Links {
+	for _, link := range topology.Links {
 
-    logger.Log.Println(
-        "FINAL LINK:",
-        link.From,
-        "->",
-        link.To,
-        "LATENCY:",
-        link.Latency,
-        "STATUS:",
-        link.Status,
-    )
-}
+		logger.Log.Println(
+			"FINAL LINK:",
+			link.From,
+			"->",
+			link.To,
+			"LATENCY:",
+			link.Latency,
+			"STATUS:",
+			link.Status,
+		)
+	}
 
 	return models.ScanResult{
 		Topology: topology,
@@ -306,3 +353,4 @@ for _, link := range topology.Links {
 		LastScan: time.Now().Unix(),
 	}
 }
+
