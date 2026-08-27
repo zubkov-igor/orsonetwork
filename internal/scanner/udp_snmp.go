@@ -10,10 +10,20 @@ import (
 )
 
 func ProbeSNMP(
-	ip string,
+    ip string,
 ) UDPProbeResult {
 
-	addr := ip + ":161"
+    probeStart := time.Now()
+
+    defer func() {
+        logger.Log.Println(
+            "SNMP PROBE DURATION:",
+            ip,
+            time.Since(probeStart),
+        )
+    }()
+
+    addr := ip + ":161"
 
 	logger.Log.Println(
 		"SNMP CONNECT:",
@@ -23,7 +33,7 @@ func ProbeSNMP(
 	conn, err := net.DialTimeout(
 		"udp",
 		addr,
-		2*time.Second,
+		500*time.Millisecond,
 	)
 
 	if err != nil {
@@ -87,7 +97,7 @@ func ProbeSNMP(
 
 	err = conn.SetReadDeadline(
 		time.Now().Add(
-			2 * time.Second,
+			500*time.Millisecond,
 		),
 	)
 

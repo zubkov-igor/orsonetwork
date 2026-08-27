@@ -94,26 +94,6 @@ func EnrichUDP(
 		}
 	}
 
-	// mDNS remains a separate discovery step
-	// for now, even though it is currently called
-	// from this enrichment stage.
-
-	mdnsHosts := ProbeMDNS(
-		iface,
-	)
-
-	logger.Log.Println(
-		"MDNS FOUND:",
-		len(mdnsHosts),
-	)
-
-	for _, ip := range mdnsHosts {
-
-		logger.Log.Println(
-			"MDNS HOST:",
-			ip,
-		)
-	}
 
 	logger.Log.Println(
 		"UDP ENRICHMENT FINISHED",

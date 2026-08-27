@@ -11,73 +11,77 @@ import (
 )
 
 func ScanPorts(
-	ip string,
+    ip string,
 ) []models.Port {
 
-	logger.Log.Println(
-		"PORT SCAN START:",
-		ip,
-	)
+    scanStart := time.Now()
 
-	const workers = 5
+    logger.Log.Println(
+        "PORT SCAN START:",
+        ip,
+    )
 
-	jobs := make(chan int)
-	results := make(chan models.Port)
+    const workers = 18
 
-	var wg sync.WaitGroup
+    jobs := make(chan int)
+    results := make(chan models.Port)
 
-	// Start workers.
+    var wg sync.WaitGroup
 
-	for i := 0; i < workers; i++ {
+    // Start workers.
 
-		wg.Add(1)
+    for i := 0; i < workers; i++ {
 
-		go scanPortWorker(
-			ip,
-			jobs,
-			results,
-			&wg,
-		)
-	}
+        wg.Add(1)
 
-	// Send ports to workers.
+        go scanPortWorker(
+            ip,
+            jobs,
+            results,
+            &wg,
+        )
+    }
 
-	go func() {
+    // Send ports to workers.
 
-		for _, port := range CommonPorts {
-			jobs <- port
-		}
+    go func() {
 
-		close(jobs)
+        for _, port := range CommonPorts {
+            jobs <- port
+        }
 
-	}()
+        close(jobs)
 
-	// Close results after all workers finish.
+    }()
 
-	go func() {
+    // Close results after all workers finish.
 
-		wg.Wait()
-		close(results)
+    go func() {
 
-	}()
+        wg.Wait()
+        close(results)
 
-	var ports []models.Port
+    }()
 
-	for port := range results {
+    var ports []models.Port
 
-		ports = append(
-			ports,
-			port,
-		)
-	}
+    for port := range results {
 
-	logger.Log.Println(
-		"PORT SCAN FINISHED:",
-		ip,
-		len(ports),
-	)
+        ports = append(
+            ports,
+            port,
+        )
+    }
 
-	return ports
+    logger.Log.Println(
+        "PORT SCAN FINISHED:",
+        ip,
+        len(ports),
+        "DURATION:",
+        time.Since(scanStart),
+    )
+
+    return ports
 }
 
 func scanPortWorker(

@@ -2,10 +2,16 @@ package scanner
 
 import (
 	"fmt"
+    "sync"
 
 	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 )
+
+type portScanResult struct {
+    index int
+    ports []models.Port
+}
 
 func EnrichPorts(
     hosts []models.Host,
@@ -15,18 +21,78 @@ func EnrichPorts(
         "PORT ENRICHMENT START",
     )
 
-    for i := range hosts {
+    const workers = 8
 
-    logger.Log.Println(
-        "PORT SCAN:",
-        hosts[i].IP,
-    )
+    type portScanResult struct {
+        index int
+        ports []models.Port
+    }
 
-    ports := ScanPorts(
-        hosts[i].IP,
-    )
+    jobs := make(chan int)
+    results := make(chan portScanResult)
 
-    hosts[i].Ports = ports
+    var wg sync.WaitGroup
+
+    // Start workers.
+
+    for i := 0; i < workers; i++ {
+
+        wg.Add(1)
+
+        go func() {
+
+            defer wg.Done()
+
+            for index := range jobs {
+
+                logger.Log.Println(
+                    "PORT SCAN:",
+                    hosts[index].IP,
+                )
+
+                ports := ScanPorts(
+                    hosts[index].IP,
+                )
+
+                results <- portScanResult{
+                    index: index,
+                    ports: ports,
+                }
+            }
+
+        }()
+    }
+
+    // Send hosts to workers.
+
+    go func() {
+
+        for i := range hosts {
+
+            jobs <- i
+        }
+
+        close(jobs)
+
+    }()
+
+    // Close results after workers finish.
+
+    go func() {
+
+        wg.Wait()
+        close(results)
+
+    }()
+
+    // Process results.
+
+    for result := range results {
+
+        i := result.index
+        ports := result.ports
+
+        hosts[i].Ports = ports
 
         for _, p := range ports {
 
