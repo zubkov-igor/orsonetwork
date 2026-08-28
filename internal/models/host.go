@@ -12,6 +12,8 @@ type Host struct {
 	Hostname string
 	Vendor   string
 
+	IsGateway bool
+
 	Ports []Port
 
 	HTTP []HTTPInfo

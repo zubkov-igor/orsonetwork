@@ -151,27 +151,26 @@ func IdentifyDevice(
 		}
 	}
 
-	// =========================
-	// IoT
-	// =========================
+	    // =========================
+    // IoT
+    // =========================
 
-	if containsAny(
-		vendor,
-		"shenzhen",
-		"esp",
-		"tuya",
-		"sonoff",
-	) {
-		return models.DeviceIdentification{
-			Type:       models.DeviceIoT,
-			Confidence: 50,
-		}
-	}
+    if containsAny(
+        vendor,
+        "esp",
+        "tuya",
+        "sonoff",
+    ) {
+        return models.DeviceIdentification{
+            Type:       models.DeviceIoT,
+            Confidence: 50,
+        }
+    }
 
-	return models.DeviceIdentification{
-		Type:       models.DeviceUnknown,
-		Confidence: 0,
-	}
+    return models.DeviceIdentification{
+        Type:       models.DeviceUnknown,
+        Confidence: 0,
+    }
 }
 
 

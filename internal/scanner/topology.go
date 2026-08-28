@@ -13,6 +13,7 @@
 
 package scanner
 
+import "OrsoNetwork/internal/logger"
 import "OrsoNetwork/internal/models"
 
 func BuildTopology(
@@ -49,6 +50,15 @@ if host.IP == network.Gateway {
 			if host.Hostname != "" {
 				label = host.Hostname
 			}
+
+			logger.Log.Println(
+    "TOPOLOGY HOST STATUS:",
+    host.IP,
+    "ONLINE:",
+    host.Online,
+    "TYPE:",
+    host.Type,
+)
 
 			topology.Nodes = append(
 				topology.Nodes,

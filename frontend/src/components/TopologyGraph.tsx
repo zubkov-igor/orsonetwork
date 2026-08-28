@@ -50,6 +50,21 @@ export default function TopologyGraph(
             animate: !compact,
             animationDuration: compact ? 0 : 300,
         }).run();
+
+            if (compact) {
+
+        roots.forEach((node) => {
+
+            const position = node.position();
+
+            node.position({
+                x: position.x,
+                y: position.y - 10,
+            });
+
+        });
+
+    }
     }
 
     onMount(() => {
@@ -134,16 +149,25 @@ export default function TopologyGraph(
     selector: "node",
     style: {
         "background-color": colorNode,
-        width: 70,
-        height: 70,
+
+        width: 18,
+        height: 18,
+
         label: "data(label)",
+
         color: colorLight,
-        "text-valign": "center",
+
+        "text-valign": "bottom",
         "text-halign": "center",
+
+        "text-margin-y": 6,
+
         "font-size": 11,
         "font-weight": "bold",
+
         "text-wrap": "wrap",
         "text-max-width": "80px",
+
         "border-width": 2,
         "border-color": colorNodeBorder,
     },
@@ -163,7 +187,7 @@ export default function TopologyGraph(
 
         "text-valign": "bottom",
         "text-halign": "center",
-        "text-margin-y": 10,
+        "text-margin-y": 5,
     },
 },
 
@@ -175,9 +199,9 @@ selector: 'node.compact[type = "gateway"]',
         "font-size": 8,
         "border-width": 2,
 
-        "text-valign": "bottom",
+        "text-valign": "top",
         "text-halign": "center",
-        "text-margin-y": 10,
+        "text-margin-y": -5,
     },
 },
 
@@ -217,17 +241,24 @@ selector: 'node.compact[type = "gateway"]',
 
                 // Gateway — крупный, сверху
                 {
-                    selector: 'node[type = "gateway"]',
-                    style: {
-                        "background-color": colorGateway,
-                        shape: "round-rectangle",
-                        width: 15,
-                        height: 15,
-                        "border-width": 3,
-                        "border-color": colorGatewayBorder,
-                        "font-size": 12,
-                    },
-                },
+    selector: 'node[type = "gateway"]',
+    style: {
+        "background-color": colorGateway,
+        shape: "round-rectangle",
+
+        width: 20,
+        height: 20,
+
+        "border-width": 3,
+        "border-color": colorGatewayBorder,
+
+        "font-size": 12,
+
+        "text-valign": "top",
+        "text-halign": "center",
+        "text-margin-y": -8,
+    },
+},
 
                 {
     selector: 'node.compact[type = "gateway"]',

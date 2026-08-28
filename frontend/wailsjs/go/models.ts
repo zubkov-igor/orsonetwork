@@ -127,6 +127,7 @@ export namespace models {
 	    MAC: string;
 	    Hostname: string;
 	    Vendor: string;
+	    IsGateway: boolean;
 	    Ports: Port[];
 	    HTTP: HTTPInfo[];
 	    MDNS: MDNSService[];
@@ -148,6 +149,7 @@ export namespace models {
 	        this.MAC = source["MAC"];
 	        this.Hostname = source["Hostname"];
 	        this.Vendor = source["Vendor"];
+	        this.IsGateway = source["IsGateway"];
 	        this.Ports = this.convertValues(source["Ports"], Port);
 	        this.HTTP = this.convertValues(source["HTTP"], HTTPInfo);
 	        this.MDNS = this.convertValues(source["MDNS"], MDNSService);

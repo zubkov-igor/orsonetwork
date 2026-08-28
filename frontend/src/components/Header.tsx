@@ -1,4 +1,7 @@
-import { createSignal } from "solid-js";
+import {
+    createSignal,
+    onCleanup,
+} from "solid-js";
 
 import { GetTopology } from "../../wailsjs/go/main/App";
 
@@ -15,6 +18,14 @@ createSignal(0);
 const [lastScan, setLastScan] =
 createSignal<number | null>(null);
 
+const [scanElapsed, setScanElapsed] =
+    createSignal(0);
+
+let scanTimer:
+    ReturnType<typeof setInterval> | undefined;
+
+let scanStartedAt = 0;
+
 export default function Header() {
 
 const handleScan = async () => {
@@ -24,6 +35,18 @@ const handleScan = async () => {
     }
 
     setScanning(true);
+
+    scanStartedAt = Date.now();
+
+setScanElapsed(0);
+
+scanTimer = setInterval(() => {
+
+    setScanElapsed(
+        Date.now() - scanStartedAt
+    );
+
+}, 100);
 
     try {
 
@@ -47,9 +70,22 @@ const handleScan = async () => {
 
     } finally {
 
-        setScanning(false);
+    if (scanTimer) {
+
+        clearInterval(scanTimer);
+
+        scanTimer = undefined;
     }
+
+    setScanning(false);
+}
 };
+onCleanup(() => {
+
+    if (scanTimer) {
+        clearInterval(scanTimer);
+    }
+});
 
 return (
     <header class="header">
@@ -106,11 +142,13 @@ return (
                         Scan duration:
                     </span>
 
-                    <strong class="header__stat-value">
-                        {scanDuration() > 0
-                            ? `${(scanDuration() / 1000).toFixed(1)}s`
-                            : "—"}
-                    </strong>
+                  <strong class="header__stat-value">
+    {scanning()
+        ? `${(scanElapsed() / 1000).toFixed(1)}s`
+        : scanDuration() > 0
+            ? `${(scanDuration() / 1000).toFixed(1)}s`
+            : "—"}
+</strong>
                 </div>
 
                 <div class="header__stat">

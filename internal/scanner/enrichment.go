@@ -124,6 +124,8 @@ func UpdateHostStatus(
     host *models.Host,
 ) {
 
+    // ICMP
+
     if host.Online {
 
         logger.Log.Println(
@@ -135,6 +137,24 @@ func UpdateHostStatus(
 
         return
     }
+
+    // ARP
+
+    if host.MAC != "" {
+
+        host.Online = true
+
+        logger.Log.Println(
+            "HOST STATUS:",
+            host.IP,
+            "ONLINE",
+            "REASON: ARP",
+        )
+
+        return
+    }
+
+    // TCP
 
     if len(host.Ports) > 0 {
 
@@ -150,6 +170,8 @@ func UpdateHostStatus(
         return
     }
 
+    // UDP
+
     if len(host.UDPServices) > 0 {
 
         host.Online = true
@@ -163,6 +185,8 @@ func UpdateHostStatus(
 
         return
     }
+
+    // HTTP
 
     if len(host.HTTP) > 0 {
 
@@ -181,11 +205,9 @@ func UpdateHostStatus(
     host.Online = false
 
     logger.Log.Println(
-    "HOST STATUS CHECK:",
-    host.IP,
-    "ICMP:", host.Online,
-    "TCP:", len(host.Ports),
-    "UDP:", len(host.UDPServices),
-    "HTTP:", len(host.HTTP),
-)
+        "HOST STATUS:",
+        host.IP,
+        "OFFLINE",
+        "REASON: NO RESPONSE",
+    )
 }

@@ -1,5 +1,6 @@
 import {
     createSignal,
+    createEffect,
     For,
     Show,
 } from "solid-js";
@@ -9,7 +10,7 @@ import {
     Monitor,
 } from "lucide-solid";
 
-    import {
+import {
     topology,
     selectedDevice,
     setSelectedDevice,
@@ -20,12 +21,14 @@ import Select from "../components/Select";
 
 export default function Devices() {
 
-
     const [search, setSearch] =
         createSignal("");
 
     const [typeFilter, setTypeFilter] =
         createSignal("all");
+
+    const [detailsTop, setDetailsTop] =
+        createSignal(0);
 
 
     const devices = () => {
@@ -34,32 +37,85 @@ export default function Devices() {
             topology()?.nodes ?? [];
 
 
-        return nodes.filter((node) => {
+        return nodes
+            .filter((node) => {
 
-            const text =
-                `${node.label}
-                ${node.ip}
-                ${node.mac ?? ""}
-                ${node.vendor ?? ""}`
-                .toLowerCase();
+                return (
+                    node.mac ||
+                    node.hostname ||
+                    node.vendor ||
+                    (node.type &&
+                        node.type !== "unknown")
+                );
+
+            })
+            .filter((node) => {
+
+                const text =
+                    `${node.label}
+                    ${node.ip}
+                    ${node.mac ?? ""}
+                    ${node.vendor ?? ""}`
+                    .toLowerCase();
 
 
-            return (
-                text.includes(
-                    search().toLowerCase()
-                )
-                &&
-                (
-                    typeFilter() === "all"
-                    ||
-                    node.type === typeFilter()
-                )
-            );
+                return (
+                    text.includes(
+                        search().toLowerCase()
+                    )
+                    &&
+                    (
+                        typeFilter() === "all"
+                        ||
+                        node.type === typeFilter()
+                    )
+                );
 
-        });
+            });
 
     };
 
+
+    let rowElements: Record<string, HTMLTableRowElement> = {};
+
+
+createEffect(() => {
+
+    const device =
+        selectedDevice();
+
+
+    if (!device) {
+
+        setDetailsTop(0);
+
+        return;
+    }
+
+
+    const row =
+        rowElements[device.id];
+
+
+    if (!row) {
+        return;
+    }
+
+
+    const offset =
+        50;
+
+
+    const top =
+        Math.max(
+            16,
+            row.offsetTop - offset
+        );
+
+
+    setDetailsTop(top);
+
+});
 
     return (
         <div class="devices">
@@ -80,226 +136,293 @@ export default function Devices() {
                     }
                 />
 
-<Select
-    value={typeFilter()}
-    options={[
-        {
-            value: "all",
-            label: "All",
-        },
-        {
-            value: "gateway",
-            label: "Gateway",
-        },
-        {
-            value: "host",
-            label: "Host",
-        },
-    ]}
-    onChange={setTypeFilter}
-/>
 
-           
-
-            </div>
-
-
-<div class="devices__layout">
-            <div class="devices__table-wrapper">
-
-                <table class="devices__table">
-
-                    <thead>
-                        <tr>
-                            <th>Status</th>
-                            <th>Type</th>
-                            <th>IP</th>
-                            <th>MAC</th>
-                            <th>Vendor</th>
-                            <th>Hostname</th>
-                        </tr>
-                    </thead>
-
-
-                    <tbody>
-
-                        <For each={devices()}>
-
-                            {(device) => (
-<tr
-    class="devices__row"
-    classList={{
-        selected:
-            selectedDevice()?.id === device.id
-    }}
-   onClick={() => {
-
-    if (
-        selectedDevice()?.id === device.id
-    ) {
-        setSelectedDevice(null);
-
-        return;
-    }
-
-    setSelectedDevice(device);}}>
-
-                                   <td>
-    <span
-        class={`device-status ${
-            device.online
-                ? "device-status--online"
-                : "device-status--offline"
-        }`}
-    >
-        {device.online
-            ? "● Online"
-            : "● Offline"}
-    </span>
-</td>
-
-
-                                    <td>
-                                        {device.type}
-                                    </td>
-
-
-                                    <td>
-                                        {device.ip}
-                                    </td>
-
-
-                                    <td>
-                                        {device.mac || "—"}
-                                    </td>
-
-
-                                    <td>
-                                        {device.vendor || "—"}
-                                    </td>
-
-                                    <td>
-                                        {device.hostname || "—"}
-                                    </td>
-
-
-                                </tr>
-
-                            )}
-
-                        </For>
-
-                    </tbody>
-
-                </table>
+                <Select
+                    value={typeFilter()}
+                    options={[
+                        {
+                            value: "all",
+                            label: "All",
+                        },
+                        {
+                            value: "gateway",
+                            label: "Gateway",
+                        },
+                        {
+                            value: "host",
+                            label: "Host",
+                        },
+                    ]}
+                    onChange={setTypeFilter}
+                />
 
             </div>
 
- <Show when={selectedDevice()}>
 
-        {(device) => (
-
-            <aside class="device-details">
-
-<div class="device-details__header">
-
-    {device().type === "gateway"
-        ? <Router size={24} />
-        : <Monitor size={24} />
-    }
-
-    <div>
-        <h2>
-            {device().type.toUpperCase()}
-        </h2>
-
-        <span class="device-details__ip">
-            {device().ip}
-        </span>
-    </div>
-
-</div>
- <div class="device-details__status">
-    <span
-        class={`device-status ${
-            device().online
-                ? "device-status--online"
-                : "device-status--offline"
-        }`}
-    >
-        {device().online
-            ? "● Online"
-            : "● Offline"}
-    </span>
-</div>
-
-<div class="device-details__section">
-
-    <h3>
-        Network
-    </h3>
-
-    <div class="device-details__row">
-        <span>Type</span>
-        <strong>
-            {device().type}
-        </strong>
-    </div>
-
-    <div class="device-details__row">
-        <span>IP</span>
-        <strong>
-            {device().ip}
-        </strong>
-    </div>
-
-    <div class="device-details__row">
-        <span>Latency</span>
-        <strong>
-            {device().online
-                ? `${(
-                    device().rtt / 1_000_000
-                ).toFixed(1)} ms`
-                : "—"}
-        </strong>
-    </div>
-
-</div>
+            <div class="devices__layout">
 
 
-<div class="device-details__section">
+                <div class="devices__table-wrapper">
 
-    <h3>
-        Hardware
-    </h3>
+                    <table class="devices__table">
 
-    <div class="device-details__row">
-        <span>MAC</span>
-        <strong>
-            {device().mac || "—"}
-        </strong>
-    </div>
+                        <thead>
 
-    <div class="device-details__row">
-        <span>Vendor</span>
-        <strong>
-            {device().vendor || "—"}
-        </strong>
-    </div>
+                            <tr>
+                                <th>Status</th>
+                                <th>Type</th>
+                                <th>IP</th>
+                                <th>MAC</th>
+                                <th>Vendor</th>
+                                <th>Hostname</th>
+                            </tr>
 
-</div>
+                        </thead>
 
 
+                        <tbody>
 
-            </aside>
+                            <For each={devices()}>
+
+                                {(device) => (
+
+                                    <tr
+                                        ref={(element) => {
+                                            rowElements[device.id] =
+                                                element;
+                                        }}
+
+                                        class="devices__row"
+
+                                        classList={{
+                                            selected:
+                                                selectedDevice()?.id ===
+                                                device.id
+                                        }}
+
+                                        onClick={() => {
+
+                                            if (
+                                                selectedDevice()?.id ===
+                                                device.id
+                                            ) {
+
+                                                setSelectedDevice(null);
+
+                                                return;
+                                            }
 
 
+                                            setSelectedDevice(device);
 
-        )}
+                                        }}
+                                    >
 
-    </Show>
+                                        <td>
+
+                                            <span
+                                                class={`device-status ${
+                                                    device.online
+                                                        ? "device-status--online"
+                                                        : "device-status--offline"
+                                                }`}
+                                            >
+                                                {device.online
+                                                    ? "● Online"
+                                                    : "● Offline"}
+                                            </span>
+
+                                        </td>
+
+
+                                        <td>
+                                            {device.type}
+                                        </td>
+
+
+                                        <td>
+                                            {device.ip}
+                                        </td>
+
+
+                                        <td>
+                                            {device.mac || "—"}
+                                        </td>
+
+
+                                        <td>
+                                            {device.vendor || "—"}
+                                        </td>
+
+
+                                        <td>
+                                            {device.hostname || "—"}
+                                        </td>
+
+                                    </tr>
+
+                                )}
+
+                            </For>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <Show when={selectedDevice()}>
+
+                    {(device) => (
+
+                        <aside
+                            class="device-details"
+                            style={{
+                                top:
+                                    `${detailsTop()}px`
+                            }}
+                        >
+
+                            <div class="device-details__header">
+
+                                {device().type === "gateway"
+                                    ? <Router size={24} />
+                                    : <Monitor size={24} />
+                                }
+
+
+                                <div>
+
+                                    <h2>
+                                        {device()
+                                            .type
+                                            .toUpperCase()}
+                                    </h2>
+
+
+                                    <span class="device-details__ip">
+                                        {device().ip}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="device-details__status">
+
+                                <span
+                                    class={`device-status ${
+                                        device().online
+                                            ? "device-status--online"
+                                            : "device-status--offline"
+                                    }`}
+                                >
+                                    {device().online
+                                        ? "● Online"
+                                        : "● Offline"}
+                                </span>
+
+                            </div>
+
+
+                            <div class="device-details__section">
+
+                                <h3>
+                                    Network
+                                </h3>
+
+
+                                <div class="device-details__row">
+
+                                    <span>
+                                        Type
+                                    </span>
+
+                                    <strong>
+                                        {device().type}
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="device-details__row">
+
+                                    <span>
+                                        IP
+                                    </span>
+
+                                    <strong>
+                                        {device().ip}
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="device-details__row">
+
+                                    <span>
+                                        Latency
+                                    </span>
+
+                                    <strong>
+                                        {device().online
+                                            ? `${(
+                                                device().rtt /
+                                                1_000_000
+                                            ).toFixed(1)} ms`
+                                            : "—"}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="device-details__section">
+
+                                <h3>
+                                    Hardware
+                                </h3>
+
+
+                                <div class="device-details__row">
+
+                                    <span>
+                                        MAC
+                                    </span>
+
+                                    <strong>
+                                        {device().mac || "—"}
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="device-details__row">
+
+                                    <span>
+                                        Vendor
+                                    </span>
+
+                                    <strong>
+                                        {device().vendor || "—"}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </aside>
+
+                    )}
+
+                </Show>
+
+            </div>
 
         </div>
-    </div>
     );
 }
+
