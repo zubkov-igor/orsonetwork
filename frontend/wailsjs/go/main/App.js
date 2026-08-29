@@ -5,3 +5,7 @@
 export function GetTopology() {
   return window['go']['main']['App']['GetTopology']();
 }
+
+export function UpdateScannerConfig(arg1) {
+  return window['go']['main']['App']['UpdateScannerConfig'](arg1);
+}

@@ -355,6 +355,36 @@ export namespace models {
 		    return a;
 		}
 	}
+	export class ScannerConfig {
+	    EnableICMP: boolean;
+	    EnableARP: boolean;
+	    EnableReverseDNS: boolean;
+	    EnableNetBIOS: boolean;
+	    EnableMDNS: boolean;
+	    EnableSSDP: boolean;
+	    EnableSNMP: boolean;
+	    EnableTCP: boolean;
+	    EnableUDP: boolean;
+	    Workers: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ScannerConfig(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.EnableICMP = source["EnableICMP"];
+	        this.EnableARP = source["EnableARP"];
+	        this.EnableReverseDNS = source["EnableReverseDNS"];
+	        this.EnableNetBIOS = source["EnableNetBIOS"];
+	        this.EnableMDNS = source["EnableMDNS"];
+	        this.EnableSSDP = source["EnableSSDP"];
+	        this.EnableSNMP = source["EnableSNMP"];
+	        this.EnableTCP = source["EnableTCP"];
+	        this.EnableUDP = source["EnableUDP"];
+	        this.Workers = source["Workers"];
+	    }
+	}
 	
 
 }

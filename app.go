@@ -34,3 +34,17 @@ func (a *App) GetTopology() models.ScanResult {
 
 	return topology
 }
+
+func (a *App) UpdateScannerConfig(
+    config models.ScannerConfig,
+) {
+
+    logger.Log.Println(
+        "NEW SCANNER CONFIG:",
+        config,
+    )
+
+    a.scanner.UpdateConfig(
+        config,
+    )
+}

@@ -7,12 +7,15 @@ import (
 	"OrsoNetwork/internal/models"
 )
 
-func discoverHostNew(ip string) models.Host {
+func discoverHostNew(
+    ip string,
+    config models.ScannerConfig,
+) models.Host {
 
-  host := models.Host{
-    IP: ip,
-  }
 
+    host := models.Host{
+        IP: ip,
+    }
   start := time.Now()
 
   // Ping
@@ -50,53 +53,56 @@ func discoverHostNew(ip string) models.Host {
     )
   }
 
-  // ARP
+ // ARP
 
-  stepStart = time.Now()
+if config.EnableARP {
 
-  mac := ARPResolve(ip)
+    stepStart = time.Now()
 
-  arpDuration := time.Since(stepStart)
+    mac := ARPResolve(ip)
 
-  if arpDuration > 100*time.Millisecond {
+    arpDuration := time.Since(stepStart)
 
-    logger.Log.Println(
-      "DISCOVERY SLOW:",
-      ip,
-      "ARP:",
-      arpDuration,
-    )
-  }
+    if arpDuration > 100*time.Millisecond {
 
-  if mac != "" {
+        logger.Log.Println(
+            "DISCOVERY SLOW:",
+            ip,
+            "ARP:",
+            arpDuration,
+        )
+    }
 
-    host.MAC = mac
+    if mac != "" {
 
-    host.Vendor = LookupVendor(mac)
+        host.MAC = mac
 
-    host.Sources = append(
-        host.Sources,
-        models.DiscoverySource{
-            Type:  models.DiscoveryARP,
-            Value: mac,
-        },
-    )
-
-    if host.Vendor != "" && host.Vendor != "Unknown" {
+        host.Vendor = LookupVendor(mac)
 
         host.Sources = append(
             host.Sources,
             models.DiscoverySource{
-                Type:  models.DiscoveryOUI,
-                Value: host.Vendor,
+                Type:  models.DiscoveryARP,
+                Value: mac,
             },
         )
+
+        if host.Vendor != "" && host.Vendor != "Unknown" {
+
+            host.Sources = append(
+                host.Sources,
+                models.DiscoverySource{
+                    Type:  models.DiscoveryOUI,
+                    Value: host.Vendor,
+                },
+            )
+        }
     }
 }
 
 // NetBIOS
 
-if result.Online {
+if result.Online && config.EnableNetBIOS {
 
     stepStart = time.Now()
 
@@ -132,43 +138,45 @@ if result.Online {
         }
 
         if netbios.MAC != "" && host.MAC == "" {
-
             host.MAC = netbios.MAC
         }
     }
 }
 
-  // Reverse DNS
 
-  stepStart = time.Now()
+// Reverse DNS
 
-  hostname := LookupReverseDNS(ip)
+if config.EnableReverseDNS {
 
-  dnsDuration := time.Since(stepStart)
+    stepStart = time.Now()
 
-  if dnsDuration > 100*time.Millisecond {
+    hostname := LookupReverseDNS(ip)
 
-    logger.Log.Println(
-      "DISCOVERY SLOW:",
-      ip,
-      "REVERSE DNS:",
-      dnsDuration,
-    )
-  }
+    dnsDuration := time.Since(stepStart)
 
-  if hostname != "" && host.Hostname == "" {
+    if dnsDuration > 100*time.Millisecond {
 
-    host.Hostname = hostname
+        logger.Log.Println(
+            "DISCOVERY SLOW:",
+            ip,
+            "REVERSE DNS:",
+            dnsDuration,
+        )
+    }
 
-    host.Sources = append(
-      host.Sources,
-      models.DiscoverySource{
-        Type:  models.DiscoveryReverseDNS,
-        Value: hostname,
-      },
-    )
-  }
+    if hostname != "" && host.Hostname == "" {
 
+        host.Hostname = hostname
+
+        host.Sources = append(
+            host.Sources,
+            models.DiscoverySource{
+                Type:  models.DiscoveryReverseDNS,
+                Value: hostname,
+            },
+        )
+    }
+}
   totalDuration := time.Since(start)
 
   if totalDuration > 1*time.Second {

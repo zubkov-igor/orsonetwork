@@ -3,3 +3,5 @@
 import {models} from '../models';
 
 export function GetTopology():Promise<models.ScanResult>;
+
+export function UpdateScannerConfig(arg1:models.ScannerConfig):Promise<void>;

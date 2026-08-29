@@ -15,27 +15,43 @@ import (
 // Every step is delegated to a dedicated module.
 
 type Scanner struct {
+    Config models.ScannerConfig
 }
 
 func New() *Scanner {
-	return &Scanner{}
+
+    return &Scanner{
+        Config: DefaultScannerConfig(),
+    }
 }
 
-// Scan performs full network discovery.
-//
-// Pipeline:
-//
-// Interfaces
-//     ↓
-// Gateways
-//     ↓
-// Networks
-//     ↓
-// Host discovery
-//     ↓
-// Host enrichment
-//
-// Returns all discovered networks.
+
+func DefaultScannerConfig() models.ScannerConfig {
+
+    return models.ScannerConfig{
+
+        EnableICMP: true,
+
+        EnableARP: true,
+
+        EnableReverseDNS: true,
+
+        EnableNetBIOS: true,
+
+        EnableMDNS: true,
+
+        EnableSSDP: true,
+
+        EnableSNMP: false,
+
+        EnableTCP: true,
+
+        EnableUDP: true,
+
+        Workers: 20,
+    }
+}
+
 
 func (s *Scanner) Scan() []models.Network {
 
@@ -118,7 +134,8 @@ logger.Log.Println(
 
 network.Hosts = DiscoverHostsFull(
     ips,
-    20,
+    s.Config.Workers,
+    s.Config,
 )
 
 logger.Log.Println(
@@ -136,11 +153,15 @@ logger.Log.Println(
     len(network.Hosts),
 )
 
-		mdnsIPs := ProbeMDNS(
-			iface,
-		)
+var ssdpResponses []SSDPResponse
 
-		ssdpResponses := ProbeSSDP(iface)
+if s.Config.EnableSSDP {
+
+    ssdpResponses = ProbeSSDP(
+        iface,
+    )
+}
+
 
 logger.Log.Println(
     "SSDP RESPONSES:",
@@ -163,11 +184,20 @@ for _, response := range ssdpResponses {
     )
 }
 
-		logger.Log.Println(
-			"MDNS IPS:",
-			mdnsIPs,
-		)
 
+var mdnsIPs []string
+
+if s.Config.EnableMDNS {
+
+    mdnsIPs = ProbeMDNS(
+        iface,
+    )
+}
+
+logger.Log.Println(
+    "MDNS IPS:",
+    mdnsIPs,
+)
 		// Merge mDNS discovered hosts
 		// with hosts discovered by ICMP.
 
@@ -231,19 +261,6 @@ for _, response := range ssdpResponses {
 
 	return networks
 }
-
-// Topology builds a graph representation
-// of the discovered network.
-//
-// It performs:
-//
-// Scan()
-//     ↓
-// BuildTopology()
-//     ↓
-// Ping every node
-//     ↓
-// Update link latency and status
 
 func (s *Scanner) Topology() models.ScanResult {
 

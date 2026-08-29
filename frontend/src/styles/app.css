@@ -385,11 +385,11 @@
     height: 700px;
     background-color: var(--color-back);
     border: 1px solid var(--color-border);
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
 .topology-graph--compact {
-    height: 200px;
+    height: 220px;
 }
 
 
@@ -749,4 +749,146 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+
+/* =============================================
+    Settings
+   ============================================= */
+
+
+.settings {
+    color: var(--color-light);
+}
+
+
+.settings__section {
+
+    background:
+        var(--color-block);
+
+    border:
+        1px solid var(--color-border);
+
+    border-radius:
+        8px;
+
+    padding:
+        1rem;
+
+    margin-bottom:
+        1rem;
+}
+
+
+.settings__section h2 {
+
+    margin-top:
+        0;
+
+    font-size:
+        1.1rem;
+
+    color:
+        var(--color-light);
+}
+
+
+.settings__row {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    padding:
+        0.7rem 0;
+
+    border-bottom:
+        1px solid var(--color-border);
+
+}
+
+
+.settings__row:last-child {
+
+    border-bottom:
+        none;
+}
+
+
+.settings__row span {
+
+    color:
+        var(--color-muted);
+
+}
+
+
+.settings__row input[type="checkbox"] {
+
+    width:
+        18px;
+
+    height:
+        18px;
+
+}
+
+
+.settings__row input[type="number"] {
+
+    width:
+        80px;
+
+    padding:
+        0.4rem;
+
+    background:
+        var(--color-dark);
+
+    border:
+        1px solid var(--color-border);
+
+    border-radius:
+        6px;
+
+    color:
+        var(--color-light);
+
+}
+
+
+.settings button {
+
+    margin-top:
+        0.5rem;
+
+    padding:
+        0.6rem 1.5rem;
+
+    background:
+        var(--color-accent);
+
+    border:
+        none;
+
+    border-radius:
+        6px;
+
+    color:
+        white;
+
+    cursor:
+        pointer;
+
+}
+
+.settings__saved {
+    margin-top: 10px;
+    font-size: 14px;
 }
