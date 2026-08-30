@@ -1,0 +1,12 @@
+{
+    "enable_icmp": true,
+    "enable_arp": false,
+    "enable_reverse_dns": false,
+    "enable_netbios": false,
+    "enable_mdns": false,
+    "enable_ssdp": false,
+    "enable_snmp": false,
+    "enable_tcp": false,
+    "enable_udp": false,
+    "workers": 99
+}

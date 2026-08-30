@@ -1,30 +1,37 @@
 import {
     createSignal,
+    onMount,
 } from "solid-js";
 
 import {
+    GetScannerConfig,
     UpdateScannerConfig,
 } from "../../wailsjs/go/main/App";
 
 
 export default function Settings() {
 
-const [settings, setSettings] = createSignal({
-    EnableICMP: true,
-    EnableARP: true,
-    EnableReverseDNS: true,
-    EnableNetBIOS: true,
-    EnableMDNS: true,
-    EnableSSDP: true,
-    EnableSNMP: true,
+    const [settings, setSettings] = createSignal({
+        enable_icmp: true,
+        enable_arp: true,
+        enable_reverse_dns: true,
+        enable_netbios: true,
+        enable_mdns: true,
+        enable_ssdp: true,
+        enable_snmp: false,
+        enable_tcp: true,
+        enable_udp: true,
+        workers: 20,
+    });
 
-    EnableTCP: true,
-    EnableUDP: true,
+    const [saved, setSaved] = createSignal(false);
 
-    Workers: 20,
-});
+    onMount(async () => {
 
-const [saved, setSaved] = createSignal(false);
+        const config = await GetScannerConfig();
+
+        setSettings(config);
+    });
 
 function updateSetting(
     key: string,
@@ -35,7 +42,7 @@ function updateSetting(
         [key]: value,
     });
 }
-   function saveSettings() {
+function saveSettings() {
 
     UpdateScannerConfig(
         settings()
@@ -48,7 +55,6 @@ function updateSetting(
         3000
     );
 }
-
     return (
         <div class="settings">
 
@@ -69,10 +75,10 @@ function updateSetting(
 
                     <input
     type="checkbox"
-    checked={settings().EnableICMP}
+    checked={settings().enable_icmp}
     onChange={(e) =>
         updateSetting(
-            "EnableICMP",
+            "enable_icmp",
             e.currentTarget.checked
         )
     }
@@ -88,10 +94,10 @@ function updateSetting(
 
     <input
         type="checkbox"
-        checked={settings().EnableARP}
+        checked={settings().enable_arp}
         onChange={(e) =>
             updateSetting(
-                "EnableARP",
+                "enable_arp",
                 e.currentTarget.checked
             )
         }
@@ -105,10 +111,10 @@ function updateSetting(
 
                     <input
     type="checkbox"
-    checked={settings().EnableReverseDNS}
+    checked={settings().enable_reverse_dns}
     onChange={(e) =>
         updateSetting(
-            "EnableReverseDNS",
+            "enable_reverse_dns",
             e.currentTarget.checked
         )
     }
@@ -123,10 +129,10 @@ function updateSetting(
 
                     <input
     type="checkbox"
-    checked={settings().EnableNetBIOS}
+    checked={settings().enable_netbios}
     onChange={(e) =>
         updateSetting(
-            "EnableNetBIOS",
+            "enable_netbios",
             e.currentTarget.checked
         )
     }
@@ -141,10 +147,10 @@ function updateSetting(
 
     <input
         type="checkbox"
-        checked={settings().EnableMDNS}
+        checked={settings().enable_mdns}
         onChange={(e) =>
             updateSetting(
-                "EnableMDNS",
+                "enable_mdns",
                 e.currentTarget.checked
             )
         }
@@ -161,10 +167,10 @@ function updateSetting(
 
     <input
         type="checkbox"
-        checked={settings().EnableSSDP}
+        checked={settings().enable_ssdp}
         onChange={(e) =>
             updateSetting(
-                "EnableSSDP",
+                "enable_ssdp",
                 e.currentTarget.checked
             )
         }
@@ -180,10 +186,10 @@ function updateSetting(
 
     <input
         type="checkbox"
-        checked={settings().EnableSNMP}
+        checked={settings().enable_snmp}
         onChange={(e) =>
             updateSetting(
-                "EnableSNMP",
+                "enable_snmp",
                 e.currentTarget.checked
             )
         }
@@ -199,10 +205,10 @@ function updateSetting(
 
     <input
         type="checkbox"
-        checked={settings().EnableTCP}
+        checked={settings().enable_tcp}
         onChange={(e) =>
             updateSetting(
-                "EnableTCP",
+                "enable_tcp",
                 e.currentTarget.checked
             )
         }
@@ -218,10 +224,10 @@ function updateSetting(
 
     <input
         type="checkbox"
-        checked={settings().EnableUDP}
+        checked={settings().enable_udp}
         onChange={(e) =>
             updateSetting(
-                "EnableUDP",
+                "enable_udp",
                 e.currentTarget.checked
             )
         }
@@ -246,10 +252,11 @@ function updateSetting(
 
                 <input
     type="number"
-    value={settings().Workers}
+    min="1"
+    value={settings().workers}
     onInput={(e) =>
         updateSetting(
-            "Workers",
+            "workers",
             Number(e.currentTarget.value)
         )
     }

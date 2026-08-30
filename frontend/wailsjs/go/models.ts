@@ -356,16 +356,16 @@ export namespace models {
 		}
 	}
 	export class ScannerConfig {
-	    EnableICMP: boolean;
-	    EnableARP: boolean;
-	    EnableReverseDNS: boolean;
-	    EnableNetBIOS: boolean;
-	    EnableMDNS: boolean;
-	    EnableSSDP: boolean;
-	    EnableSNMP: boolean;
-	    EnableTCP: boolean;
-	    EnableUDP: boolean;
-	    Workers: number;
+	    enable_icmp: boolean;
+	    enable_arp: boolean;
+	    enable_reverse_dns: boolean;
+	    enable_netbios: boolean;
+	    enable_mdns: boolean;
+	    enable_ssdp: boolean;
+	    enable_snmp: boolean;
+	    enable_tcp: boolean;
+	    enable_udp: boolean;
+	    workers: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new ScannerConfig(source);
@@ -373,16 +373,16 @@ export namespace models {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.EnableICMP = source["EnableICMP"];
-	        this.EnableARP = source["EnableARP"];
-	        this.EnableReverseDNS = source["EnableReverseDNS"];
-	        this.EnableNetBIOS = source["EnableNetBIOS"];
-	        this.EnableMDNS = source["EnableMDNS"];
-	        this.EnableSSDP = source["EnableSSDP"];
-	        this.EnableSNMP = source["EnableSNMP"];
-	        this.EnableTCP = source["EnableTCP"];
-	        this.EnableUDP = source["EnableUDP"];
-	        this.Workers = source["Workers"];
+	        this.enable_icmp = source["enable_icmp"];
+	        this.enable_arp = source["enable_arp"];
+	        this.enable_reverse_dns = source["enable_reverse_dns"];
+	        this.enable_netbios = source["enable_netbios"];
+	        this.enable_mdns = source["enable_mdns"];
+	        this.enable_ssdp = source["enable_ssdp"];
+	        this.enable_snmp = source["enable_snmp"];
+	        this.enable_tcp = source["enable_tcp"];
+	        this.enable_udp = source["enable_udp"];
+	        this.workers = source["workers"];
 	    }
 	}
 	

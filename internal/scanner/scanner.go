@@ -7,12 +7,6 @@ import (
 	"OrsoNetwork/internal/models"
 )
 
-// Scanner is the main orchestrator.
-//
-// It coordinates the entire discovery process
-// but does not implement discovery itself.
-//
-// Every step is delegated to a dedicated module.
 
 type Scanner struct {
     Config models.ScannerConfig
@@ -20,9 +14,41 @@ type Scanner struct {
 
 func New() *Scanner {
 
-    return &Scanner{
-        Config: DefaultScannerConfig(),
+    config, err := LoadConfig()
+
+    if err != nil {
+
+        logger.Log.Println(
+            "CONFIG LOAD FAILED:",
+            err,
+        )
+
+        config = DefaultScannerConfig()
     }
+
+    logger.Log.Println(
+        "SCANNER CONFIG LOADED:",
+        config,
+    )
+
+    return &Scanner{
+        Config: config,
+    }
+}
+
+func (s *Scanner) UpdateConfig(
+    config models.ScannerConfig,
+) error {
+
+    s.Config = config
+
+    return SaveConfig(
+        config,
+    )
+}
+
+func (s *Scanner) GetConfig() models.ScannerConfig {
+    return s.Config
 }
 
 

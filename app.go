@@ -37,14 +37,18 @@ func (a *App) GetTopology() models.ScanResult {
 
 func (a *App) UpdateScannerConfig(
     config models.ScannerConfig,
-) {
+) error {
 
     logger.Log.Println(
         "NEW SCANNER CONFIG:",
         config,
     )
 
-    a.scanner.UpdateConfig(
+    return a.scanner.UpdateConfig(
         config,
     )
+}
+
+func (a *App) GetScannerConfig() models.ScannerConfig {
+    return a.scanner.GetConfig()
 }
