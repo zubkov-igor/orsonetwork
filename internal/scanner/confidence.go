@@ -3,68 +3,68 @@ package scanner
 import "OrsoNetwork/internal/models"
 
 func CalculateConfidence(
-    host models.Host,
+	host models.Host,
 ) int {
 
-    score := 0
+	score := 0
 
-    for _, source := range host.Sources {
+	for _, source := range host.Sources {
 
-        switch source.Type {
+		switch source.Type {
 
-        case models.DiscoveryARP:
-            score += 20
+		case models.DiscoveryARP:
+			score += 20
 
-        case models.DiscoveryReverseDNS:
-            score += 20
+		case models.DiscoveryReverseDNS:
+			score += 20
 
-        case models.DiscoveryNetBIOS:
-            score += 30
+		case models.DiscoveryNetBIOS:
+			score += 30
 
-        case models.DiscoveryMDNS:
-            score += 25
-        }
-    }
+		case models.DiscoveryMDNS:
+			score += 25
+		}
+	}
 
-    // MAC address found
+	// MAC address found
 
-    if host.MAC != "" {
-        score += 10
-    }
+	if host.MAC != "" {
+		score += 10
+	}
 
-    // Vendor found
+	// Vendor found
 
-    if host.Vendor != "" {
-        score += 15
-    }
+	if host.Vendor != "" {
+		score += 15
+	}
 
-    // Hostname found
+	// Hostname found
 
-    if host.Hostname != "" {
-        score += 15
-    }
+	if host.Hostname != "" {
+		score += 15
+	}
 
-    // Open ports found
+	// Open ports found
 
-    if len(host.Ports) > 0 {
-        score += 10
-    }
+	if len(host.Ports) > 0 {
+		score += 10
+	}
 
-    // HTTP information found
+	// HTTP information found
 
-    if len(host.HTTP) > 0 {
-        score += 10
-    }
+	if len(host.HTTP) > 0 {
+		score += 10
+	}
 
-    // UDP service found
+	// UDP service found
 
-    if len(host.UDPServices) > 0 {
-        score += 10
-    }
+	if len(host.UDPServices) > 0 {
+		score += 10
+	}
 
-    if score > 100 {
-        score = 100
-    }
+	if score > 100 {
+		score = 100
+	}
 
-    return score
+	return score
 }

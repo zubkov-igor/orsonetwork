@@ -84,16 +84,11 @@ func ScanHTTP(ip string, port int) models.HTTPInfo {
 			match[1],
 		)
 
-		logger.Log.Println(
+		logger.Debug(
 			"HTTP SCRIPT:",
 			match[1],
 		)
 	}
-
-	logger.Log.Println(
-		"HTTP HTML SAMPLE:",
-		html[:min(len(html), 500)],
-	)
 
 	start := strings.Index(
 		lowerHTML,
@@ -105,13 +100,13 @@ func ScanHTTP(ip string, port int) models.HTTPInfo {
 		"</title>",
 	)
 
-	logger.Log.Println(
+	logger.Debug(
 		"TITLE INDEX:",
 		start,
 		end,
 	)
 
-	logger.Log.Println(
+	logger.Debug(
 		"HAS TITLE:",
 		strings.Contains(
 			lowerHTML,
@@ -119,7 +114,7 @@ func ScanHTTP(ip string, port int) models.HTTPInfo {
 		),
 	)
 
-	logger.Log.Println(
+	logger.Debug(
 		"boardtype:",
 		strings.Contains(lowerHTML, "boardtype"),
 	)
@@ -130,8 +125,8 @@ func ScanHTTP(ip string, port int) models.HTTPInfo {
 
 		titleRaw := html[start+7 : end]
 
-		logger.Log.Printf(
-			"TITLE RAW: %q",
+		logger.Debug(
+			"TITLE RAW:",
 			titleRaw,
 		)
 
@@ -139,7 +134,7 @@ func ScanHTTP(ip string, port int) models.HTTPInfo {
 			strings.TrimSpace(titleRaw)
 	}
 
-	logger.Log.Println(
+	logger.Info(
 		"HTTP FOUND:",
 		ip,
 		port,

@@ -15,14 +15,7 @@ const sortedNodes = createMemo(() => {
     return [
         ...(topology()?.nodes || [])
     ]
-        .filter((node) => {
-    return (
-        node.mac ||
-        node.hostname ||
-        node.vendor ||
-        (node.type && node.type !== "unknown")
-    );
-})
+        .filter((node) => node.online)
         .sort((a, b) => {
 
             const aParts = a.ip.split(".").map(Number);

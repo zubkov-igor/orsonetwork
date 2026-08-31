@@ -15,7 +15,21 @@ var assets embed.FS
 
 func main() {
 
-	logger.Init()
+    logger.Init()
+
+    // Log levels:
+    //
+    // LevelDebug — подробная информация для разработки и отладки.
+    // LevelInfo  — основные события и результаты работы программы.
+    // LevelWarn  — потенциальные проблемы, которые не остановили работу.
+    // LevelError — ошибки, из-за которых операция не выполнена.
+    //
+    // Current level:
+
+    logger.SetLevel(
+        logger.LevelInfo,
+    )
+
 
 	app := NewApp()
 

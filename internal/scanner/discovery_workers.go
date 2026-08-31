@@ -3,88 +3,130 @@ package scanner
 import (
 	"sync"
 
-    "OrsoNetwork/internal/logger"
+	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 )
 
-func discoveryWorker(
-    jobs <-chan string,
-    results chan<- models.Host,
-    wg *sync.WaitGroup,
-    config models.ScannerConfig,
+func udpDiscoveryWorker(
+	jobs <-chan UDPDiscoveryJob,
+	results chan<- UDPDiscoveryResult,
+	iface models.Interface,
+	config models.ScannerConfig,
+	wg *sync.WaitGroup,
 ) {
 
-    defer wg.Done()
+	defer wg.Done()
 
-    for ip := range jobs {
+	for job := range jobs {
 
-        host := discoverHostNew(
-            ip,
-            config,
-        )
+		services := DiscoverUDP(
+			job.IP,
+			iface,
+			config,
+		)
 
-        results <- host
-    }
+		results <- UDPDiscoveryResult{
+			Index:    job.Index,
+			Services: services,
+		}
+	}
 }
 
 func DiscoverHostsFull(
-    ips []string,
-    workers int,
-    config models.ScannerConfig,
+	ips []string,
+	workers int,
+	config models.ScannerConfig,
 ) []models.Host {
 
-    if workers <= 0 {
-        workers = 1
-    }
+	if workers <= 0 {
+		workers = 1
+	}
 
-    logger.Log.Println(
-    "DISCOVERY WORKERS:",
-    workers,
-)
+	logger.Info(
+		"DISCOVERY WORKERS:",
+		workers,
+	)
 
-    jobs := make(chan string)
-    results := make(chan models.Host)
+	jobs := make(chan string)
+	results := make(chan models.Host)
 
-    var wg sync.WaitGroup
+	var wg sync.WaitGroup
 
-    for i := 0; i < workers; i++ {
+	for i := 0; i < workers; i++ {
 
-        wg.Add(1)
+		wg.Add(1)
 
-        go discoveryWorker(
-            jobs,
-            results,
-            &wg,
-            config,
-        )
-    }
+		go discoveryWorker(
+			jobs,
+			results,
+			&wg,
+			config,
+		)
+	}
 
-    go func() {
+	go func() {
 
-        for _, ip := range ips {
-            jobs <- ip
-        }
+		for _, ip := range ips {
+			jobs <- ip
+		}
 
-        close(jobs)
+		close(jobs)
 
-    }()
+	}()
 
-    go func() {
+	go func() {
 
-        wg.Wait()
-        close(results)
+		wg.Wait()
+		close(results)
 
-    }()
+	}()
 
-    var hosts []models.Host
+	var hosts []models.Host
 
-    for host := range results {
+	for host := range results {
 
-        hosts = append(
-            hosts,
-            host,
-        )
-    }
+		logger.Debug(
+			"DISCOVERY RESULT:",
+			host.IP,
+			"ONLINE:",
+			host.Online,
+			"MAC:",
+			host.MAC,
+		)
 
-    return hosts
+		if !IsHostDiscovered(host) {
+			continue
+		}
+
+		hosts = append(hosts, host)
+	}
+
+	return hosts
+}
+
+func IsHostDiscovered(
+	host models.Host,
+) bool {
+
+	if host.Online {
+		return true
+	}
+
+	if host.MAC != "" {
+		return true
+	}
+
+	if len(host.Ports) > 0 {
+		return true
+	}
+
+	if len(host.UDPServices) > 0 {
+		return true
+	}
+
+	if len(host.HTTP) > 0 {
+		return true
+	}
+
+	return false
 }

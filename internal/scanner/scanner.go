@@ -7,77 +7,73 @@ import (
 	"OrsoNetwork/internal/models"
 )
 
-
 type Scanner struct {
-    Config models.ScannerConfig
+	Config models.ScannerConfig
 }
 
 func New() *Scanner {
 
-    config, err := LoadConfig()
+	config, err := LoadConfig()
 
-    if err != nil {
+	if err != nil {
 
-        logger.Log.Println(
-            "CONFIG LOAD FAILED:",
-            err,
-        )
+		logger.Error(
+			"CONFIG LOAD FAILED:",
+			err,
+		)
 
-        config = DefaultScannerConfig()
-    }
+		config = DefaultScannerConfig()
+	}
 
-    logger.Log.Println(
-        "SCANNER CONFIG LOADED:",
-        config,
-    )
-
-    return &Scanner{
-        Config: config,
-    }
+	logger.Debug(
+		"SCANNER CONFIG LOADED:",
+		config,
+	)
+	return &Scanner{
+		Config: config,
+	}
 }
 
 func (s *Scanner) UpdateConfig(
-    config models.ScannerConfig,
+	config models.ScannerConfig,
 ) error {
 
-    s.Config = config
+	s.Config = config
 
-    return SaveConfig(
-        config,
-    )
+	return SaveConfig(
+		config,
+	)
 }
 
 func (s *Scanner) GetConfig() models.ScannerConfig {
-    return s.Config
+	return s.Config
 }
-
 
 func DefaultScannerConfig() models.ScannerConfig {
 
-    return models.ScannerConfig{
+	return models.ScannerConfig{
 
-        EnableICMP: true,
+		EnableICMP: true,
 
-        EnableARP: true,
+		EnableARP: true,
 
-        EnableReverseDNS: true,
+		EnableReverseDNS: true,
 
-        EnableNetBIOS: true,
+		EnableNetBIOS: true,
 
-        EnableMDNS: true,
+		EnableMDNS: true,
 
-        EnableSSDP: true,
+		EnableSSDP: true,
 
-        EnableSNMP: false,
+		EnableSNMP: false,
 
-        EnableTCP: true,
+		EnableTCP: true,
 
-        EnableUDP: true,
+		EnableUDP: true,
 
-        Workers: 20,
-    }
+		Workers: 20,
+	}
 }
-
 
 func (s *Scanner) Scan() []models.Network {
 
@@ -95,25 +91,25 @@ func (s *Scanner) Scan() []models.Network {
 
 	interfaces := GetInterfaces()
 
-	logger.Log.Println(
+	logger.Info(
 		"SCANNER INTERFACES:",
 		len(interfaces),
 	)
 
 	gateways := GetGateways()
 
-	logger.Log.Println(
+	logger.Info(
 		"SCANNER GATEWAYS:",
 		len(gateways),
 	)
 
-	logger.Log.Println(
+	logger.Debug(
 		"SCANNER LOOP START",
 	)
 
 	for _, iface := range interfaces {
 
-		logger.Log.Println(
+		logger.Debug(
 			"PROCESS INTERFACE:",
 			iface.Name,
 		)
@@ -125,7 +121,7 @@ func (s *Scanner) Scan() []models.Network {
 
 		if gw == nil {
 
-			logger.Log.Println(
+			logger.Warn(
 				"NO GATEWAY FOR INTERFACE:",
 				iface.Name,
 			)
@@ -133,7 +129,7 @@ func (s *Scanner) Scan() []models.Network {
 			continue
 		}
 
-		logger.Log.Println(
+		logger.Info(
 			"GATEWAY FOUND:",
 			iface.Name,
 			gw.IP,
@@ -144,86 +140,85 @@ func (s *Scanner) Scan() []models.Network {
 			gw,
 		)
 
-		logger.Log.Println(
+		logger.Info(
 			"NETWORK BUILT:",
 			network.CIDR,
 		)
 
 		ips := HostsFromCIDR(
-	network.CIDR,
-)
+			network.CIDR,
+		)
 
-logger.Log.Println(
-	"HOST IPS GENERATED:",
-	len(ips),
-)
+		logger.Info(
+			"HOST IPS GENERATED:",
+			len(ips),
+		)
 
-network.Hosts = DiscoverHostsFull(
-    ips,
-    s.Config.Workers,
-    s.Config,
-)
+		network.Hosts = DiscoverHostsFull(
+			ips,
+			s.Config.Workers,
+			s.Config,
+		)
 
-logger.Log.Println(
-    "HOSTS DISCOVERY FULL FINISHED:",
-    len(network.Hosts),
-)
+		logger.Info(
+			"HOSTS ENRICHMENT FINISHED:",
+			len(network.Hosts),
+		)
 
-network.Hosts = EnrichHosts(
-    network.Hosts,
-    iface,
-)
+		logger.Info(
+			"HOSTS DISCOVERY FULL FINISHED:",
+			len(network.Hosts),
+		)
 
-logger.Log.Println(
-    "HOSTS ENRICHMENT FINISHED:",
-    len(network.Hosts),
-)
+		network.Hosts = EnrichHosts(
+			network.Hosts,
+			iface,
+			s.Config,
+		)
 
-var ssdpResponses []SSDPResponse
+		var ssdpResponses []SSDPResponse
 
-if s.Config.EnableSSDP {
+		if s.Config.EnableSSDP {
 
-    ssdpResponses = ProbeSSDP(
-        iface,
-    )
-}
+			ssdpResponses = ProbeSSDP(
+				iface,
+			)
+		}
 
+		logger.Info(
+			"SSDP RESPONSES:",
+			len(ssdpResponses),
+		)
 
-logger.Log.Println(
-    "SSDP RESPONSES:",
-    len(ssdpResponses),
-)
+		for _, response := range ssdpResponses {
 
-for _, response := range ssdpResponses {
+			logger.Debug(
+				"SSDP DEVICE:",
+				response.IP,
+				"LOCATION:",
+				response.Location,
+				"SERVER:",
+				response.Server,
+				"ST:",
+				response.ST,
+				"USN:",
+				response.USN,
+			)
+		}
 
-    logger.Log.Println(
-        "SSDP DEVICE:",
-        response.IP,
-        "LOCATION:",
-        response.Location,
-        "SERVER:",
-        response.Server,
-        "ST:",
-        response.ST,
-        "USN:",
-        response.USN,
-    )
-}
+		var mdnsIPs []string
 
+		if s.Config.EnableMDNS {
 
-var mdnsIPs []string
+			mdnsIPs = ProbeMDNS(
+				iface,
+			)
+		}
 
-if s.Config.EnableMDNS {
-
-    mdnsIPs = ProbeMDNS(
-        iface,
-    )
-}
-
-logger.Log.Println(
-    "MDNS IPS:",
-    mdnsIPs,
-)
+		logger.Info(
+			"MDNS IPS:",
+			len(mdnsIPs),
+		)
 		// Merge mDNS discovered hosts
 		// with hosts discovered by ICMP.
 
@@ -260,24 +255,23 @@ logger.Log.Println(
 			knownHosts[ip] = true
 		}
 
-		logger.Log.Println(
+		logger.Debug(
 			"HOSTS AFTER MDNS MERGE:",
 			len(network.Hosts),
 		)
 
 		for _, host := range network.Hosts {
 
-			logger.Log.Println(
+			logger.Debug(
 				"HOST:",
 				host.IP,
 			)
 		}
 
-		logger.Log.Println(
+		logger.Info(
 			"HOSTS DISCOVERED:",
 			len(network.Hosts),
 		)
-
 
 		networks = append(
 			networks,
@@ -298,22 +292,10 @@ func (s *Scanner) Topology() models.ScanResult {
 		networks,
 	)
 
-	logger.Log.Println(
-	"TOPOLOGY NODES:",
-	len(topology.Nodes),
-)
-
-for _, node := range topology.Nodes {
-
-	logger.Log.Println(
-		"TOPOLOGY NODE:",
-		node.IP,
-		"TYPE:",
-		node.Type,
-		"MAC:",
-		node.MAC,
+	logger.Info(
+		"TOPOLOGY NODES:",
+		len(topology.Nodes),
 	)
-}
 
 	nodeIPs := make(map[string]string)
 
@@ -366,7 +348,7 @@ for _, node := range topology.Nodes {
 
 	for _, node := range topology.Nodes {
 
-		logger.Log.Println(
+		logger.Debug(
 			"FINAL NODE:",
 			node.IP,
 			"ONLINE:",
@@ -378,7 +360,7 @@ for _, node := range topology.Nodes {
 
 	for _, link := range topology.Links {
 
-		logger.Log.Println(
+		logger.Debug(
 			"FINAL LINK:",
 			link.From,
 			"->",
@@ -396,4 +378,3 @@ for _, node := range topology.Nodes {
 		LastScan: time.Now().Unix(),
 	}
 }
-

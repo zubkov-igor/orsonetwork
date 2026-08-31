@@ -1,9 +1,9 @@
 package scanner
 
 import (
-	"sync"
 	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
+	"sync"
 )
 
 type UDPDiscoveryJob struct {
@@ -19,66 +19,57 @@ type UDPDiscoveryResult struct {
 func DiscoverUDP(
 	ip string,
 	iface models.Interface,
+	config models.ScannerConfig,
 ) []models.UDPService {
 
-	logger.Log.Println(
+	logger.Debug(
 		"UDP DISCOVERY START:",
 		ip,
 	)
 
 	var services []models.UDPService
 
-	udpPorts := []int{
-		137,
-		161,
-	}
+	// =========================
+	// NetBIOS UDP/137
+	// =========================
 
-	for _, port := range udpPorts {
+	if config.EnableNetBIOS {
 
-		service := UDPServices[port]
+		data, err := ProbeNetBIOS(ip)
 
-		var result UDPProbeResult
+		if err == nil {
 
-		switch port {
-
-		case 161:
-
-			logger.Log.Println(
-				"UDP SNMP PROBE:",
+			logger.Info(
+				"UDP NETBIOS RESPONSE:",
 				ip,
+				len(data),
 			)
 
-			result = ProbeSNMP(
-				ip,
-			)
+			netbios := ParseNetBIOSResponse(data)
 
-		default:
-			continue
-		}
+			if netbios.Name != "" {
 
-		if result.Found {
+				logger.Info(
+					"UDP NETBIOS FOUND:",
+					ip,
+					netbios.Name,
+				)
 
-			logger.Log.Println(
-				"UDP SERVICE FOUND:",
-				ip,
-				port,
-				service,
-			)
-
-			services = append(
-				services,
-				models.UDPService{
-					IP:       ip,
-					Port:     port,
-					Service:  service,
-					Protocol: "udp",
-					Info:     result.Info,
-				},
-			)
+				services = append(
+					services,
+					models.UDPService{
+						IP:       ip,
+						Port:     137,
+						Service:  "NetBIOS",
+						Protocol: "udp",
+						Info:     netbios.Name,
+					},
+				)
+			}
 		}
 	}
 
-	logger.Log.Println(
+	logger.Debug(
 		"UDP DISCOVERY FINISHED:",
 		ip,
 		len(services),
@@ -87,25 +78,22 @@ func DiscoverUDP(
 	return services
 }
 
-func udpDiscoveryWorker(
-	jobs <-chan UDPDiscoveryJob,
-	results chan<- UDPDiscoveryResult,
-	iface models.Interface,
+func discoveryWorker(
+	jobs <-chan string,
+	results chan<- models.Host,
 	wg *sync.WaitGroup,
+	config models.ScannerConfig,
 ) {
 
 	defer wg.Done()
 
-	for job := range jobs {
+	for ip := range jobs {
 
-		services := DiscoverUDP(
-			job.IP,
-			iface,
+		host := discoverHostNew(
+			ip,
+			config,
 		)
 
-		results <- UDPDiscoveryResult{
-			Index:    job.Index,
-			Services: services,
-		}
+		results <- host
 	}
 }

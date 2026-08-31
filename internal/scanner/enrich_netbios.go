@@ -9,7 +9,7 @@ func EnrichNetBIOS(
 	hosts []models.Host,
 ) []models.Host {
 
-	logger.Log.Println(
+	logger.Info(
 		"NETBIOS ENRICHMENT START",
 	)
 
@@ -23,7 +23,7 @@ func EnrichNetBIOS(
 			continue
 		}
 
-		logger.Log.Println(
+		logger.Info(
 			"NETBIOS FOUND:",
 			hosts[i].IP,
 			netbios.Name,
@@ -90,7 +90,7 @@ func EnrichNetBIOS(
 		}
 	}
 
-	logger.Log.Println(
+	logger.Info(
 		"NETBIOS ENRICHMENT FINISHED",
 	)
 

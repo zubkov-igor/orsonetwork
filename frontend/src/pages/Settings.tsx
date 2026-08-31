@@ -18,9 +18,9 @@ export default function Settings() {
         enable_netbios: true,
         enable_mdns: true,
         enable_ssdp: true,
-        enable_snmp: false,
         enable_tcp: true,
         enable_udp: true,
+        enable_snmp: false,
         workers: 20,
     });
 
@@ -70,7 +70,7 @@ function saveSettings() {
 
                 <div class="settings__row">
                     <span>
-                        ICMP Ping
+                        ICMP
                     </span>
 
                     <input
@@ -181,25 +181,6 @@ function saveSettings() {
 <div class="settings__row">
 
     <span>
-        SNMP
-    </span>
-
-    <input
-        type="checkbox"
-        checked={settings().enable_snmp}
-        onChange={(e) =>
-            updateSetting(
-                "enable_snmp",
-                e.currentTarget.checked
-            )
-        }
-    />
-
-</div>
-
-<div class="settings__row">
-
-    <span>
         TCP
     </span>
 
@@ -228,6 +209,25 @@ function saveSettings() {
         onChange={(e) =>
             updateSetting(
                 "enable_udp",
+                e.currentTarget.checked
+            )
+        }
+    />
+
+</div>
+
+<div class="settings__row">
+
+    <span>
+        SNMP
+    </span>
+
+    <input
+        type="checkbox"
+        checked={settings().enable_snmp}
+        onChange={(e) =>
+            updateSetting(
+                "enable_snmp",
                 e.currentTarget.checked
             )
         }

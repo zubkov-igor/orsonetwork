@@ -16,7 +16,7 @@ func EnrichARP(
 	hosts []models.Host,
 ) []models.Host {
 
-	logger.Log.Println(
+	logger.Info(
 		"ARP ENRICHMENT START",
 	)
 
@@ -63,7 +63,7 @@ func EnrichARP(
 				)
 			}
 
-			logger.Log.Println(
+			logger.Info(
 				"ARP ENRICHED:",
 				hosts[i].IP,
 				hosts[i].MAC,
@@ -72,7 +72,7 @@ func EnrichARP(
 		}
 	}
 
-	logger.Log.Println(
+	logger.Info(
 		"ARP ENRICHMENT FINISHED",
 	)
 

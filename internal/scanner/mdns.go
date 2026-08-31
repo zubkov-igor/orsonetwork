@@ -33,7 +33,7 @@ func DiscoverMDNS() []models.MDNSService {
 
 		for entry := range entries {
 
-			logger.Log.Println(
+			logger.Info(
 				"MDNS SERVICE:",
 				entry.Instance,
 				entry.Service,

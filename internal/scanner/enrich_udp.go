@@ -1,17 +1,18 @@
 package scanner
 
 import (
-	"sync"
 	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
+	"sync"
 )
 
 func EnrichUDP(
 	hosts []models.Host,
 	iface models.Interface,
+	config models.ScannerConfig,
 ) []models.Host {
 
-	logger.Log.Println(
+	logger.Info(
 		"UDP ENRICHMENT START",
 	)
 
@@ -27,8 +28,6 @@ func EnrichUDP(
 
 	var wg sync.WaitGroup
 
-	// Start workers.
-
 	for i := 0; i < workers; i++ {
 
 		wg.Add(1)
@@ -37,6 +36,7 @@ func EnrichUDP(
 			jobs,
 			results,
 			iface,
+			config,
 			&wg,
 		)
 	}
@@ -76,7 +76,7 @@ func EnrichUDP(
 
 		for _, u := range result.Services {
 
-			logger.Log.Println(
+			logger.Info(
 				"UDP SERVICE:",
 				hosts[i].IP,
 				u.Port,
@@ -94,9 +94,54 @@ func EnrichUDP(
 		}
 	}
 
-
-	logger.Log.Println(
+	logger.Info(
 		"UDP ENRICHMENT FINISHED",
+	)
+
+	return hosts
+}
+
+func EnrichSNMP(
+	hosts []models.Host,
+) []models.Host {
+
+	logger.Info(
+		"SNMP ENRICHMENT START",
+	)
+
+	for i := range hosts {
+
+		result := ProbeSNMP(
+			hosts[i].IP,
+		)
+
+		if result.Found {
+
+			hosts[i].UDPServices =
+				append(
+					hosts[i].UDPServices,
+					models.UDPService{
+						IP:       hosts[i].IP,
+						Port:     161,
+						Service:  "SNMP",
+						Protocol: "udp",
+						Info:     result.Info,
+					},
+				)
+
+			hosts[i].Sources =
+				append(
+					hosts[i].Sources,
+					models.DiscoverySource{
+						Type:  models.DiscoverySNMP,
+						Value: "SNMP",
+					},
+				)
+		}
+	}
+
+	logger.Info(
+		"SNMP ENRICHMENT FINISHED",
 	)
 
 	return hosts

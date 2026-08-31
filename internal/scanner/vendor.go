@@ -40,10 +40,13 @@ func LookupVendor(mac string) string {
 func loadVendorDB() {
 	vendors = make(map[string]string)
 
-	logger.Log.Printf("Vendor file bytes: %d", len(vendorTXT))
+	logger.Debug(
+		"Vendor file bytes:",
+		len(vendorTXT),
+	)
 
 	if len(vendorTXT) == 0 {
-		logger.Log.Println("WARNING: vendorTXT is empty")
+		logger.Warn("vendorTXT is empty")
 		dbLoaded = true
 		return
 	}
@@ -89,7 +92,7 @@ func loadVendorDB() {
 		logger.Log.Printf("Scanner error: %v", err)
 	}
 
-	logger.Log.Printf("IEEE OUI LOADED: %d entries, skipped %d lines, map size: %d", count, skipped, len(vendors))
+	logger.Debug("IEEE OUI LOADED: %d entries, skipped %d lines, map size: %d", count, skipped, len(vendors))
 	dbLoaded = true
 }
 

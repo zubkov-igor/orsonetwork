@@ -41,9 +41,9 @@ func BuildTopology(
 
 			nodeType := host.Type
 
-if host.IP == network.Gateway {
-	nodeType = models.DeviceGateway
-}
+			if host.IP == network.Gateway {
+				nodeType = models.DeviceGateway
+			}
 
 			label := host.IP
 
@@ -51,14 +51,14 @@ if host.IP == network.Gateway {
 				label = host.Hostname
 			}
 
-			logger.Log.Println(
-    "TOPOLOGY HOST STATUS:",
-    host.IP,
-    "ONLINE:",
-    host.Online,
-    "TYPE:",
-    host.Type,
-)
+			logger.Debug(
+				"TOPOLOGY HOST STATUS:",
+				host.IP,
+				"ONLINE:",
+				host.Online,
+				"TYPE:",
+				host.Type,
+			)
 
 			topology.Nodes = append(
 				topology.Nodes,
@@ -88,6 +88,17 @@ if host.IP == network.Gateway {
 				)
 			}
 		}
+	}
+
+	for _, node := range topology.Nodes {
+
+		logger.Debug(
+			"TOPOLOGY FINAL NODE:",
+			"ID:", node.ID,
+			"IP:", node.IP,
+			"ONLINE:", node.Online,
+			"TYPE:", node.Type,
+		)
 	}
 
 	return topology

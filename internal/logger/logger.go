@@ -5,7 +5,24 @@ import (
 	"os"
 )
 
-var Log *log.Logger
+type Level int
+
+const (
+	LevelDebug Level = iota
+	LevelInfo
+	LevelWarn
+	LevelError
+)
+
+var (
+	Log          *log.Logger
+	currentLevel = LevelInfo
+)
+
+// SetLevel changes the minimum log level.
+func SetLevel(level Level) {
+	currentLevel = level
+}
 
 func Init() {
 
@@ -25,33 +42,66 @@ func Init() {
 		log.Ldate|log.Ltime,
 	)
 
+}
+
+func Debug(v ...any) {
+
+	if currentLevel > LevelDebug {
+		return
+	}
+
 	Log.Println(
-		"LOGGER STARTED",
+		append([]any{"DEBUG:"}, v...)...,
+	)
+}
+
+func Info(v ...any) {
+
+	if currentLevel > LevelInfo {
+		return
+	}
+
+	Log.Println(
+		append([]any{"INFO:"}, v...)...,
+	)
+}
+
+func Warn(v ...any) {
+
+	if currentLevel > LevelWarn {
+		return
+	}
+
+	Log.Println(
+		append([]any{"WARN:"}, v...)...,
+	)
+}
+
+func Error(v ...any) {
+
+	if currentLevel > LevelError {
+		return
+	}
+
+	Log.Println(
+		append([]any{"ERROR:"}, v...)...,
 	)
 }
 
 func Separator(title string) {
 
-	Log.Println(
+	Info(
 		"========================================",
 	)
 
-	Log.Println(
-		title,
-	)
+	Info(title)
 
-	Log.Println(
+	Info(
 		"========================================",
 	)
-
 }
 
 func Section(title string) {
 
-	Log.Println()
-	Log.Println(
-		"----------",
-		title,
-		"----------",
-	)
+	Info("----------", title, "----------")
 }

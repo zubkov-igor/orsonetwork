@@ -16,7 +16,7 @@ func ProbeMDNS(
 	iface models.Interface,
 ) []string {
 
-	logger.Log.Println(
+	logger.Info(
 		"MDNS DISCOVERY START",
 	)
 
@@ -26,7 +26,7 @@ func ProbeMDNS(
 
 	if err != nil {
 
-		logger.Log.Println(
+		logger.Warn(
 			"MDNS INTERFACE ERROR:",
 			err,
 		)
@@ -34,7 +34,7 @@ func ProbeMDNS(
 		return nil
 	}
 
-	logger.Log.Println(
+	logger.Info(
 		"MDNS INTERFACE:",
 		networkInterface.Name,
 		iface.IP,
@@ -45,7 +45,7 @@ func ProbeMDNS(
 		Port: 5353,
 	}
 
-	logger.Log.Println(
+	logger.Debug(
 		"MDNS TARGET:",
 		target,
 	)
@@ -106,7 +106,7 @@ func ProbeMDNS(
 
 	if err != nil {
 
-		logger.Log.Println(
+		logger.Warn(
 			"MDNS UDP LISTEN ERROR:",
 			err,
 		)
@@ -125,7 +125,7 @@ func ProbeMDNS(
 
 	if err != nil {
 
-		logger.Log.Println(
+		logger.Warn(
 			"MDNS MULTICAST JOIN ERROR:",
 			err,
 		)
@@ -163,16 +163,14 @@ func ProbeMDNS(
 	)
 
 	if err != nil {
-
-		logger.Log.Println(
+		logger.Error(
 			"MDNS WRITE ERROR:",
 			err,
 		)
-
 		return nil
 	}
 
-	logger.Log.Println(
+	logger.Debug(
 		"MDNS QUERY SENT:",
 		n,
 		"bytes",
@@ -200,7 +198,7 @@ func ProbeMDNS(
 
 		if err != nil {
 
-			logger.Log.Println(
+			logger.Warn(
 				"MDNS DEADLINE ERROR:",
 				err,
 			)
@@ -214,7 +212,7 @@ func ProbeMDNS(
 
 		if err != nil {
 
-			logger.Log.Println(
+			logger.Debug(
 				"MDNS READ FINISHED:",
 				err,
 			)
@@ -230,7 +228,7 @@ func ProbeMDNS(
 
 		if err != nil {
 
-			logger.Log.Println(
+			logger.Warn(
 				"MDNS UNPACK ERROR:",
 				err,
 			)
@@ -252,7 +250,7 @@ func ProbeMDNS(
 
 		found[ip] = true
 
-		logger.Log.Println(
+		logger.Info(
 			"MDNS HOST FOUND:",
 			ip,
 		)
@@ -272,12 +270,12 @@ func ProbeMDNS(
 		)
 	}
 
-	logger.Log.Println(
+	logger.Info(
 		"MDNS DISCOVERY FOUND:",
 		len(result),
 	)
 
-	logger.Log.Println(
+	logger.Info(
 		"MDNS DISCOVERY FINISHED",
 	)
 

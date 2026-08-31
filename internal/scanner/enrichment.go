@@ -1,213 +1,231 @@
 package scanner
 
 import (
-    "time"
+	"time"
 
-    "OrsoNetwork/internal/logger"
-    "OrsoNetwork/internal/models"
+	"OrsoNetwork/internal/logger"
+	"OrsoNetwork/internal/models"
 )
 
 func EnrichHosts(
-    hosts []models.Host,
-    iface models.Interface,
+	hosts []models.Host,
+	iface models.Interface,
+	config models.ScannerConfig,
 ) []models.Host {
 
-    logger.Log.Println(
-        "HOSTS BEFORE ENRICHMENT:",
-        len(hosts),
-    )
+	logger.Info(
+		"HOSTS BEFORE ENRICHMENT:",
+		len(hosts),
+	)
 
-    enrichmentStart := time.Now()
+	// =========================
+	// mDNS
+	// =========================
 
-    // =========================
-    // mDNS
-    // =========================
+	if config.EnableMDNS {
 
-    stepStart := time.Now()
+		stepStart := time.Now()
 
-    hosts = EnrichMDNS(
-        hosts,
-    )
+		hosts = EnrichMDNS(
+			hosts,
+		)
 
-    logger.Log.Println(
-        "ENRICH TIMING MDNS:",
-        time.Since(stepStart),
-    )
+		logger.Debug(
+			"ENRICH TIMING MDNS:",
+			time.Since(stepStart),
+		)
+	}
 
-    // =========================
-    // UDP
-    // =========================
+	// =========================
+	// UDP
+	// =========================
 
-    stepStart = time.Now()
+	if config.EnableUDP {
 
-    hosts = EnrichUDP(
-        hosts,
-        iface,
-    )
+		stepStart := time.Now()
 
-    logger.Log.Println(
-        "ENRICH TIMING UDP:",
-        time.Since(stepStart),
-    )
+		hosts = EnrichUDP(
+			hosts,
+			iface,
+			config,
+		)
 
-    // =========================
-    // TCP Ports
-    // =========================
+		logger.Debug(
+			"ENRICH TIMING UDP:",
+			time.Since(stepStart),
+		)
+	}
 
-    stepStart = time.Now()
+	// =========================
+	// SNMP
+	// =========================
 
-    hosts = EnrichPorts(
-        hosts,
-    )
+	if config.EnableSNMP {
 
-    logger.Log.Println(
-        "ENRICH TIMING PORTS:",
-        time.Since(stepStart),
-    )
+		stepStart := time.Now()
 
+		hosts = EnrichSNMP(
+			hosts,
+		)
 
-    for i := range hosts {
+		logger.Debug(
+			"ENRICH TIMING SNMP:",
+			time.Since(stepStart),
+		)
+	}
 
-    UpdateHostStatus(
-        &hosts[i],
-    )
-}
+	// =========================
+	// TCP Ports
+	// =========================
 
-    // =========================
-    // Identification
-    // =========================
+	if config.EnableTCP {
 
-    stepStart = time.Now()
+		stepStart := time.Now()
 
-    for i := range hosts {
+		hosts = EnrichPorts(
+			hosts,
+		)
 
-        identification := IdentifyDevice(
-            hosts[i],
-        )
+		logger.Debug(
+			"ENRICH TIMING PORTS:",
+			time.Since(stepStart),
+		)
+	}
 
-        hosts[i].Type = identification.Type
+	// =========================
+	// Host Status
+	// =========================
 
-        hosts[i].Confidence =
-            CalculateConfidence(
-                hosts[i],
-            )
+	for i := range hosts {
 
-        logger.Log.Println(
-            "IDENTIFICATION:",
-            hosts[i].IP,
-            "TYPE:",
-            hosts[i].Type,
-            "CONFIDENCE:",
-            hosts[i].Confidence,
-        )
-    }
+		UpdateHostStatus(
+			&hosts[i],
+			config,
+		)
+	}
 
-    logger.Log.Println(
-        "ENRICH TIMING IDENTIFICATION:",
-        time.Since(stepStart),
-    )
+	// =========================
+	// Identification
+	// =========================
 
-    logger.Log.Println(
-        "ENRICH TIMING TOTAL:",
-        time.Since(enrichmentStart),
-    )
+	stepStart := time.Now()
 
-    logger.Log.Println(
-        "HOSTS BEFORE IDENTIFICATION:",
-        len(hosts),
-    )
+	for i := range hosts {
 
-    return hosts
+		identification := IdentifyDevice(
+			hosts[i],
+		)
+
+		hosts[i].Type = identification.Type
+
+		hosts[i].Confidence =
+			CalculateConfidence(
+				hosts[i],
+			)
+
+		logger.Debug(
+			"IDENTIFICATION:",
+			hosts[i].IP,
+			"TYPE:",
+			hosts[i].Type,
+			"CONFIDENCE:",
+			hosts[i].Confidence,
+		)
+
+		if hosts[i].Type != "unknown" {
+
+			logger.Info(
+				"DEVICE IDENTIFIED:",
+				hosts[i].IP,
+				"TYPE:",
+				hosts[i].Type,
+				"CONFIDENCE:",
+				hosts[i].Confidence,
+			)
+		}
+	}
+
+	logger.Debug(
+		"ENRICH TIMING IDENTIFICATION:",
+		time.Since(stepStart),
+	)
+
+	return hosts
 }
 
 func UpdateHostStatus(
-    host *models.Host,
+	host *models.Host,
+	config models.ScannerConfig,
 ) {
 
-    // ICMP
+	// ICMP
 
-    if host.Online {
+	if config.EnableICMP && host.Online {
 
-        logger.Log.Println(
-            "HOST STATUS:",
-            host.IP,
-            "ONLINE",
-            "REASON: ICMP",
-        )
+		logger.Debug(
+			"HOST STATUS:",
+			host.IP,
+			"ONLINE",
+			"REASON: ICMP",
+		)
 
-        return
-    }
+		return
+	}
 
-    // ARP
+	// ARP
 
-    if host.MAC != "" {
+	if config.EnableARP && host.MAC != "" {
 
-        host.Online = true
+		host.Online = true
 
-        logger.Log.Println(
-            "HOST STATUS:",
-            host.IP,
-            "ONLINE",
-            "REASON: ARP",
-        )
+		logger.Debug(
+			"HOST STATUS:",
+			host.IP,
+			"ONLINE",
+			"REASON: ARP",
+		)
 
-        return
-    }
+		return
+	}
 
-    // TCP
+	// UDP
 
-    if len(host.Ports) > 0 {
+	if config.EnableUDP && len(host.UDPServices) > 0 {
 
-        host.Online = true
+		host.Online = true
 
-        logger.Log.Println(
-            "HOST STATUS:",
-            host.IP,
-            "ONLINE",
-            "REASON: TCP PORT",
-        )
+		logger.Debug(
+			"HOST STATUS:",
+			host.IP,
+			"ONLINE",
+			"REASON: UDP SERVICE",
+		)
 
-        return
-    }
+		return
+	}
 
-    // UDP
+	// TCP
 
-    if len(host.UDPServices) > 0 {
+	if config.EnableTCP && len(host.Ports) > 0 {
 
-        host.Online = true
+		host.Online = true
 
-        logger.Log.Println(
-            "HOST STATUS:",
-            host.IP,
-            "ONLINE",
-            "REASON: UDP SERVICE",
-        )
+		logger.Debug(
+			"HOST STATUS:",
+			host.IP,
+			"ONLINE",
+			"REASON: TCP PORT",
+		)
 
-        return
-    }
+		return
+	}
 
-    // HTTP
+	host.Online = false
 
-    if len(host.HTTP) > 0 {
-
-        host.Online = true
-
-        logger.Log.Println(
-            "HOST STATUS:",
-            host.IP,
-            "ONLINE",
-            "REASON: HTTP",
-        )
-
-        return
-    }
-
-    host.Online = false
-
-    logger.Log.Println(
-        "HOST STATUS:",
-        host.IP,
-        "OFFLINE",
-        "REASON: NO RESPONSE",
-    )
+	logger.Debug(
+		"HOST STATUS:",
+		host.IP,
+		"OFFLINE",
+		"REASON: NO RESPONSE",
+	)
 }

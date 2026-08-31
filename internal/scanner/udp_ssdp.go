@@ -33,7 +33,7 @@ func ProbeSSDP(
 
 	if err != nil {
 
-		logger.Log.Println(
+		logger.Error(
 			"SSDP CONNECT ERROR:",
 			err,
 		)
@@ -43,7 +43,7 @@ func ProbeSSDP(
 
 	defer conn.Close()
 
-	logger.Log.Println(
+	logger.Debug(
 		"SSDP LOCAL:",
 		conn.LocalAddr(),
 	)
@@ -68,7 +68,7 @@ func ProbeSSDP(
 
 	if err != nil {
 
-		logger.Log.Println(
+		logger.Error(
 			"SSDP WRITE ERROR:",
 			err,
 		)
@@ -76,7 +76,7 @@ func ProbeSSDP(
 		return nil
 	}
 
-	logger.Log.Println(
+	logger.Debug(
 		"SSDP SENT:",
 		n,
 		"bytes",
@@ -107,7 +107,7 @@ func ProbeSSDP(
 
 		if err != nil {
 
-			logger.Log.Println(
+			logger.Debug(
 				"SSDP READ FINISHED:",
 				err,
 			)
@@ -119,12 +119,12 @@ func ProbeSSDP(
 			buffer[:n],
 		)
 
-		logger.Log.Println(
+		logger.Debug(
 			"SSDP RESPONSE FROM:",
 			addr.IP,
 		)
 
-		logger.Log.Println(
+		logger.Debug(
 			"SSDP RESPONSE:",
 			response,
 		)
@@ -145,7 +145,7 @@ func ProbeSSDP(
 		)
 	}
 
-	logger.Log.Println(
+	logger.Info(
 		"SSDP DISCOVERY FOUND:",
 		len(responses),
 	)

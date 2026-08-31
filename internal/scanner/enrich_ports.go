@@ -2,154 +2,154 @@ package scanner
 
 import (
 	"fmt"
-    "sync"
+	"sync"
 
 	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 )
 
 type portScanResult struct {
-    index int
-    ports []models.Port
+	index int
+	ports []models.Port
 }
 
 func EnrichPorts(
-    hosts []models.Host,
+	hosts []models.Host,
 ) []models.Host {
 
-    logger.Log.Println(
-        "PORT ENRICHMENT START",
-    )
+	logger.Info(
+		"PORT ENRICHMENT START",
+	)
 
-    const workers = 8
+	const workers = 8
 
-    type portScanResult struct {
-        index int
-        ports []models.Port
-    }
+	type portScanResult struct {
+		index int
+		ports []models.Port
+	}
 
-    jobs := make(chan int)
-    results := make(chan portScanResult)
+	jobs := make(chan int)
+	results := make(chan portScanResult)
 
-    var wg sync.WaitGroup
+	var wg sync.WaitGroup
 
-    // Start workers.
+	// Start workers.
 
-    for i := 0; i < workers; i++ {
+	for i := 0; i < workers; i++ {
 
-        wg.Add(1)
+		wg.Add(1)
 
-        go func() {
+		go func() {
 
-            defer wg.Done()
+			defer wg.Done()
 
-            for index := range jobs {
+			for index := range jobs {
 
-                logger.Log.Println(
-                    "PORT SCAN:",
-                    hosts[index].IP,
-                )
+				logger.Debug(
+					"PORT SCAN:",
+					hosts[index].IP,
+				)
 
-                ports := ScanPorts(
-                    hosts[index].IP,
-                )
+				ports := ScanPorts(
+					hosts[index].IP,
+				)
 
-                results <- portScanResult{
-                    index: index,
-                    ports: ports,
-                }
-            }
+				results <- portScanResult{
+					index: index,
+					ports: ports,
+				}
+			}
 
-        }()
-    }
+		}()
+	}
 
-    // Send hosts to workers.
+	// Send hosts to workers.
 
-    go func() {
+	go func() {
 
-        for i := range hosts {
+		for i := range hosts {
 
-            jobs <- i
-        }
+			jobs <- i
+		}
 
-        close(jobs)
+		close(jobs)
 
-    }()
+	}()
 
-    // Close results after workers finish.
+	// Close results after workers finish.
 
-    go func() {
+	go func() {
 
-        wg.Wait()
-        close(results)
+		wg.Wait()
+		close(results)
 
-    }()
+	}()
 
-    // Process results.
+	// Process results.
 
-    for result := range results {
+	for result := range results {
 
-        i := result.index
-        ports := result.ports
+		i := result.index
+		ports := result.ports
 
-        hosts[i].Ports = ports
+		hosts[i].Ports = ports
 
-        for _, p := range ports {
+		for _, p := range ports {
 
-            logger.Log.Println(
-                "OPEN PORT:",
-                hosts[i].IP,
-                p.Number,
-                p.Protocol,
-                p.Service,
-            )
+			logger.Info(
+				"OPEN PORT:",
+				hosts[i].IP,
+				p.Number,
+				p.Protocol,
+				p.Service,
+			)
 
-            hosts[i].Sources = append(
-                hosts[i].Sources,
-                models.DiscoverySource{
-                    Type: models.DiscoveryTCP,
-                    Value: fmt.Sprintf(
-                        "%s:%d:%s",
-                        p.Protocol,
-                        p.Number,
-                        p.Service,
-                    ),
-                },
-            )
+			hosts[i].Sources = append(
+				hosts[i].Sources,
+				models.DiscoverySource{
+					Type: models.DiscoveryTCP,
+					Value: fmt.Sprintf(
+						"%s:%d:%s",
+						p.Protocol,
+						p.Number,
+						p.Service,
+					),
+				},
+			)
 
-            if p.Service == "http" {
+			if p.Service == "http" {
 
-                httpInfo := ScanHTTP(
-                    hosts[i].IP,
-                    p.Number,
-                )
+				httpInfo := ScanHTTP(
+					hosts[i].IP,
+					p.Number,
+				)
 
-                if httpInfo.Server != "" ||
-                    httpInfo.Title != "" ||
-                    len(httpInfo.Scripts) > 0 ||
-                    len(httpInfo.Keywords) > 0 {
+				if httpInfo.Server != "" ||
+					httpInfo.Title != "" ||
+					len(httpInfo.Scripts) > 0 ||
+					len(httpInfo.Keywords) > 0 {
 
-                    hosts[i].HTTP = append(
-                        hosts[i].HTTP,
-                        httpInfo,
-                    )
+					hosts[i].HTTP = append(
+						hosts[i].HTTP,
+						httpInfo,
+					)
 
-                    logger.Log.Println(
-                        "HTTP ENRICHED:",
-                        hosts[i].IP,
-                        httpInfo.Port,
-                        httpInfo.Server,
-                        httpInfo.Title,
-                        httpInfo.Keywords,
-                    )
-                }
-            }
-        }
-    }
+					logger.Info(
+						"HTTP ENRICHED:",
+						hosts[i].IP,
+						httpInfo.Port,
+						httpInfo.Server,
+						httpInfo.Title,
+						httpInfo.Keywords,
+					)
+				}
+			}
+		}
+	}
 
-    logger.Log.Println(
-        "PORT ENRICHMENT FINISHED",
-    )
+	logger.Info(
+		"PORT ENRICHMENT FINISHED",
+	)
 
-    return hosts
+	return hosts
 }

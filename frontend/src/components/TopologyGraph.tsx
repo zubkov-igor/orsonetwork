@@ -480,14 +480,8 @@ selector: 'node.compact[type = "gateway"]',
     const nodes = currentTopology.nodes ?? [];
     const links = currentTopology.links ?? [];
 
-    const visibleNodes = nodes.filter((node) => {
-    return (
-        node.type === "gateway" ||
-        node.mac ||
-        node.hostname ||
-        node.vendor ||
-        (node.type && node.type !== "unknown")
-    );
+const visibleNodes = nodes.filter((node) => {
+    return node.online;
 });
 
 const visibleNodeIds = new Set(

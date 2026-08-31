@@ -15,7 +15,7 @@ func ARPDiscovery(
 	hosts []models.Host,
 ) []models.Host {
 
-	logger.Log.Println(
+	logger.Debug(
 		"ARP DISCOVERY START",
 	)
 
@@ -27,7 +27,7 @@ func ARPDiscovery(
 
 	for _, i := range interfaces {
 
-		logger.Log.Println(
+		logger.Debug(
 			"AVAILABLE INTERFACE:",
 			i.Name,
 		)
@@ -55,7 +55,7 @@ func ARPDiscovery(
 
 		if IsVirtualInterface(found.Name) {
 
-			logger.Log.Println(
+			logger.Debug(
 				"SKIP INTERFACE:",
 				found.Name,
 			)
@@ -66,7 +66,7 @@ func ARPDiscovery(
 		iface = found
 		interfaceIP = i.IP
 
-		logger.Log.Println(
+		logger.Debug(
 			"ARP INTERFACE:",
 			iface.Name,
 			iface.HardwareAddr.String(),
@@ -76,7 +76,7 @@ func ARPDiscovery(
 	}
 
 	if iface == nil {
-		logger.Log.Println(
+		logger.Warn(
 			"NO ARP INTERFACE",
 		)
 
@@ -89,7 +89,7 @@ func ARPDiscovery(
 
 	if err != nil {
 
-		logger.Log.Println(
+		logger.Warn(
 			"ARP DIAL ERROR:",
 			err.Error(),
 		)
@@ -102,7 +102,7 @@ func ARPDiscovery(
 	for _, host := range hosts {
 
 		if host.IP == interfaceIP {
-			logger.Log.Println(
+			logger.Debug(
 				"SKIP OWN HOST:",
 				host.IP,
 			)
@@ -118,7 +118,7 @@ func ARPDiscovery(
 			continue
 		}
 
-		logger.Log.Println(
+		logger.Debug(
 			"ARP REQUEST:",
 			host.IP,
 		)
@@ -139,7 +139,7 @@ func ARPDiscovery(
 
 		if err != nil {
 
-			logger.Log.Println(
+			logger.Warn(
 				"ARP RESOLVE ERROR:",
 				host.IP,
 				err.Error(),
@@ -157,7 +157,7 @@ func ARPDiscovery(
 
 		arpHost.MAC = mac.String()
 
-		logger.Log.Println(
+		logger.Info(
 			"ARP HOST:",
 			arpHost.IP,
 			arpHost.MAC,
@@ -171,8 +171,6 @@ func ARPDiscovery(
 
 	return arpHosts
 }
-
-
 
 func ARPResolve(ip string) string {
 
@@ -219,10 +217,10 @@ func ARPResolve(ip string) string {
 	}
 
 	err = client.SetReadDeadline(
-    time.Now().Add(
-        300 * time.Millisecond,
-    ),
-)
+		time.Now().Add(
+			300 * time.Millisecond,
+		),
+	)
 
 	if err != nil {
 		return ""
@@ -236,4 +234,3 @@ func ARPResolve(ip string) string {
 
 	return mac.String()
 }
-

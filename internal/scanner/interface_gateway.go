@@ -10,14 +10,14 @@ func GatewayForInterface(
 	gateways []models.Gateway,
 ) *models.Gateway {
 
-	logger.Log.Println(
+	logger.Debug(
 		"GATEWAY SEARCH FOR INTERFACE:",
 		iface.Name,
 	)
 
 	for _, gw := range gateways {
 
-		logger.Log.Println(
+		logger.Debug(
 			"CHECK GATEWAY:",
 			gw.IP,
 			gw.Interface,
@@ -25,7 +25,7 @@ func GatewayForInterface(
 
 		if gw.Interface == iface.Name {
 
-			logger.Log.Println(
+			logger.Debug(
 				"GATEWAY MATCH:",
 				gw.IP,
 			)
@@ -36,7 +36,7 @@ func GatewayForInterface(
 
 	for i := range gateways {
 
-		logger.Log.Println(
+		logger.Debug(
 			"CHECK GATEWAY:",
 			gateways[i].IP,
 			gateways[i].Interface,
@@ -44,7 +44,7 @@ func GatewayForInterface(
 
 		if gateways[i].Interface == iface.Name {
 
-			logger.Log.Println(
+			logger.Info(
 				"GATEWAY MATCH:",
 				gateways[i].IP,
 			)
@@ -53,7 +53,7 @@ func GatewayForInterface(
 		}
 	}
 
-	logger.Log.Println(
+	logger.Warn(
 		"GATEWAY NOT FOUND",
 	)
 

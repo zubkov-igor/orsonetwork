@@ -25,7 +25,7 @@ func (a *App) GetTopology() models.ScanResult {
 
 	topology := a.scanner.Topology()
 
-	logger.Log.Println(
+	logger.Info(
 		"TOPOLOGY:",
 		len(topology.Topology.Nodes),
 		len(topology.Topology.Links),
@@ -39,7 +39,7 @@ func (a *App) UpdateScannerConfig(
     config models.ScannerConfig,
 ) error {
 
-    logger.Log.Println(
+    logger.Info(
         "NEW SCANNER CONFIG:",
         config,
     )

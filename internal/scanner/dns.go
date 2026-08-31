@@ -31,7 +31,7 @@ func LookupReverseDNS(ip string) string {
 		return ""
 	}
 
-	logger.Log.Println(
+	logger.Info(
 		"REVERSE DNS:",
 		ip,
 		names,

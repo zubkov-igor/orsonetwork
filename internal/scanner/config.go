@@ -1,53 +1,53 @@
 package scanner
 
 import (
-    "encoding/json"
-    "os"
+	"encoding/json"
+	"os"
 
-    "OrsoNetwork/internal/models"
+	"OrsoNetwork/internal/models"
 )
 
 const configFile = "scanner_config.json"
 
 func LoadConfig() (models.ScannerConfig, error) {
 
-    data, err := os.ReadFile(configFile)
+	data, err := os.ReadFile(configFile)
 
-    if err != nil {
-        return models.ScannerConfig{}, err
-    }
+	if err != nil {
+		return models.ScannerConfig{}, err
+	}
 
-    var config models.ScannerConfig
+	var config models.ScannerConfig
 
-    err = json.Unmarshal(
-        data,
-        &config,
-    )
+	err = json.Unmarshal(
+		data,
+		&config,
+	)
 
-    if err != nil {
-        return models.ScannerConfig{}, err
-    }
+	if err != nil {
+		return models.ScannerConfig{}, err
+	}
 
-    return config, nil
+	return config, nil
 }
 
 func SaveConfig(
-    config models.ScannerConfig,
+	config models.ScannerConfig,
 ) error {
 
-    data, err := json.MarshalIndent(
-        config,
-        "",
-        "    ",
-    )
+	data, err := json.MarshalIndent(
+		config,
+		"",
+		"    ",
+	)
 
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
-    return os.WriteFile(
-        configFile,
-        data,
-        0644,
-    )
+	return os.WriteFile(
+		configFile,
+		data,
+		0644,
+	)
 }

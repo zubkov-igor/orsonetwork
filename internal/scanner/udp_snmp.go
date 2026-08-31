@@ -1,7 +1,6 @@
 package scanner
 
 import (
-	"encoding/hex"
 	"fmt"
 	"net"
 	"time"
@@ -10,22 +9,23 @@ import (
 )
 
 func ProbeSNMP(
-    ip string,
+	ip string,
 ) UDPProbeResult {
 
-    probeStart := time.Now()
+	probeStart := time.Now()
 
-    defer func() {
-        logger.Log.Println(
-            "SNMP PROBE DURATION:",
-            ip,
-            time.Since(probeStart),
-        )
-    }()
+	defer func() {
 
-    addr := ip + ":161"
+		logger.Debug(
+			"SNMP PROBE DURATION:",
+			ip,
+			time.Since(probeStart),
+		)
+	}()
 
-	logger.Log.Println(
+	addr := ip + ":161"
+
+	logger.Debug(
 		"SNMP CONNECT:",
 		addr,
 	)
@@ -38,7 +38,7 @@ func ProbeSNMP(
 
 	if err != nil {
 
-		logger.Log.Println(
+		logger.Debug(
 			"SNMP CONNECT ERROR:",
 			ip,
 			err,
@@ -51,7 +51,7 @@ func ProbeSNMP(
 
 	defer conn.Close()
 
-	logger.Log.Println(
+	logger.Debug(
 		"OID:",
 		OIDSysDescr,
 	)
@@ -60,12 +60,12 @@ func ProbeSNMP(
 		OIDSysDescr,
 	)
 
-	logger.Log.Println(
+	logger.Debug(
 		"SNMP REQUEST HEX:",
 		fmt.Sprintf("% X", request),
 	)
 
-	logger.Log.Println(
+	logger.Debug(
 		"SNMP SEND:",
 		addr,
 	)
@@ -74,7 +74,7 @@ func ProbeSNMP(
 
 	if err != nil {
 
-		logger.Log.Println(
+		logger.Debug(
 			"SNMP WRITE ERROR:",
 			ip,
 			err,
@@ -85,7 +85,7 @@ func ProbeSNMP(
 		}
 	}
 
-	logger.Log.Println(
+	logger.Debug(
 		"SNMP WAIT:",
 		ip,
 	)
@@ -97,13 +97,13 @@ func ProbeSNMP(
 
 	err = conn.SetReadDeadline(
 		time.Now().Add(
-			500*time.Millisecond,
+			500 * time.Millisecond,
 		),
 	)
 
 	if err != nil {
 
-		logger.Log.Println(
+		logger.Debug(
 			"SNMP DEADLINE ERROR:",
 			ip,
 			err,
@@ -120,7 +120,7 @@ func ProbeSNMP(
 
 	if err != nil {
 
-		logger.Log.Println(
+		logger.Debug(
 			"SNMP READ ERROR:",
 			ip,
 			err,
@@ -133,24 +133,19 @@ func ProbeSNMP(
 
 	response := buffer[:n]
 
-	logger.Log.Println(
+	logger.Debug(
 		"SNMP RESPONSE SIZE:",
 		len(response),
 	)
 
-	logger.Log.Println(
+	logger.Debug(
 		"SNMP RESPONSE HEX:",
 		fmt.Sprintf("% X", response),
 	)
 
-	logger.Log.Println(
-		"SNMP RESPONSE HEX COMPACT:",
-		hex.EncodeToString(response),
-	)
-
 	if len(response) == 0 {
 
-		logger.Log.Println(
+		logger.Debug(
 			"SNMP EMPTY RESPONSE:",
 			ip,
 		)
@@ -162,7 +157,7 @@ func ProbeSNMP(
 
 	if response[0] != 0x30 {
 
-		logger.Log.Println(
+		logger.Debug(
 			"SNMP INVALID BER RESPONSE:",
 			ip,
 			response[0],
@@ -176,26 +171,13 @@ func ProbeSNMP(
 	parsed := ParseSNMPResponse(
 		response,
 	)
-	if err != nil {
 
-		logger.Log.Println(
-			"SNMP PARSE ERROR:",
-			ip,
-			err,
-		)
-
-		return UDPProbeResult{
-			Found: false,
-		}
-	}
-
-	logger.Log.Println(
-		"SNMP OID:",
+	logger.Info(
+		"SNMP FOUND:",
+		ip,
+		"OID:",
 		parsed.OID,
-	)
-
-	logger.Log.Println(
-		"SNMP VALUE:",
+		"VALUE:",
 		parsed.Value,
 	)
 
@@ -204,4 +186,5 @@ func ProbeSNMP(
 		Info:  "SNMP response",
 		Raw:   response,
 	}
+
 }
