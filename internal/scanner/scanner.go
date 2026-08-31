@@ -155,26 +155,26 @@ func (s *Scanner) Scan() []models.Network {
 		)
 
 		network.Hosts = DiscoverHostsFull(
-			ips,
-			s.Config.Workers,
-			s.Config,
-		)
+    ips,
+    s.Config.Workers,
+    s.Config,
+)
 
-		logger.Info(
-			"HOSTS ENRICHMENT FINISHED:",
-			len(network.Hosts),
-		)
+logger.Info(
+    "HOSTS DISCOVERY FULL FINISHED:",
+    len(network.Hosts),
+)
 
-		logger.Info(
-			"HOSTS DISCOVERY FULL FINISHED:",
-			len(network.Hosts),
-		)
+network.Hosts = EnrichHosts(
+    network.Hosts,
+    iface,
+    s.Config,
+)
 
-		network.Hosts = EnrichHosts(
-			network.Hosts,
-			iface,
-			s.Config,
-		)
+logger.Info(
+    "HOSTS ENRICHMENT FINISHED:",
+    len(network.Hosts),
+)
 
 		var ssdpResponses []SSDPResponse
 
