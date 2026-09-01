@@ -349,31 +349,36 @@ func (s *Scanner) Topology() models.ScanResult {
 			}
 		}
 
-		if result.Online {
+if !result.Online {
 
-			latency :=
-				result.RTT.Seconds() * 1000
+        topology.Links[i].Latency = 0
+        topology.Links[i].Status = "timeout"
 
-			topology.Links[i].Latency = latency
+} else if result.RTT == 0 {
 
-			switch {
+        topology.Links[i].Latency = 0
+        topology.Links[i].Status = "unknown"
 
-			case latency < 10:
-				topology.Links[i].Status = "good"
+} else {
 
-			case latency < 50:
-				topology.Links[i].Status = "warning"
+        latency :=
+                result.RTT.Seconds() * 1000
 
-			default:
-				topology.Links[i].Status = "critical"
-			}
+        topology.Links[i].Latency = latency
 
-		} else {
+        switch {
 
-			topology.Links[i].Latency = 0
-			topology.Links[i].Status = "timeout"
-		}
-	}
+        case latency < 10:
+                topology.Links[i].Status = "good"
+
+        case latency < 50:
+                topology.Links[i].Status = "warning"
+
+        default:
+                topology.Links[i].Status = "critical"
+        }
+}
+}
 
 	for _, node := range topology.Nodes {
 

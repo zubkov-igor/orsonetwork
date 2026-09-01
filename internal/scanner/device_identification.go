@@ -117,6 +117,27 @@ func IdentifyDevice(
 		}
 	}
 
+// =========================
+// HTTP / Web Server
+// =========================
+
+for _, httpInfo := range host.HTTP {
+
+	server := strings.ToLower(
+		httpInfo.Server,
+	)
+
+	if strings.Contains(
+		server,
+		"apache",
+	) {
+		return models.DeviceIdentification{
+			Type:       models.DeviceComputer,
+			Confidence: 50,
+		}
+	}
+}
+
 	// =========================
 	// Server
 	// =========================
