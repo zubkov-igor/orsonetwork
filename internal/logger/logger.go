@@ -16,6 +16,7 @@ const (
 
 var (
 	Log          *log.Logger
+	DebugLog     *log.Logger
 	currentLevel = LevelInfo
 )
 
@@ -36,54 +37,74 @@ func Init() {
 		panic(err)
 	}
 
+	debugFile, err := os.OpenFile(
+		"debug.info",
+		os.O_CREATE|os.O_APPEND|os.O_WRONLY,
+		0666,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
 	Log = log.New(
 		file,
 		"",
 		log.Ldate|log.Ltime,
 	)
 
+	DebugLog = log.New(
+		debugFile,
+		"",
+		log.Ldate|log.Ltime,
+	)
 }
 
 func Debug(v ...any) {
 
-	if currentLevel > LevelDebug {
-		return
-	}
-
-	Log.Println(
+	DebugLog.Println(
 		append([]any{"DEBUG:"}, v...)...,
 	)
 }
 
 func Info(v ...any) {
 
-	if currentLevel > LevelInfo {
-		return
+	if currentLevel <= LevelInfo {
+
+		Log.Println(
+			append([]any{"INFO:"}, v...)...,
+		)
 	}
 
-	Log.Println(
+	DebugLog.Println(
 		append([]any{"INFO:"}, v...)...,
 	)
 }
 
 func Warn(v ...any) {
 
-	if currentLevel > LevelWarn {
-		return
+	if currentLevel <= LevelWarn {
+
+		Log.Println(
+			append([]any{"WARN:"}, v...)...,
+		)
 	}
 
-	Log.Println(
+	DebugLog.Println(
 		append([]any{"WARN:"}, v...)...,
 	)
 }
 
 func Error(v ...any) {
 
-	if currentLevel > LevelError {
-		return
+	if currentLevel <= LevelError {
+
+		Log.Println(
+			append([]any{"ERROR:"}, v...)...,
+		)
 	}
 
-	Log.Println(
+	DebugLog.Println(
 		append([]any{"ERROR:"}, v...)...,
 	)
 }

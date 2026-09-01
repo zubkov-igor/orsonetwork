@@ -135,20 +135,49 @@ func (s *Scanner) Scan() []models.Network {
 			gw.IP,
 		)
 
-		network := BuildNetwork(
-			iface,
-			gw,
-		)
+network := BuildNetwork(
+	iface,
+	gw,
+)
 
-		logger.Info(
-			"NETWORK BUILT:",
-			network.CIDR,
-		)
+logger.Info(
+	"NETWORK BUILT:",
+	network.CIDR,
+)
 
-		ips := HostsFromCIDR(
-			network.CIDR,
-		)
+subnets := SubnetsFromCIDR(
+    network.CIDR,
+    24,
+)
 
+logger.Info(
+    "SUBNETS GENERATED:",
+    len(subnets),
+)
+
+for _, subnet := range subnets {
+
+    logger.Debug(
+        "SUBNET:",
+        subnet,
+    )
+}
+
+// TODO: временно отключено до тестирования больших сетей.
+//
+// if len(subnets) > 1 {
+//
+//     logger.Info(
+//         "LARGE NETWORK DETECTED:",
+//         network.CIDR,
+//     )
+//
+//     continue
+// }
+
+ips := HostsFromCIDR(
+	network.CIDR,
+)
 		logger.Info(
 			"HOST IPS GENERATED:",
 			len(ips),
