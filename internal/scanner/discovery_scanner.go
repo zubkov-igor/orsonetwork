@@ -141,29 +141,6 @@ func discoverHostNew(
 		)
 	}
 
-	identification := IdentifyDevice(
-		host,
-	)
-
-	host.Type = identification.Type
-
-	host.Confidence =
-		CalculateConfidence(
-			host,
-		)
-
-	if host.Type != "unknown" {
-
-		logger.Info(
-			"DEVICE IDENTIFIED:",
-			host.IP,
-			"TYPE:",
-			host.Type,
-			"CONFIDENCE:",
-			host.Confidence,
-		)
-	}
-
 	return host
 
 }

@@ -5,4 +5,5 @@ type Port struct {
 	Protocol string `json:"protocol"`
 	Service  string `json:"service"`
 	Open     bool   `json:"open"`
+	Banner   string `json:"banner"`
 }

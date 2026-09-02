@@ -102,11 +102,24 @@ func scanPortWorker(
 			continue
 		}
 
+		banner := GrabBanner(
+			ip,
+			port,
+		)
+
+		logger.Debug(
+			"PORT BANNER:",
+			ip,
+			port,
+			banner,
+		)
+
 		results <- models.Port{
 			Number:   port,
 			Protocol: "tcp",
 			Service:  DetectPortService(port),
 			Open:     true,
+			Banner:   banner,
 		}
 	}
 }

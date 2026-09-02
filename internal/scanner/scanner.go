@@ -135,75 +135,106 @@ func (s *Scanner) Scan() []models.Network {
 			gw.IP,
 		)
 
-network := BuildNetwork(
-	iface,
-	gw,
-)
+		network := BuildNetwork(
+			iface,
+			gw,
+		)
 
-logger.Info(
-	"NETWORK BUILT:",
-	network.CIDR,
-)
+		logger.Info(
+			"NETWORK BUILT:",
+			network.CIDR,
+		)
 
-subnets := SubnetsFromCIDR(
-    network.CIDR,
-    24,
-)
+		subnets := SubnetsFromCIDR(
+			network.CIDR,
+			24,
+		)
 
-logger.Info(
-    "SUBNETS GENERATED:",
-    len(subnets),
-)
+		logger.Info(
+			"SUBNETS GENERATED:",
+			len(subnets),
+		)
 
-for _, subnet := range subnets {
+		for _, subnet := range subnets {
 
-    logger.Debug(
-        "SUBNET:",
-        subnet,
-    )
-}
+			logger.Debug(
+				"SUBNET:",
+				subnet,
+			)
+		}
 
-// TODO: временно отключено до тестирования больших сетей.
-//
-// if len(subnets) > 1 {
-//
-//     logger.Info(
-//         "LARGE NETWORK DETECTED:",
-//         network.CIDR,
-//     )
-//
-//     continue
-// }
+		// TODO: временно отключено до тестирования больших сетей.
+		//
+		// if len(subnets) > 1 {
+		//
+		//     logger.Info(
+		//         "LARGE NETWORK DETECTED:",
+		//         network.CIDR,
+		//     )
+		//
+		//     continue
+		// }
 
-ips := HostsFromCIDR(
-	network.CIDR,
-)
+		ips := HostsFromCIDR(
+			network.CIDR,
+		)
 		logger.Info(
 			"HOST IPS GENERATED:",
 			len(ips),
 		)
 
 		network.Hosts = DiscoverHostsFull(
-    ips,
-    s.Config.Workers,
-    s.Config,
-)
+			ips,
+			s.Config.Workers,
+			s.Config,
+		)
 
-logger.Info(
-    "HOSTS DISCOVERY FULL FINISHED:",
-    len(network.Hosts),
-)
+		logger.Info(
+			"HOSTS DISCOVERY FULL FINISHED:",
+			len(network.Hosts),
+		)
 
-network.Hosts = EnrichHosts(
-    network.Hosts,
-    iface,
-    s.Config,
-)
+		network.Hosts = EnrichHosts(
+			network.Hosts,
+			iface,
+			s.Config,
+		)
 
-logger.Info(
-    "HOSTS ENRICHMENT FINISHED:",
-    len(network.Hosts),
-)
+		for i := range network.Hosts {
+
+			host := &network.Hosts[i]
+
+			identification := IdentifyDevice(*host)
+
+			host.Type = identification.Type
+
+			host.Confidence = CalculateConfidence(*host)
+
+			host.OS = IdentifyOS(*host)
+
+			logger.Info(
+				"OS IDENTIFIED:",
+				host.IP,
+				"OS:",
+				host.OS,
+			)
+
+			if host.Type != models.DeviceUnknown {
+				logger.Info(
+					"DEVICE IDENTIFIED:",
+					host.IP,
+					"TYPE:",
+					host.Type,
+					"CONFIDENCE:",
+					host.Confidence,
+				)
+			}
+		}
+
+		logger.Info(
+			"HOSTS ENRICHMENT FINISHED:",
+			len(network.Hosts),
+		)
 
 		var ssdpResponses []SSDPResponse
 
@@ -349,36 +380,36 @@ func (s *Scanner) Topology() models.ScanResult {
 			}
 		}
 
-if !result.Online {
+		if !result.Online {
 
-        topology.Links[i].Latency = 0
-        topology.Links[i].Status = "timeout"
+			topology.Links[i].Latency = 0
+			topology.Links[i].Status = "timeout"
 
-} else if result.RTT == 0 {
+		} else if result.RTT == 0 {
 
-        topology.Links[i].Latency = 0
-        topology.Links[i].Status = "unknown"
+			topology.Links[i].Latency = 0
+			topology.Links[i].Status = "unknown"
 
-} else {
+		} else {
 
-        latency :=
-                result.RTT.Seconds() * 1000
+			latency :=
+				result.RTT.Seconds() * 1000
 
-        topology.Links[i].Latency = latency
+			topology.Links[i].Latency = latency
 
-        switch {
+			switch {
 
-        case latency < 10:
-                topology.Links[i].Status = "good"
+			case latency < 10:
+				topology.Links[i].Status = "good"
 
-        case latency < 50:
-                topology.Links[i].Status = "warning"
+			case latency < 50:
+				topology.Links[i].Status = "warning"
 
-        default:
-                topology.Links[i].Status = "critical"
-        }
-}
-}
+			default:
+				topology.Links[i].Status = "critical"
+			}
+		}
+	}
 
 	for _, node := range topology.Nodes {
 

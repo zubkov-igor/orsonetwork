@@ -2,6 +2,7 @@ package scanner
 
 var PortServices = map[int]string{
 
+	21: "ftp",
 	22: "ssh",
 	23: "telnet",
 

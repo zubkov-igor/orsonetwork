@@ -12,6 +12,8 @@ type Host struct {
 	Hostname string
 	Vendor   string
 
+	OS string `json:"os"`
+
 	IsGateway bool
 
 	Ports []Port

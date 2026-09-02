@@ -46,7 +46,6 @@ func incIP(ip net.IP) {
 	}
 }
 
-
 func SubnetsFromCIDR(cidr string, prefix int) []string {
 
 	ip, network, err := net.ParseCIDR(cidr)

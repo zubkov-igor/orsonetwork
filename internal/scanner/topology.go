@@ -70,6 +70,7 @@ func BuildTopology(
 					MAC:      host.MAC,
 					Hostname: host.Hostname,
 					Vendor:   host.Vendor,
+					OS:       host.OS,
 					Sources:  host.Sources,
 					Online:   host.Online,
 					RTT:      host.RTT,

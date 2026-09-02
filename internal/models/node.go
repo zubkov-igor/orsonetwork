@@ -15,6 +15,7 @@ type Node struct {
 	MAC      string `json:"mac"`
 	Hostname string `json:"hostname"`
 	Vendor   string `json:"vendor"`
+	OS       string `json:"os"`
 
 	Sources []DiscoverySource `json:"sources"`
 

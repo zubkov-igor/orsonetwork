@@ -54,30 +54,35 @@ return (
         <div class="dashboard__nodes">
 
             {sortedNodes().map((node) => (
+<div class="node-card">
 
-                <div class="node-card">
+    <h3>
+        {node.hostname || node.ip}
+    </h3>
 
-                    <h3>
-                        {node.hostname || node.ip}
-                    </h3>
+    {node.hostname && (
+        <span>{node.ip}</span>
+    )}
 
-                    {node.hostname && (
-                        <span>{node.ip}</span>
-                    )}
+    <span>{node.type}</span>
 
-                    <span>{node.type}</span>
+    <span>
+        {node.os || "Unknown OS"}
+    </span>
 
-                    <span>
-                        {node.vendor || "Unknown vendor"}
-                    </span>
-                   <span
-    class={`node-card__status ${
-        node.online
-            ? "node-card__status--online"
-            : "node-card__status--offline"
-    }`}
-></span>
-                </div>
+    <span>
+        {node.vendor || "Unknown vendor"}
+    </span>
+
+    <span
+        class={`node-card__status ${
+            node.online
+                ? "node-card__status--online"
+                : "node-card__status--offline"
+        }`}
+    ></span>
+
+</div>
 
             ))}
 

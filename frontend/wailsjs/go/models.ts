@@ -109,6 +109,7 @@ export namespace models {
 	    protocol: string;
 	    service: string;
 	    open: boolean;
+	    banner: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Port(source);
@@ -120,6 +121,7 @@ export namespace models {
 	        this.protocol = source["protocol"];
 	        this.service = source["service"];
 	        this.open = source["open"];
+	        this.banner = source["banner"];
 	    }
 	}
 	export class Host {
@@ -127,6 +129,7 @@ export namespace models {
 	    MAC: string;
 	    Hostname: string;
 	    Vendor: string;
+	    os: string;
 	    IsGateway: boolean;
 	    Ports: Port[];
 	    HTTP: HTTPInfo[];
@@ -149,6 +152,7 @@ export namespace models {
 	        this.MAC = source["MAC"];
 	        this.Hostname = source["Hostname"];
 	        this.Vendor = source["Vendor"];
+	        this.os = source["os"];
 	        this.IsGateway = source["IsGateway"];
 	        this.Ports = this.convertValues(source["Ports"], Port);
 	        this.HTTP = this.convertValues(source["HTTP"], HTTPInfo);
@@ -245,6 +249,7 @@ export namespace models {
 	    mac: string;
 	    hostname: string;
 	    vendor: string;
+	    os: string;
 	    sources: DiscoverySource[];
 	    online: boolean;
 	    rtt: number;
@@ -262,6 +267,7 @@ export namespace models {
 	        this.mac = source["mac"];
 	        this.hostname = source["hostname"];
 	        this.vendor = source["vendor"];
+	        this.os = source["os"];
 	        this.sources = this.convertValues(source["sources"], DiscoverySource);
 	        this.online = source["online"];
 	        this.rtt = source["rtt"];
