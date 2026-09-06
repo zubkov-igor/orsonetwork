@@ -15,7 +15,7 @@ func discoverHostNew(
 	host := models.Host{
 		IP: ip,
 	}
-	start := time.Now()
+	//	start := time.Now()
 
 	// =========================
 	// ICMP
@@ -23,14 +23,14 @@ func discoverHostNew(
 
 	if config.EnableICMP {
 
-		stepStart := time.Now()
+		//		stepStart := time.Now()
 
 		result := PingHost(
 			ip,
 			500*time.Millisecond,
 		)
 
-		pingDuration := time.Since(stepStart)
+		//	pingDuration := time.Since(stepStart)
 
 		if result.Online {
 
@@ -46,14 +46,14 @@ func discoverHostNew(
 			)
 		}
 
-		if pingDuration > 100*time.Millisecond {
-			logger.Debug(
-				"DISCOVERY SLOW:",
-				ip,
-				"PING:",
-				pingDuration,
-			)
-		}
+		//	if pingDuration > 100*time.Millisecond {
+		//		logger.Debug(
+		//			"DISCOVERY SLOW:",
+		//			ip,
+		//			"PING:",
+		//			pingDuration,
+		//		)
+		//	}
 	}
 
 	// ARP
@@ -101,21 +101,21 @@ func discoverHostNew(
 
 	if config.EnableReverseDNS {
 
-		stepStart := time.Now()
+		//	stepStart := time.Now()
 
 		hostname := LookupReverseDNS(ip)
 
-		dnsDuration := time.Since(stepStart)
+		//	dnsDuration := time.Since(stepStart)
 
-		if dnsDuration > 100*time.Millisecond {
+		//	if dnsDuration > 100*time.Millisecond {
 
-			logger.Debug(
-				"DISCOVERY SLOW:",
-				ip,
-				"REVERSE DNS:",
-				dnsDuration,
-			)
-		}
+		//		logger.Debug(
+		//			"DISCOVERY SLOW:",
+		//			ip,
+		//			"REVERSE DNS:",
+		//			dnsDuration,
+		//		)
+		//	}
 
 		if hostname != "" && host.Hostname == "" {
 
@@ -130,16 +130,16 @@ func discoverHostNew(
 			)
 		}
 	}
-	totalDuration := time.Since(start)
+	// totalDuration := time.Since(start)
 
-	if totalDuration > 1*time.Second {
-
-		logger.Debug(
-			"DISCOVERY SLOW TOTAL:",
-			ip,
-			totalDuration,
-		)
-	}
+	//if totalDuration > 1*time.Second {
+	//
+	//		logger.Debug(
+	//			"DISCOVERY SLOW TOTAL:",
+	//			ip,
+	//			totalDuration,
+	//		)
+	//	}
 
 	return host
 

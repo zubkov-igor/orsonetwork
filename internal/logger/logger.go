@@ -28,7 +28,7 @@ func SetLevel(level Level) {
 func Init() {
 
 	file, err := os.OpenFile(
-		"orsonetwork.log",
+		"info.log",
 		os.O_CREATE|os.O_APPEND|os.O_WRONLY,
 		0666,
 	)

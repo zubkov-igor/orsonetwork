@@ -9,6 +9,7 @@ import (
 
 func IdentifyDevice(
 	host models.Host,
+	evidence []models.FingerprintEvidence,
 ) models.DeviceIdentification {
 
 	logger.Debug(
@@ -21,13 +22,29 @@ func IdentifyDevice(
 		"MDNS:", len(host.MDNS),
 	)
 
-	hostname := strings.ToLower(
-		host.Hostname,
-	)
+	hostname := strings.ToLower(host.Hostname)
 
-	vendor := strings.ToLower(
-		host.Vendor,
-	)
+	if hostname != "" {
+		evidence = append(
+			evidence,
+			models.FingerprintEvidence{
+				Source: models.DiscoveryReverseDNS,
+				Value:  "hostname:" + hostname,
+			},
+		)
+	}
+
+	vendor := strings.ToLower(host.Vendor)
+
+	if vendor != "" {
+		evidence = append(
+			evidence,
+			models.FingerprintEvidence{
+				Source: models.DiscoveryOUI,
+				Value:  "vendor:" + vendor,
+			},
+		)
+	}
 
 	scores := make(
 		map[models.DeviceType]int,

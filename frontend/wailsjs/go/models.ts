@@ -14,6 +14,20 @@ export namespace models {
 	        this.Value = source["Value"];
 	    }
 	}
+	export class FingerprintEvidence {
+	    Source: string;
+	    Value: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new FingerprintEvidence(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Source = source["Source"];
+	        this.Value = source["Value"];
+	    }
+	}
 	export class HTTPInfo {
 	    port: number;
 	    scheme: string;
@@ -141,6 +155,7 @@ export namespace models {
 	    Sources: DiscoverySource[];
 	    Online: boolean;
 	    RTT: number;
+	    fingerprint: FingerprintEvidence[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Host(source);
@@ -164,6 +179,7 @@ export namespace models {
 	        this.Sources = this.convertValues(source["Sources"], DiscoverySource);
 	        this.Online = source["Online"];
 	        this.RTT = source["RTT"];
+	        this.fingerprint = this.convertValues(source["fingerprint"], FingerprintEvidence);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

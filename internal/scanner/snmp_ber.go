@@ -48,14 +48,11 @@ func WrapBER(
 }
 
 func EncodeInteger(value int) []byte {
-	return WrapBER(
-		0x02,
-		[]byte{
-			byte(value),
-		},
-	)
-
 	var result []byte
+
+	if value == 0 {
+		result = []byte{0}
+	}
 
 	for value > 0 {
 		result = append(

@@ -38,12 +38,10 @@ return (
         <h1>Dashboard</h1>
 
         <div class="dashboard__topology">
-            <h2>Network Topology</h2>
-
             <TopologyGraph compact />
         </div>
 
-        <h2>Devices</h2>
+        <h3>Devices</h3>
 
         {scanning() && (
             <div class="scan-spinner">

@@ -118,6 +118,27 @@ func ProbeSNMP(
 		buffer,
 	)
 
+	logger.Debug(
+		"SNMP AFTER READ:",
+		ip,
+		"N:",
+		n,
+		"ERR:",
+		err,
+	)
+
+	if err != nil {
+		logger.Debug(
+			"SNMP READ ERROR:",
+			ip,
+			err,
+		)
+
+		return UDPProbeResult{
+			Found: false,
+		}
+	}
+
 	if err != nil {
 
 		logger.Debug(
@@ -167,6 +188,11 @@ func ProbeSNMP(
 			Found: false,
 		}
 	}
+
+	logger.Debug(
+		"SNMP BEFORE PARSER:",
+		ip,
+	)
 
 	parsed := ParseSNMPResponse(
 		response,

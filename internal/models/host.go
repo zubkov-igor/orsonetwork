@@ -35,4 +35,6 @@ type Host struct {
 	Online bool
 
 	RTT time.Duration
+
+	Fingerprint []FingerprintEvidence `json:"fingerprint"`
 }

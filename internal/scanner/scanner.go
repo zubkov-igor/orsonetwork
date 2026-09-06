@@ -204,7 +204,14 @@ func (s *Scanner) Scan() []models.Network {
 
 			host := &network.Hosts[i]
 
-			identification := IdentifyDevice(*host)
+			evidence := BuildFingerprint(*host)
+
+			host.Fingerprint = evidence
+
+			identification := IdentifyDevice(
+				*host,
+				evidence,
+			)
 
 			host.Type = identification.Type
 

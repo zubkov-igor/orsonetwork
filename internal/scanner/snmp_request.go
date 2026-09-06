@@ -1,16 +1,5 @@
 package scanner
 
-// BuildSNMPRequest builds SNMPv1 GET request.
-//
-// Request:
-//   - Version: SNMPv1 (0)
-//   - Community: public
-//   - PDU: GetRequest
-//   - VarBind: OID + NULL
-//
-// Used for querying values like:
-// 1.3.6.1.2.1.1.1.0 (sysDescr)
-
 func BuildSNMPRequest(
 	oid []int,
 ) []byte {
