@@ -5,6 +5,7 @@ export type Route =
     | "dashboard"
     | "topology"
     | "devices"
+    | "utility"
     | "settings";
 
 

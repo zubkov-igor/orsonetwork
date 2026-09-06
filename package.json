@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "cytoscape-dagre": "^4.0.1",
+    "dagre": "^0.8.5",
     "solid-js": "^1.9.14"
   },
   "devDependencies": {

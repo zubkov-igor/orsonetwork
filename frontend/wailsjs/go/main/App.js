@@ -10,6 +10,10 @@ export function GetTopology() {
   return window['go']['main']['App']['GetTopology']();
 }
 
+export function ScanWifi() {
+  return window['go']['main']['App']['ScanWifi']();
+}
+
 export function UpdateScannerConfig(arg1) {
   return window['go']['main']['App']['UpdateScannerConfig'](arg1);
 }

@@ -3,220 +3,114 @@ import {
     onCleanup,
     createEffect,
 } from "solid-js";
-
 import cytoscape from "cytoscape";
-
+import dagre from "cytoscape-dagre";
 import {
     topology,
     selectedDevice,
     setSelectedDevice,
 } from "../store/topology";
 
+cytoscape.use(dagre);
+
 interface TopologyGraphProps {
     compact?: boolean;
 }
 
-export default function TopologyGraph(
-    props: TopologyGraphProps
-) {
+export default function TopologyGraph(props: TopologyGraphProps) {
     let container: HTMLDivElement | undefined;
-
     let cy: cytoscape.Core | undefined;
 
     const latencyGood = 10;
     const latencyWarning = 50;
 
-    function runLayout(compact: boolean) {
-        if (!cy) return;
+function runLayout(compact: boolean) {
+    if (!cy) return;
 
-        const roots = cy.nodes('node[type = "gateway"]');
-
-        cy.layout({
-            name: "breadthfirst",
-            directed: true,
-
-            roots: roots.length > 0
-                ? roots.map((n) => n.id())
-                : undefined,
-
-            padding: compact ? 10 : 40,
-
-            spacingFactor: compact ? 0.8 : 1.25,
-
-            circle: false,
-
-            fit: true,
-
-            animate: !compact,
-            animationDuration: compact ? 0 : 300,
-        }).run();
-
-            if (compact) {
-
-        roots.forEach((node) => {
-
-            const position = node.position();
-
-            node.position({
-                x: position.x,
-                y: position.y - 10,
-            });
-
-        });
-
-    }
-    }
+    cy.layout({
+        name: "dagre",
+        rankDir: "TB",
+        nodeSep: compact ? 45 : 50,      // было 20
+        rankSep: compact ? 55 : 70,      // было 35
+        edgeSep: compact ? 15 : 10,
+        padding: compact ? 30 : 40,
+        animate: !compact,
+        animationDuration: 300,
+        fit: true,
+    } as any).run();
+}
 
     onMount(() => {
-        if (!container) {
-            return;
-        }
+        if (!container) return;
 
-        const styles = getComputedStyle(
-            document.documentElement
-        );
+        const styles = getComputedStyle(document.documentElement);
 
-        const colorNode = styles
-            .getPropertyValue("--color-node")
-            .trim();
-
-        const colorNodeBorder = styles
-            .getPropertyValue("--color-node-border")
-            .trim();
-
-        const colorGateway = styles
-            .getPropertyValue("--color-gateway")
-            .trim();
-
-        const colorGatewayBorder = styles
-            .getPropertyValue("--color-gateway-border")
-            .trim();
-
-        const colorLight = styles
-            .getPropertyValue("--color-light")
-            .trim();
-
-        const colorSwitch = styles
-            .getPropertyValue("--color-switch")
-            .trim();
-
-        const colorSwitchBorder = styles
-            .getPropertyValue("--color-switch-border")
-            .trim();
-
-        const colorServer = styles
-            .getPropertyValue("--color-server")
-            .trim();
-
-        const colorServerBorder = styles
-            .getPropertyValue("--color-server-border")
-            .trim();
-
-        const colorAP = styles
-            .getPropertyValue("--color-ap")
-            .trim();
-
-        const colorAPBorder = styles
-            .getPropertyValue("--color-ap-border")
-            .trim();
-
-        const colorLatencyGood = styles
-            .getPropertyValue("--color-latency-good")
-            .trim();
-
-        const colorLatencyWarning = styles
-            .getPropertyValue("--color-latency-warning")
-            .trim();
-
-        const colorLatencyCritical = styles
-            .getPropertyValue("--color-latency-critical")
-            .trim();
-
-        const colorLatencyTimeout = styles
-            .getPropertyValue("--color-latency-timeout")
-            .trim();
-
-        const colorLatencyLabelBg = styles
-            .getPropertyValue("--color-latency-label-bg")
-            .trim();
+        const colorNode = styles.getPropertyValue("--color-node").trim();
+        const colorNodeBorder = styles.getPropertyValue("--color-node-border").trim();
+        const colorGateway = styles.getPropertyValue("--color-gateway").trim();
+        const colorGatewayBorder = styles.getPropertyValue("--color-gateway-border").trim();
+        const colorLight = styles.getPropertyValue("--color-light").trim();
+        const colorSwitch = styles.getPropertyValue("--color-switch").trim();
+        const colorSwitchBorder = styles.getPropertyValue("--color-switch-border").trim();
+        const colorServer = styles.getPropertyValue("--color-server").trim();
+        const colorServerBorder = styles.getPropertyValue("--color-server-border").trim();
+        const colorAP = styles.getPropertyValue("--color-ap").trim();
+        const colorAPBorder = styles.getPropertyValue("--color-ap-border").trim();
+        const colorLatencyGood = styles.getPropertyValue("--color-latency-good").trim();
+        const colorLatencyWarning = styles.getPropertyValue("--color-latency-warning").trim();
+        const colorLatencyCritical = styles.getPropertyValue("--color-latency-critical").trim();
+        const colorLatencyTimeout = styles.getPropertyValue("--color-latency-timeout").trim();
+        const colorLatencyLabelBg = styles.getPropertyValue("--color-latency-label-bg").trim();
 
         cy = cytoscape({
             container,
-
             style: [
-               // Базовый стиль узла
-{
-    selector: "node",
-    style: {
-        "background-color": colorNode,
-
-        width: 18,
-        height: 18,
-
-        label: "data(label)",
-
-        color: colorLight,
-
-        "text-valign": "bottom",
-        "text-halign": "center",
-
-        "text-margin-y": 6,
-
-        "font-size": 11,
-        "font-weight": "bold",
-
-        "text-wrap": "wrap",
-        "text-max-width": "80px",
-
-        "border-width": 1,
-        "border-color": colorNodeBorder,
-    },
-},
-
-// =========================
-// Compact Dashboard
-// =========================
-
-    {
-    selector: "node.compact",
-    style: {
-        width: 10,
-        height: 10,
-        "font-size": 8,
-        "border-width": 1,
-
-        "text-valign": "bottom",
-        "text-halign": "center",
-        "text-margin-y": 10,
-    },
-},
-
-{
-selector: 'node.compact[type = "gateway"]',
-    style: {
-        width: 10,
-        height: 10,
-        "font-size": 8,
-        "border-width": 2,
-
-        "text-valign": "top",
-        "text-halign": "center",
-        "text-margin-y": 0,
-    },
-},
-
-// Выделенный узел
-{
-    selector: "node.node--selected",
-    style: {
-        "border-width": 3,
-        "border-color": colorGatewayBorder,
-        "overlay-color": colorGatewayBorder,
-        "overlay-opacity": 0.25,
-        "overlay-padding": 8,
-    },
-},
-
+                // Базовый стиль узла
+                {
+                    selector: "node",
+                    style: {
+                        "background-color": colorNode,
+                        width: 18,
+                        height: 18,
+                        label: "data(label)",
+                        color: colorLight,
+                        "text-valign": "bottom",
+                        "text-halign": "center",
+                        "text-margin-y": 6,
+                        "font-size": 11,
+                        "font-weight": "bold",
+                        "text-wrap": "wrap",
+                        "text-max-width": "80px",
+                        "border-width": 1,
+                        "border-color": colorNodeBorder,
+                    },
+                },
+                // Compact
+                {
+                    selector: "node.compact",
+                    style: {
+                        width: 12,
+                        height: 12,
+                        "font-size": 8,
+                        "border-width": 1,
+                        "text-valign": "bottom",
+                        "text-halign": "center",
+                        "text-margin-y": 4,
+                        "text-max-width": "60px",
+                    },
+                },
+                {
+                    selector: 'node.compact[type = "gateway"]',
+                    style: {
+                        width: 14,
+                        height: 14,
+                        "font-size": 8,
+                        "border-width": 2,
+                        "text-valign": "top",
+                        "text-halign": "center",
+                        "text-margin-y": -2,
+                    },
+                },
                 // Выделенный узел
                 {
                     selector: "node.node--selected",
@@ -228,8 +122,7 @@ selector: 'node.compact[type = "gateway"]',
                         "overlay-padding": 8,
                     },
                 },
-
-                // Hover на узле
+                // Hover
                 {
                     selector: "node.node--hover",
                     style: {
@@ -238,39 +131,23 @@ selector: 'node.compact[type = "gateway"]',
                         "z-index": 999,
                     },
                 },
-
-                // Gateway — крупный, сверху
+                // Gateway
                 {
-    selector: 'node[type = "gateway"]',
-    style: {
-        "background-color": colorGateway,
-        shape: "round-rectangle",
-
-        width: 20,
-        height: 20,
-
-        "border-width": 3,
-        "border-color": colorGatewayBorder,
-
-        "font-size": 12,
-
-        "text-valign": "top",
-        "text-halign": "center",
-        "text-margin-y": -8,
-    },
-},
-
-                {
-    selector: 'node.compact[type = "gateway"]',
-    style: {
-        width: 15,
-        height: 15,
-        "font-size": 8,
-        "border-width": 2,
-    },
-},
-
-                // Switch — прямоугольник
+                    selector: 'node[type = "gateway"]',
+                    style: {
+                        "background-color": colorGateway,
+                        shape: "round-rectangle",
+                        width: 20,
+                        height: 20,
+                        "border-width": 3,
+                        "border-color": colorGatewayBorder,
+                        "font-size": 12,
+                        "text-valign": "top",
+                        "text-halign": "center",
+                        "text-margin-y": -8,
+                    },
+                },
+                // Switch
                 {
                     selector: 'node[type = "switch"]',
                     style: {
@@ -281,8 +158,7 @@ selector: 'node.compact[type = "gateway"]',
                         "border-color": colorSwitchBorder,
                     },
                 },
-
-                // Server — barrel
+                // Server
                 {
                     selector: 'node[type = "server"]',
                     style: {
@@ -293,8 +169,7 @@ selector: 'node.compact[type = "gateway"]',
                         "border-color": colorServerBorder,
                     },
                 },
-
-                // AP — треугольник
+                // AP
                 {
                     selector: 'node[type = "ap"]',
                     style: {
@@ -305,8 +180,7 @@ selector: 'node.compact[type = "gateway"]',
                         "border-color": colorAPBorder,
                     },
                 },
-
-                // Host — круг
+                // Host
                 {
                     selector: 'node[type = "host"]',
                     style: {
@@ -317,16 +191,14 @@ selector: 'node.compact[type = "gateway"]',
                         "border-color": colorNodeBorder,
                     },
                 },
-
                 {
-    selector: 'node.compact[type = "host"]',
-    style: {
-        width: 18,
-        height: 18,
-        "border-width": 1,
-    },
-},
-
+                    selector: 'node.compact[type = "host"]',
+                    style: {
+                        width: 18,
+                        height: 18,
+                        "border-width": 1,
+                    },
+                },
                 // Базовый стиль ребра
                 {
                     selector: "edge",
@@ -343,7 +215,6 @@ selector: 'node.compact[type = "gateway"]',
                         "font-size": "9px",
                     },
                 },
-
                 // Hover на ребре
                 {
                     selector: "edge.edge--hover",
@@ -354,8 +225,7 @@ selector: 'node.compact[type = "gateway"]',
                         "z-index": 999,
                     },
                 },
-
-                // Физический линк — сплошная
+                // Типы рёбер
                 {
                     selector: 'edge[type = "physical"]',
                     style: {
@@ -363,8 +233,6 @@ selector: 'node.compact[type = "gateway"]',
                         width: 2,
                     },
                 },
-
-                // Туннель / VPN — пунктир
                 {
                     selector: 'edge[type = "tunnel"]',
                     style: {
@@ -373,8 +241,6 @@ selector: 'node.compact[type = "gateway"]',
                         width: 2,
                     },
                 },
-
-                // Wi-Fi — точечная, без стрелки
                 {
                     selector: 'edge[type = "wireless"]',
                     style: {
@@ -383,16 +249,13 @@ selector: 'node.compact[type = "gateway"]',
                         "target-arrow-shape": "none",
                     },
                 },
-
-                // Trunk — толще
                 {
                     selector: 'edge[type = "trunk"]',
                     style: {
                         width: 4,
                     },
                 },
-
-                // Статусы по задержке
+                // Статусы latency
                 {
                     selector: 'edge[status = "good"]',
                     style: {
@@ -422,144 +285,109 @@ selector: 'node.compact[type = "gateway"]',
                     },
                 },
             ],
-
-            layout: {
-                name: "breadthfirst",
-                directed: true,
-                padding: 30,
-            },
         });
 
-        // Клик по узлу — выбор устройства
+        // Клик по узлу
         cy.on("tap", "node", (event) => {
             const node = event.target;
-
             const currentTopology = topology();
-
-            if (!currentTopology) {
-                return;
-            }
+            if (!currentTopology) return;
 
             const device = currentTopology.nodes.find(
                 (item) => item.id === node.id()
             );
-
-            if (!device) {
-                return;
+            if (device) {
+                setSelectedDevice(device);
             }
-
-            setSelectedDevice(device);
         });
 
-        // Hover на узел
+        // Hover
         cy.on("mouseover", "node", (event) => {
             event.target.addClass("node--hover");
         });
-
         cy.on("mouseout", "node", (event) => {
             event.target.removeClass("node--hover");
         });
-
-        // Hover на ребро
         cy.on("mouseover", "edge", (event) => {
             event.target.addClass("edge--hover");
         });
-
         cy.on("mouseout", "edge", (event) => {
             event.target.removeClass("edge--hover");
         });
     });
 
+    // Обновление топологии
     createEffect(() => {
         const currentTopology = topology();
+        if (!currentTopology || !cy) return;
 
-        if (!currentTopology || !cy) {
-            return;
-        }
+        const nodes = currentTopology.nodes ?? [];
+        const links = currentTopology.links ?? [];
 
-    const nodes = currentTopology.nodes ?? [];
-    const links = currentTopology.links ?? [];
+        const visibleNodes = nodes.filter((node) => node.online);
+        const visibleNodeIds = new Set(visibleNodes.map((node) => node.id));
 
-const visibleNodes = nodes.filter((node) => {
-    return node.online;
-});
+        const visibleLinks = links.filter(
+            (link) =>
+                visibleNodeIds.has(link.from) &&
+                visibleNodeIds.has(link.to)
+        );
 
-const visibleNodeIds = new Set(
-    visibleNodes.map((node) => node.id)
-);
-
-const visibleLinks = links.filter((link) => {
-    return (
-        visibleNodeIds.has(link.from) &&
-        visibleNodeIds.has(link.to)
-    );
-});
-
-cy.json({
-    elements: {
-       nodes: visibleNodes.map((node) => ({
-    data: {
-        id: node.id,
-        label: node.ip,
-        type: node.type,
-        ip: node.ip,
-        mac: node.mac,
-        vendor: node.vendor,
-        hostname: node.hostname,
-        sources: node.sources,
-        online: node.online,
-        rtt: node.rtt,
-    },
-
-    classes: props.compact
-        ? "compact"
-        : "",
-})),
-
-        edges: visibleLinks.map((link, index) => ({
-            data: {
-                id: `link-${index}`,
-                source: link.from,
-                target: link.to,
-                type: link.type,
-                latencyLabel:
-    props.compact
-        ? ""
-        : link.latency > 0
-            ? `${link.latency.toFixed(1)} ms`
-            : "—",
-                status:
-                    link.latency <= 0
-                        ? "timeout"
-                        : link.latency < latencyGood
-                            ? "good"
-                            : link.latency <= latencyWarning
-                                ? "warning"
-                                : "critical",
+        cy.json({
+            elements: {
+                nodes: visibleNodes.map((node) => ({
+                    data: {
+                        id: node.id,
+                        label: node.ip,
+                        type: node.type,
+                        ip: node.ip,
+                        mac: node.mac,
+                        vendor: node.vendor,
+                        hostname: node.hostname,
+                        sources: node.sources,
+                        online: node.online,
+                        rtt: node.rtt,
+                    },
+                    classes: props.compact ? "compact" : "",
+                })),
+                edges: visibleLinks.map((link, index) => ({
+                    data: {
+                        id: `link-${index}`,
+                        source: link.from,
+                        target: link.to,
+                        type: link.type,
+                        latencyLabel: props.compact
+                            ? ""
+                            : link.latency > 0
+                              ? `${link.latency.toFixed(1)} ms`
+                              : "—",
+                        status:
+                            link.latency <= 0
+                                ? "timeout"
+                                : link.latency < latencyGood
+                                  ? "good"
+                                  : link.latency <= latencyWarning
+                                    ? "warning"
+                                    : "critical",
+                    },
+                })),
             },
-        })),
-    },
-});
+        });
 
         cy.resize();
         runLayout(props.compact ?? false);
     });
 
+    // Подсветка выбранного устройства
     createEffect(() => {
         const selected = selectedDevice();
-
-        if (!cy) {
-            return;
-        }
+        if (!cy) return;
 
         cy.nodes().removeClass("node--selected");
 
-        if (!selected) {
-            return;
-        }
+        if (!selected) return;
 
         const node = cy.getElementById(selected.id);
-
         if (node.length > 0) {
             node.addClass("node--selected");
         }
@@ -573,11 +401,8 @@ cy.json({
         <div
             ref={container}
             class={`topology-graph ${
-                props.compact
-                    ? "topology-graph--compact"
-                    : ""
+                props.compact ? "topology-graph--compact" : ""
             }`}
         />
     );
 }
-

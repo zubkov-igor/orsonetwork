@@ -10,6 +10,7 @@ import Devices from "../pages/Devices";
 import Settings from "../pages/Settings";
 
 import { sidebarExpanded } from "../store/ui";
+import Utility from "../pages/Utility";
 
 function renderPage() {
   switch (route()) {
@@ -19,6 +20,8 @@ function renderPage() {
       return <Topology />;
     case "devices":
       return <Devices />;
+    case "utility":
+      return <Utility />;
     case "settings":
       return <Settings />;
     default:

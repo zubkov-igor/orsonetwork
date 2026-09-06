@@ -411,3 +411,34 @@ export namespace models {
 
 }
 
+export namespace wifi {
+	
+	export class Network {
+	    ssid: string;
+	    bssid?: string;
+	    signal?: string;
+	    security?: string;
+	    channel?: string;
+	    freq?: string;
+	    rate?: string;
+	    mode?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Network(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ssid = source["ssid"];
+	        this.bssid = source["bssid"];
+	        this.signal = source["signal"];
+	        this.security = source["security"];
+	        this.channel = source["channel"];
+	        this.freq = source["freq"];
+	        this.rate = source["rate"];
+	        this.mode = source["mode"];
+	    }
+	}
+
+}
+

@@ -31,6 +31,11 @@ const menu: {
         title: "Devices",
         icon: "/icons/devices.svg",
     },
+      {
+        id: "utility",
+        title: "Utility",
+        icon: "/icons/rocket.svg",
+    },
     {
         id: "settings",
         title: "Settings",

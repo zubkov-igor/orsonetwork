@@ -52,6 +52,14 @@
 
 --color-latency-label: #f8fafc;
 --color-latency-label-bg: #1e293b;
+
+
+--color-risk-critical: var(--color-danger);      /* #ef4444 */
+--color-risk-high: var(--color-warning);         /* #f0a202 */
+--color-risk-medium: var(--color-accent);        /* #3b82f6 */
+--color-risk-low: var(--color-latency-good);     /* #2dd4bf */
+--color-risk-info: var(--color-muted);           /* #94a3b8 */
+
 }
 
 

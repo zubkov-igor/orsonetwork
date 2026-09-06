@@ -5,6 +5,7 @@ import (
 	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 	"OrsoNetwork/internal/scanner"
+	"OrsoNetwork/internal/wifi"
 )
 
 type App struct {
@@ -51,4 +52,8 @@ func (a *App) UpdateScannerConfig(
 
 func (a *App) GetScannerConfig() models.ScannerConfig {
     return a.scanner.GetConfig()
+}
+
+func (a *App) ScanWifi() ([]wifi.Network, error) {
+	return wifi.Scan()
 }
