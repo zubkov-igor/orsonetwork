@@ -894,57 +894,19 @@
 }
 
 
-.risk-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.risk-badge--critical {
-  background: color-mix(in srgb, var(--color-risk-critical) 20%, transparent);
-  color: var(--color-risk-critical);
-  border: 1px solid var(--color-risk-critical);
-}
-
-.risk-badge--high {
-  background: color-mix(in srgb, var(--color-risk-high) 20%, transparent);
-  color: var(--color-risk-high);
-  border: 1px solid var(--color-risk-high);
-}
-
-.risk-badge--medium {
-  background: color-mix(in srgb, var(--color-risk-medium) 18%, transparent);
-  color: var(--color-risk-medium);
-  border: 1px solid var(--color-risk-medium);
-}
-
-.risk-badge--low {
-  background: color-mix(in srgb, var(--color-risk-low) 18%, transparent);
-  color: var(--color-risk-low);
-  border: 1px solid var(--color-risk-low);
-}
-
-
-
 /* =========================
    Wi-Fi Scanner
-   OrsoNetwork style
    ========================= */
 
 .utility-page {
   padding: 24px;
-  color: #d7dee7;
+  color: var(--color-text);
 }
 
 .utility-page h2 {
-  margin: 0 0 18px;
-  font-size: 20px;
+  margin: 0 0 20px;
+  font-size: 24px;
   font-weight: 600;
-  letter-spacing: 0.02em;
 }
 
 /* =========================
@@ -954,27 +916,23 @@
 .utility-page > button {
   padding: 9px 16px;
 
-  border: 1px solid #334155;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
 
-  background: #18212b;
-  color: #dce4ec;
+  background: var(--color-block);
+  color: var(--color-text);
 
-  font-size: 13px;
-  font-weight: 500;
-
+  font-size: 14px;
   cursor: pointer;
 
   transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
+    background var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .utility-page > button:hover:not(:disabled) {
-  background: #202c38;
-  border-color: #4ade80;
-  color: #ffffff;
+  background: var(--color-dark);
+  border-color: var(--color-accent);
 }
 
 .utility-page > button:disabled {
@@ -987,16 +945,14 @@
    ========================= */
 
 .utility-page .error {
-  margin: 14px 0 0;
+  margin: 14px 0;
   padding: 10px 12px;
 
-  border: 1px solid #7f1d1d;
+  border: 1px solid var(--color-danger);
   border-radius: 6px;
 
-  background: #24171a;
-  color: #fca5a5;
-
-  font-size: 13px;
+  background: var(--color-dark);
+  color: var(--color-danger);
 }
 
 /* =========================
@@ -1004,73 +960,92 @@
    ========================= */
 
 .wifi-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.risk-metric {
+  position: relative;
+
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  justify-content: center;
 
-  margin: 20px 0 14px;
-  padding: 12px;
+  min-height: 78px;
+  padding: 14px 16px 14px 20px;
 
-  border: 1px solid #273342;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
 
-  background: #111820;
+  background: var(--color-block);
+
+  overflow: hidden;
+}
+
+.risk-metric::before {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+
+  width: 3px;
+}
+
+.risk-metric__value {
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.risk-metric__label {
+  margin-top: 7px;
+
+  color: var(--color-muted);
+
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 /* =========================
-   Risk badges
+   Risk colors
    ========================= */
 
-.risk-badge {
-  display: inline-flex;
-  align-items: center;
-
-  min-width: 64px;
-  justify-content: center;
-
-  padding: 4px 8px;
-
-  border: 1px solid;
-  border-radius: 4px;
-
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-
-  text-transform: lowercase;
-  letter-spacing: 0.02em;
+.risk-metric--critical {
+  color: var(--color-risk-critical);
 }
 
-/* Critical */
-
-.risk-badge--critical {
-  border-color: #7f1d1d;
-  background: #2a1719;
-  color: #fca5a5;
+.risk-metric--critical::before {
+  background: var(--color-risk-critical);
 }
 
-/* High */
-
-.risk-badge--high {
-  border-color: #92400e;
-  background: #291d13;
-  color: #fdba74;
+.risk-metric--high {
+  color: var(--color-risk-high);
 }
 
-/* Medium */
-
-.risk-badge--medium {
-  border-color: #854d0e;
-  background: #282316;
-  color: #fde68a;
+.risk-metric--high::before {
+  background: var(--color-risk-high);
 }
 
-/* Low */
+.risk-metric--medium {
+  color: var(--color-risk-medium);
+}
 
-.risk-badge--low {
-  border-color: #166534;
-  background: #14241a;
-  color: #86efac;
+.risk-metric--medium::before {
+  background: var(--color-risk-medium);
+}
+
+.risk-metric--low {
+  color: var(--color-risk-low);
+}
+
+.risk-metric--low::before {
+  background: var(--color-risk-low);
 }
 
 /* =========================
@@ -1080,38 +1055,38 @@
 .utility-page table {
   width: 100%;
 
+  border: 1px solid var(--color-border);
   border-collapse: separate;
   border-spacing: 0;
-
-  overflow: hidden;
-
-  border: 1px solid #273342;
   border-radius: 8px;
 
-  background: #10171f;
+  background: var(--color-block);
 
-  font-size: 13px;
+  overflow: hidden;
 }
 
 /* Header */
 
-.utility-page thead {
-  background: #151e28;
-}
-
 .utility-page th {
   padding: 11px 14px;
 
-  border-bottom: 1px solid #2b3745;
+  border-bottom: 1px solid var(--color-border);
 
-  color: #8997a8;
+  background: var(--color-dark);
+  color: var(--color-text);
 
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 
   text-align: left;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+
+  white-space: nowrap;
+}
+
+.utility-page th:not(:last-child) {
+  border-right: 1px solid var(--color-border);
 }
 
 /* Cells */
@@ -1119,11 +1094,17 @@
 .utility-page td {
   padding: 11px 14px;
 
-  border-bottom: 1px solid #202b37;
+  border-bottom: 1px solid var(--color-border);
 
-  color: #cbd5df;
+  color: var(--color-text);
+
+  font-size: 13px;
 
   white-space: nowrap;
+}
+
+.utility-page td:not(:last-child) {
+  border-right: 1px solid var(--color-border);
 }
 
 /* Last row */
@@ -1132,55 +1113,49 @@
   border-bottom: none;
 }
 
-/* Row hover */
-
-.utility-page tbody tr {
-  transition: background 0.12s ease;
-}
+/* Hover */
 
 .utility-page tbody tr:hover {
-  background: #18222d;
+  background: var(--color-dark);
 }
 
-/* SSID */
+/* =========================
+   Risk badges
+   ========================= */
 
-.utility-page td:first-child {
-  color: #f1f5f9;
-  font-weight: 500;
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 64px;
+  padding: 3px 8px;
+
+  border: 1px solid currentColor;
+  border-radius: 4px;
+
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-/* Signal */
-
-.utility-page td:nth-child(2) {
-  color: #9fb0c1;
-  font-variant-numeric: tabular-nums;
+.risk-badge--critical {
+  color: var(--color-risk-critical);
 }
 
-/* Security */
-
-.utility-page td:nth-child(3) {
-  color: #b7c3cf;
+.risk-badge--high {
+  color: var(--color-risk-high);
 }
 
-/* Channel */
-
-.utility-page td:nth-child(5) {
-  color: #8fa1b3;
-  font-variant-numeric: tabular-nums;
+.risk-badge--medium {
+  color: var(--color-risk-medium);
 }
 
-/* BSSID */
-
-.utility-page td:last-child {
-  color: #718296;
-
-  font-family:
-    "JetBrains Mono",
-    "Roboto Mono",
-    monospace;
-
-  font-size: 12px;
-  letter-spacing: 0.02em;
+.risk-badge--low {
+  color: var(--color-risk-low);
 }
 
 /* =========================
@@ -1188,37 +1163,22 @@
    ========================= */
 
 @media (max-width: 900px) {
-  .utility-page {
-    padding: 16px;
-  }
-
   .wifi-summary {
-    flex-wrap: wrap;
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .utility-page table {
-    display: block;
+  .utility-page {
+    padding: 18px;
     overflow-x: auto;
   }
 }
 
-@media (max-width: 600px) {
-  .utility-page h2 {
-    font-size: 18px;
-  }
-
+@media (max-width: 560px) {
   .wifi-summary {
-    gap: 6px;
-  }
-
-  .risk-badge {
-    min-width: 58px;
-    padding: 4px 6px;
-  }
-
-  .utility-page th,
-  .utility-page td {
-    padding: 9px 10px;
+    grid-template-columns: 1fr;
   }
 }
+
+
+
 

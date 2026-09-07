@@ -89,20 +89,27 @@ export default function Utility() {
       {error() && <p class="error">{error()}</p>}
 
       {/* Счётчики рисков */}
-      <div class="wifi-summary">
-        <span class="risk-badge risk-badge--critical">
-          {riskStats().critical} critical
-        </span>
-        <span class="risk-badge risk-badge--high">
-          {riskStats().high} high
-        </span>
-        <span class="risk-badge risk-badge--medium">
-          {riskStats().medium} medium
-        </span>
-        <span class="risk-badge risk-badge--low">
-          {riskStats().low} low
-        </span>
-      </div>
+  <div class="wifi-summary">
+  <div class="risk-metric risk-metric--critical">
+    <span class="risk-metric__value">{riskStats().critical}</span>
+    <span class="risk-metric__label">Critical</span>
+  </div>
+
+  <div class="risk-metric risk-metric--high">
+    <span class="risk-metric__value">{riskStats().high}</span>
+    <span class="risk-metric__label">High</span>
+  </div>
+
+  <div class="risk-metric risk-metric--medium">
+    <span class="risk-metric__value">{riskStats().medium}</span>
+    <span class="risk-metric__label">Medium</span>
+  </div>
+
+  <div class="risk-metric risk-metric--low">
+    <span class="risk-metric__value">{riskStats().low}</span>
+    <span class="risk-metric__label">Low</span>
+  </div>
+</div>
 
       <table>
         <thead>
