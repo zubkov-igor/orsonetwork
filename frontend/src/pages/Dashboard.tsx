@@ -52,6 +52,7 @@ return (
         <div class="dashboard__nodes">
 
             {sortedNodes().map((node) => (
+
 <div class="node-card">
 
     <h3>
@@ -62,15 +63,17 @@ return (
         <span>{node.ip}</span>
     )}
 
+ {node.os && node.os.toLowerCase() !== "unknown" && (
+    <span>{node.os}</span>
+)}
+
+{node.type && node.type.toLowerCase() !== "unknown" && (
     <span>{node.type}</span>
+)}
 
-    <span>
-        {node.os || "Unknown OS"}
-    </span>
-
-    <span>
-        {node.vendor || "Unknown vendor"}
-    </span>
+{node.vendor && node.vendor.toLowerCase() !== "unknown" && (
+    <span>{node.vendor}</span>
+)}
 
     <span
         class={`node-card__status ${

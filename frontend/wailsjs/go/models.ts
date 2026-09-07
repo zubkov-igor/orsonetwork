@@ -266,7 +266,13 @@ export namespace models {
 	    hostname: string;
 	    vendor: string;
 	    os: string;
+	    ports: Port[];
+	    http: HTTPInfo[];
+	    mdns: MDNSService[];
+	    udpServices: UDPService[];
+	    snmp: SNMPInfo[];
 	    sources: DiscoverySource[];
+	    fingerprint: FingerprintEvidence[];
 	    online: boolean;
 	    rtt: number;
 	
@@ -284,7 +290,13 @@ export namespace models {
 	        this.hostname = source["hostname"];
 	        this.vendor = source["vendor"];
 	        this.os = source["os"];
+	        this.ports = this.convertValues(source["ports"], Port);
+	        this.http = this.convertValues(source["http"], HTTPInfo);
+	        this.mdns = this.convertValues(source["mdns"], MDNSService);
+	        this.udpServices = this.convertValues(source["udpServices"], UDPService);
+	        this.snmp = this.convertValues(source["snmp"], SNMPInfo);
 	        this.sources = this.convertValues(source["sources"], DiscoverySource);
+	        this.fingerprint = this.convertValues(source["fingerprint"], FingerprintEvidence);
 	        this.online = source["online"];
 	        this.rtt = source["rtt"];
 	    }

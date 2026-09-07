@@ -194,160 +194,68 @@ func (s *Scanner) Scan() []models.Network {
 			len(network.Hosts),
 		)
 
-		network.Hosts = EnrichHosts(
-			network.Hosts,
-			iface,
-			s.Config,
-		)
+network.Hosts = EnrichHosts(
+    network.Hosts,
+    iface,
+    s.Config,
+)
 
-		for i := range network.Hosts {
+for i := range network.Hosts {
 
-			host := &network.Hosts[i]
+    host := &network.Hosts[i]
 
-			evidence := BuildFingerprint(*host)
+    evidence := BuildFingerprint(*host)
 
-			host.Fingerprint = evidence
+    host.Fingerprint = evidence
 
-			identification := IdentifyDevice(
-				*host,
-				evidence,
-			)
+    host.OS = IdentifyOS(*host)
 
-			host.Type = identification.Type
+    logger.Info(
+        "OS IDENTIFIED:",
+        host.IP,
+        "OS:",
+        host.OS,
+    )
+}
 
-			host.Confidence = CalculateConfidence(*host)
+logger.Info(
+    "HOSTS ENRICHMENT FINISHED:",
+    len(network.Hosts),
+)
 
-			host.OS = IdentifyOS(*host)
+var ssdpResponses []SSDPResponse
 
-			logger.Info(
-				"OS IDENTIFIED:",
-				host.IP,
-				"OS:",
-				host.OS,
-			)
+if s.Config.EnableSSDP {
 
-			if host.Type != models.DeviceUnknown {
-				logger.Info(
-					"DEVICE IDENTIFIED:",
-					host.IP,
-					"TYPE:",
-					host.Type,
-					"CONFIDENCE:",
-					host.Confidence,
-				)
-			}
-		}
+    ssdpResponses = ProbeSSDP(
+        iface,
+    )
 
-		logger.Info(
-			"HOSTS ENRICHMENT FINISHED:",
-			len(network.Hosts),
-		)
+    logger.Info(
+        "SSDP RESPONSES:",
+        len(ssdpResponses),
+    )
+}
 
-		var ssdpResponses []SSDPResponse
+if s.Config.EnableMDNS {
 
-		if s.Config.EnableSSDP {
+    mdnsServices := DiscoverMDNS()
 
-			ssdpResponses = ProbeSSDP(
-				iface,
-			)
-		}
+    logger.Info(
+        "MDNS DISCOVERED:",
+        len(mdnsServices),
+    )
+}
 
-		logger.Info(
-			"SSDP RESPONSES:",
-			len(ssdpResponses),
-		)
-
-		for _, response := range ssdpResponses {
-
-			logger.Debug(
-				"SSDP DEVICE:",
-				response.IP,
-				"LOCATION:",
-				response.Location,
-				"SERVER:",
-				response.Server,
-				"ST:",
-				response.ST,
-				"USN:",
-				response.USN,
-			)
-		}
-
-		var mdnsIPs []string
-
-		if s.Config.EnableMDNS {
-
-			mdnsIPs = ProbeMDNS(
-				iface,
-			)
-		}
-
-		logger.Info(
-			"MDNS IPS:",
-			len(mdnsIPs),
-		)
-		// Merge mDNS discovered hosts
-		// with hosts discovered by ICMP.
-
-		knownHosts := make(
-			map[string]bool,
-		)
-
-		for _, host := range network.Hosts {
-
-			knownHosts[host.IP] = true
-		}
-
-		for _, ip := range mdnsIPs {
-
-			// Never add our own host.
-
-			if ip == iface.IP {
-				continue
-			}
-
-			// Host already discovered by ICMP.
-
-			if knownHosts[ip] {
-				continue
-			}
-
-			network.Hosts = append(
-				network.Hosts,
-				models.Host{
-					IP: ip,
-				},
-			)
-
-			knownHosts[ip] = true
-		}
-
-		logger.Debug(
-			"HOSTS AFTER MDNS MERGE:",
-			len(network.Hosts),
-		)
-
-		for _, host := range network.Hosts {
-
-			logger.Debug(
-				"HOST:",
-				host.IP,
-			)
-		}
-
-		logger.Info(
-			"HOSTS DISCOVERED:",
-			len(network.Hosts),
-		)
-
-		networks = append(
-			networks,
-			network,
-		)
-	}
+networks = append(
+    networks,
+    network,
+)
+}
 
 	return networks
 }
+
 
 func (s *Scanner) Topology() models.ScanResult {
 

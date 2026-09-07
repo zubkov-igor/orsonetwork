@@ -396,16 +396,14 @@
 /*----------------------------------------------*/
 
 .devices__layout {
-
     display: grid;
 
     grid-template-columns:
-        1fr 320px;
+        1fr 360px;
 
     gap: 1rem;
 
     align-items: start;
-
 }
 
 .devices__table-wrapper {
@@ -573,25 +571,22 @@
 }
 
 .device-details__row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 1rem;
 
-    display: flex;
-
-    justify-content: space-between;
-
-    padding:
-        .5rem 0;
-
-    border-bottom:
-        1px solid var(--color-border);
-
+    padding: .5rem 0;
+    border-bottom: 1px solid var(--color-border);
 }
 
-
 .device-details__row span {
+    color: var(--color-muted);
+}
 
-    color:
-        var(--color-muted);
-
+.device-details__row strong {
+    min-width: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
 }
 
 .devices__row {
@@ -616,6 +611,28 @@
 
     box-shadow:
         inset 3px 0 0 var(--color-accent);
+}
+
+.device-details__services {
+    display: flex;
+    flex-direction: column;
+}
+
+.device-details__service {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: .5rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.device-details__service-port {
+    color: var(--color-muted);
+}
+
+.device-details__service-name {
+    margin-left: auto;
+    text-align: right;
 }
 
 .select {

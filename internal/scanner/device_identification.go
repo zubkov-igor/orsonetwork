@@ -23,32 +23,13 @@ func IdentifyDevice(
 	)
 
 	hostname := strings.ToLower(host.Hostname)
+vendor := strings.ToLower(host.Vendor)
 
-	if hostname != "" {
-		evidence = append(
-			evidence,
-			models.FingerprintEvidence{
-				Source: models.DiscoveryReverseDNS,
-				Value:  "hostname:" + hostname,
-			},
-		)
-	}
+scores := make(
+    map[models.DeviceType]int,
+)
 
-	vendor := strings.ToLower(host.Vendor)
 
-	if vendor != "" {
-		evidence = append(
-			evidence,
-			models.FingerprintEvidence{
-				Source: models.DiscoveryOUI,
-				Value:  "vendor:" + vendor,
-			},
-		)
-	}
-
-	scores := make(
-		map[models.DeviceType]int,
-	)
 
 	// =========================
 	// Router / Gateway
