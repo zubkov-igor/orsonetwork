@@ -927,3 +927,298 @@
   color: var(--color-risk-low);
   border: 1px solid var(--color-risk-low);
 }
+
+
+
+/* =========================
+   Wi-Fi Scanner
+   OrsoNetwork style
+   ========================= */
+
+.utility-page {
+  padding: 24px;
+  color: #d7dee7;
+}
+
+.utility-page h2 {
+  margin: 0 0 18px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* =========================
+   Scan button
+   ========================= */
+
+.utility-page > button {
+  padding: 9px 16px;
+
+  border: 1px solid #334155;
+  border-radius: 6px;
+
+  background: #18212b;
+  color: #dce4ec;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.utility-page > button:hover:not(:disabled) {
+  background: #202c38;
+  border-color: #4ade80;
+  color: #ffffff;
+}
+
+.utility-page > button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================
+   Error
+   ========================= */
+
+.utility-page .error {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+
+  border: 1px solid #7f1d1d;
+  border-radius: 6px;
+
+  background: #24171a;
+  color: #fca5a5;
+
+  font-size: 13px;
+}
+
+/* =========================
+   Risk summary
+   ========================= */
+
+.wifi-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin: 20px 0 14px;
+  padding: 12px;
+
+  border: 1px solid #273342;
+  border-radius: 8px;
+
+  background: #111820;
+}
+
+/* =========================
+   Risk badges
+   ========================= */
+
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+
+  min-width: 64px;
+  justify-content: center;
+
+  padding: 4px 8px;
+
+  border: 1px solid;
+  border-radius: 4px;
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+}
+
+/* Critical */
+
+.risk-badge--critical {
+  border-color: #7f1d1d;
+  background: #2a1719;
+  color: #fca5a5;
+}
+
+/* High */
+
+.risk-badge--high {
+  border-color: #92400e;
+  background: #291d13;
+  color: #fdba74;
+}
+
+/* Medium */
+
+.risk-badge--medium {
+  border-color: #854d0e;
+  background: #282316;
+  color: #fde68a;
+}
+
+/* Low */
+
+.risk-badge--low {
+  border-color: #166534;
+  background: #14241a;
+  color: #86efac;
+}
+
+/* =========================
+   Wi-Fi table
+   ========================= */
+
+.utility-page table {
+  width: 100%;
+
+  border-collapse: separate;
+  border-spacing: 0;
+
+  overflow: hidden;
+
+  border: 1px solid #273342;
+  border-radius: 8px;
+
+  background: #10171f;
+
+  font-size: 13px;
+}
+
+/* Header */
+
+.utility-page thead {
+  background: #151e28;
+}
+
+.utility-page th {
+  padding: 11px 14px;
+
+  border-bottom: 1px solid #2b3745;
+
+  color: #8997a8;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Cells */
+
+.utility-page td {
+  padding: 11px 14px;
+
+  border-bottom: 1px solid #202b37;
+
+  color: #cbd5df;
+
+  white-space: nowrap;
+}
+
+/* Last row */
+
+.utility-page tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Row hover */
+
+.utility-page tbody tr {
+  transition: background 0.12s ease;
+}
+
+.utility-page tbody tr:hover {
+  background: #18222d;
+}
+
+/* SSID */
+
+.utility-page td:first-child {
+  color: #f1f5f9;
+  font-weight: 500;
+}
+
+/* Signal */
+
+.utility-page td:nth-child(2) {
+  color: #9fb0c1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Security */
+
+.utility-page td:nth-child(3) {
+  color: #b7c3cf;
+}
+
+/* Channel */
+
+.utility-page td:nth-child(5) {
+  color: #8fa1b3;
+  font-variant-numeric: tabular-nums;
+}
+
+/* BSSID */
+
+.utility-page td:last-child {
+  color: #718296;
+
+  font-family:
+    "JetBrains Mono",
+    "Roboto Mono",
+    monospace;
+
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+/* =========================
+   Responsive
+   ========================= */
+
+@media (max-width: 900px) {
+  .utility-page {
+    padding: 16px;
+  }
+
+  .wifi-summary {
+    flex-wrap: wrap;
+  }
+
+  .utility-page table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .utility-page h2 {
+    font-size: 18px;
+  }
+
+  .wifi-summary {
+    gap: 6px;
+  }
+
+  .risk-badge {
+    min-width: 58px;
+    padding: 4px 6px;
+  }
+
+  .utility-page th,
+  .utility-page td {
+    padding: 9px 10px;
+  }
+}
+

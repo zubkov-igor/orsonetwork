@@ -83,7 +83,7 @@ export default function Utility() {
       <h2>Wi‑Fi Scanner</h2>
 
       <button onClick={handleScan} disabled={loading()}>
-        {loading() ? "Сканирование..." : "Сканировать сети"}
+        {loading() ? "Scan..." : "Scanning Wi‑Fi"}
       </button>
 
       {error() && <p class="error">{error()}</p>}
