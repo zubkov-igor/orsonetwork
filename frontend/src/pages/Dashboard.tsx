@@ -1,95 +1,70 @@
-import {
-topology,
-scanning,
-} from "../store/topology";
+import { topology, scanning } from "../store/topology";
 
 import TopologyGraph from "../components/TopologyGraph";
 
-import {
-    createMemo,
-} from "solid-js";
+import { createMemo } from "solid-js";
 
 export default function Dashboard() {
+  const sortedNodes = createMemo(() => {
+    return [...(topology()?.nodes || [])]
+      .filter((node) => node.online)
+      .sort((a, b) => {
+        const aParts = a.ip.split(".").map(Number);
+        const bParts = b.ip.split(".").map(Number);
 
-const sortedNodes = createMemo(() => {
-    return [
-        ...(topology()?.nodes || [])
-    ]
-        .filter((node) => node.online)
-        .sort((a, b) => {
+        for (let i = 0; i < 4; i++) {
+          if (aParts[i] !== bParts[i]) {
+            return aParts[i] - bParts[i];
+          }
+        }
 
-            const aParts = a.ip.split(".").map(Number);
-            const bParts = b.ip.split(".").map(Number);
+        return 0;
+      });
+  });
 
-            for (let i = 0; i < 4; i++) {
-
-                if (aParts[i] !== bParts[i]) {
-                    return aParts[i] - bParts[i];
-                }
-            }
-
-            return 0;
-        });
-});
-
-return (
+  return (
     <div class="dashboard">
+      <h1>Dashboard</h1>
 
-        <h1>Dashboard</h1>
+      <div class="dashboard__topology">
+        <TopologyGraph compact />
+      </div>
 
-        <div class="dashboard__topology">
-            <TopologyGraph compact />
+      <h3>Devices</h3>
+
+      {scanning() && (
+        <div class="scan-spinner">
+          <span class="scan-spinner__icon"></span>
         </div>
+      )}
 
-        <h3>Devices</h3>
+      <div class="dashboard__nodes">
+        {sortedNodes().map((node) => (
+          <div class="node-card">
+            <h3>{node.hostname || node.ip}</h3>
 
-        {scanning() && (
-            <div class="scan-spinner">
-                <span class="scan-spinner__icon"></span>
-            </div>
-        )}
+            {node.hostname && <span>{node.ip}</span>}
 
-        <div class="dashboard__nodes">
+            {node.os && node.os.toLowerCase() !== "unknown" && (
+              <span>{node.os}</span>
+            )}
 
-            {sortedNodes().map((node) => (
+            {node.type && node.type.toLowerCase() !== "unknown" && (
+              <span>{node.type}</span>
+            )}
 
-<div class="node-card">
+            {node.vendor && node.vendor.toLowerCase() !== "unknown" && (
+              <span>{node.vendor}</span>
+            )}
 
-    <h3>
-        {node.hostname || node.ip}
-    </h3>
-
-    {node.hostname && (
-        <span>{node.ip}</span>
-    )}
-
- {node.os && node.os.toLowerCase() !== "unknown" && (
-    <span>{node.os}</span>
-)}
-
-{node.type && node.type.toLowerCase() !== "unknown" && (
-    <span>{node.type}</span>
-)}
-
-{node.vendor && node.vendor.toLowerCase() !== "unknown" && (
-    <span>{node.vendor}</span>
-)}
-
-    <span
-        class={`node-card__status ${
-            node.online
-                ? "node-card__status--online"
-                : "node-card__status--offline"
-        }`}
-    ></span>
-
-</div>
-
-            ))}
-
-        </div>
-
+            <span
+              class={`device-status status-dashboard ${
+                node.online ? "device-status--online" : "device-status--offline"
+              }`}
+            ></span>
+          </div>
+        ))}
+      </div>
     </div>
-);
-
+  );
 }

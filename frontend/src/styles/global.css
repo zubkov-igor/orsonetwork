@@ -34,34 +34,30 @@
   --color-gateway: #3b82f6;
   --color-gateway-border: #f0a202;
 
-/* Colors: latency */
---color-latency-good: #2dd4bf;
---color-latency-warning: #38bdf8;
---color-latency-critical: #c084fc;
---color-latency-timeout: #64748b;
+  /* Colors: latency */
+  --color-latency-good: #2dd4bf;
+  --color-latency-warning: #38bdf8;
+  --color-latency-critical: #c084fc;
+  --color-latency-timeout: #64748b;
 
-    --color-switch: #27ae60;
-    --color-switch-border: #1e8449;
-    --color-server: #8e44ad;
-    --color-server-border: #6c3483;
-    --color-ap: #f39c12;
-    --color-ap-border: #b9770e;
-    --color-host: #7f8c8d;
-    --color-host-border: #566573;
+  --color-switch: #27ae60;
+  --color-switch-border: #1e8449;
+  --color-server: #8e44ad;
+  --color-server-border: #6c3483;
+  --color-ap: #f39c12;
+  --color-ap-border: #b9770e;
+  --color-host: #7f8c8d;
+  --color-host-border: #566573;
 
+  --color-latency-label: #f8fafc;
+  --color-latency-label-bg: #1e293b;
 
---color-latency-label: #f8fafc;
---color-latency-label-bg: #1e293b;
-
-
---color-risk-critical: var(--color-danger);      /* #ef4444 */
---color-risk-high: var(--color-warning);         /* #f0a202 */
---color-risk-medium: var(--color-accent);        /* #3b82f6 */
---color-risk-low: var(--color-latency-good);     /* #2dd4bf */
---color-risk-info: var(--color-muted);           /* #94a3b8 */
-
+  --color-risk-critical: var(--color-danger); /* #ef4444 */
+  --color-risk-high: var(--color-warning); /* #f0a202 */
+  --color-risk-medium: var(--color-accent); /* #3b82f6 */
+  --color-risk-low: var(--color-latency-good); /* #2dd4bf */
+  --color-risk-info: var(--color-muted); /* #94a3b8 */
 }
-
 
 /* =============================================
     Reset
@@ -82,45 +78,46 @@ a {
   text-decoration: none;
 }
 
-ul, ol, li {
+ul,
+ol,
+li {
   list-style: none;
 }
-
 
 /* =============================================
     Fonts 
    ============================================= */
 @font-face {
-  font-family: 'IBM Plex Sans';
+  font-family: "IBM Plex Sans";
   font-weight: 300;
   font-display: swap;
-  src: url('/fonts/ibm-plex-sans-light.woff2') format('woff2');
+  src: url("/fonts/ibm-plex-sans-light.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: 'IBM Plex Sans';
+  font-family: "IBM Plex Sans";
   font-weight: 500;
   font-display: swap;
-  src: url('/fonts/ibm-plex-sans-medium.woff2') format('woff2');
+  src: url("/fonts/ibm-plex-sans-medium.woff2") format("woff2");
 }
 
 h1 {
   font-size: 1.5rem;
-  margin: .5rem;
+  margin: 0.5rem;
 }
 
 h2 {
   font-size: 1.3rem;
-  margin: .5rem;
+  margin: 0.5rem;
 }
 
 h3 {
   font-size: 1.1rem;
-  margin: .5rem;
+  margin: 0.5rem;
 }
 
 html {
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: "IBM Plex Sans", sans-serif;
   font-size: var(--base-font-size);
   line-height: 1.5;
 }

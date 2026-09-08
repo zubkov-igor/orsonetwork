@@ -1,12 +1,12 @@
 {
-    "enable_icmp": true,
-    "enable_arp": true,
-    "enable_reverse_dns": true,
-    "enable_netbios": true,
-    "enable_mdns": true,
-    "enable_ssdp": true,
-    "enable_snmp": true,
-    "enable_tcp": true,
-    "enable_udp": true,
-    "workers": 100
+  "enable_icmp": true,
+  "enable_arp": true,
+  "enable_reverse_dns": true,
+  "enable_netbios": true,
+  "enable_mdns": true,
+  "enable_ssdp": true,
+  "enable_snmp": true,
+  "enable_tcp": true,
+  "enable_udp": true,
+  "workers": 100
 }

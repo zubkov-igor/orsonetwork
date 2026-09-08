@@ -32,17 +32,15 @@ function renderPage() {
 export default function AppLayout() {
   return (
     <div
-  class="app__layout"
-  classList={{
-    expanded: sidebarExpanded(),
-  }}
->
+      class="app__layout"
+      classList={{
+        expanded: sidebarExpanded(),
+      }}
+    >
       <Header />
       <Aside />
 
-      <main class="main">
-        {renderPage()}
-      </main>
+      <main class="main">{renderPage()}</main>
 
       <Footer />
     </div>

@@ -2,7 +2,4 @@ import { render } from "solid-js/web";
 import App from "./App";
 import "./styles/index.css";
 
-render(
-    () => <App />,
-    document.getElementById("app")!
-);
+render(() => <App />, document.getElementById("app")!);

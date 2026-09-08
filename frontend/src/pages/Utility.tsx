@@ -17,7 +17,8 @@ function getWifiRisk(n: WifiNetwork): "critical" | "high" | "medium" | "low" {
 
   if (!sec || sec === "--" || sec.includes("OPEN")) return "critical";
   if (sec.includes("WEP")) return "critical";
-  if (sec.includes("WPA") && !sec.includes("WPA2") && !sec.includes("WPA3")) return "high";
+  if (sec.includes("WPA") && !sec.includes("WPA2") && !sec.includes("WPA3"))
+    return "high";
   if (sec.includes("TKIP")) return "high";
   if (sec.includes("WPA2") && !sec.includes("WPA3")) return "medium";
   return "low";
@@ -33,13 +34,13 @@ const riskOrder = {
 function getRiskLabel(risk: keyof typeof riskOrder): string {
   switch (risk) {
     case "critical":
-      return "Нет шифрования или WEP";
+      return "No encryption or WEP";
     case "high":
-      return "Устаревший WPA / TKIP";
+      return "Outdated WPA / TKIP";
     case "medium":
-      return "WPA2 — лучше перейти на WPA3";
+      return "WPA2 — consider upgrading to WPA3";
     case "low":
-      return "Современная защита (WPA3)";
+      return "Modern protection (WPA3)";
   }
 }
 
@@ -50,7 +51,7 @@ export default function Utility() {
 
   const sortedNetworks = () =>
     [...networks()].sort(
-      (a, b) => riskOrder[getWifiRisk(a)] - riskOrder[getWifiRisk(b)]
+      (a, b) => riskOrder[getWifiRisk(a)] - riskOrder[getWifiRisk(b)],
     );
 
   const riskStats = () => {
@@ -72,7 +73,7 @@ export default function Utility() {
       setNetworks(result ?? []);
     } catch (e: any) {
       console.error(e);
-      setError(e?.message || "Ошибка сканирования Wi‑Fi");
+      setError(e?.message || "Wi-Fi scanning error");
     } finally {
       setLoading(false);
     }
@@ -80,36 +81,37 @@ export default function Utility() {
 
   return (
     <div class="utility-page">
-      <h2>Wi‑Fi Scanner</h2>
-
-      <button onClick={handleScan} disabled={loading()}>
-        {loading() ? "Scan..." : "Scanning Wi‑Fi"}
-      </button>
+      <div class="utility-page__header">
+        <h2>Wi‑Fi Scanner</h2>
+        <button onClick={handleScan} disabled={loading()}>
+          {loading() ? "Scan..." : "Scanning Wi‑Fi"}
+        </button>
+      </div>
 
       {error() && <p class="error">{error()}</p>}
 
       {/* Счётчики рисков */}
-  <div class="wifi-summary">
-  <div class="risk-metric risk-metric--critical">
-    <span class="risk-metric__value">{riskStats().critical}</span>
-    <span class="risk-metric__label">Critical</span>
-  </div>
+      <div class="wifi-summary">
+        <div class="risk-metric risk-metric--critical">
+          <span class="risk-metric__value">{riskStats().critical}</span>
+          <span class="risk-metric__label">Critical</span>
+        </div>
 
-  <div class="risk-metric risk-metric--high">
-    <span class="risk-metric__value">{riskStats().high}</span>
-    <span class="risk-metric__label">High</span>
-  </div>
+        <div class="risk-metric risk-metric--high">
+          <span class="risk-metric__value">{riskStats().high}</span>
+          <span class="risk-metric__label">High</span>
+        </div>
 
-  <div class="risk-metric risk-metric--medium">
-    <span class="risk-metric__value">{riskStats().medium}</span>
-    <span class="risk-metric__label">Medium</span>
-  </div>
+        <div class="risk-metric risk-metric--medium">
+          <span class="risk-metric__value">{riskStats().medium}</span>
+          <span class="risk-metric__label">Medium</span>
+        </div>
 
-  <div class="risk-metric risk-metric--low">
-    <span class="risk-metric__value">{riskStats().low}</span>
-    <span class="risk-metric__label">Low</span>
-  </div>
-</div>
+        <div class="risk-metric risk-metric--low">
+          <span class="risk-metric__value">{riskStats().low}</span>
+          <span class="risk-metric__label">Low</span>
+        </div>
+      </div>
 
       <table>
         <thead>
