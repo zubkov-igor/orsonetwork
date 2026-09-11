@@ -1,455 +1,456 @@
 export namespace models {
-  export class DiscoverySource {
-    Type: string;
-    Value: string;
+	
+	export class DiscoverySource {
+	    Type: string;
+	    Value: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DiscoverySource(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Type = source["Type"];
+	        this.Value = source["Value"];
+	    }
+	}
+	export class FingerprintEvidence {
+	    Source: string;
+	    Value: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new FingerprintEvidence(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Source = source["Source"];
+	        this.Value = source["Value"];
+	    }
+	}
+	export class HTTPInfo {
+	    port: number;
+	    scheme: string;
+	    server: string;
+	    title: string;
+	    statusCode: number;
+	    contentType: string;
+	    scripts: string[];
+	    keywords: string[];
+	    fingerprint: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new HTTPInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.port = source["port"];
+	        this.scheme = source["scheme"];
+	        this.server = source["server"];
+	        this.title = source["title"];
+	        this.statusCode = source["statusCode"];
+	        this.contentType = source["contentType"];
+	        this.scripts = source["scripts"];
+	        this.keywords = source["keywords"];
+	        this.fingerprint = source["fingerprint"];
+	    }
+	}
+	export class SNMPInfo {
+	    Version: string;
+	    Community: string;
+	    SysDescr: string;
+	    SysName: string;
+	    SysLocation: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SNMPInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Version = source["Version"];
+	        this.Community = source["Community"];
+	        this.SysDescr = source["SysDescr"];
+	        this.SysName = source["SysName"];
+	        this.SysLocation = source["SysLocation"];
+	    }
+	}
+	export class UDPService {
+	    ip: string;
+	    port: number;
+	    protocol: string;
+	    service: string;
+	    info: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UDPService(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ip = source["ip"];
+	        this.port = source["port"];
+	        this.protocol = source["protocol"];
+	        this.service = source["service"];
+	        this.info = source["info"];
+	    }
+	}
+	export class MDNSService {
+	    name: string;
+	    service: string;
+	    host: string;
+	    ip: string;
+	    port: number;
+	    txt: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new MDNSService(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.service = source["service"];
+	        this.host = source["host"];
+	        this.ip = source["ip"];
+	        this.port = source["port"];
+	        this.txt = source["txt"];
+	    }
+	}
+	export class Port {
+	    number: number;
+	    protocol: string;
+	    service: string;
+	    open: boolean;
+	    banner: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Port(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.number = source["number"];
+	        this.protocol = source["protocol"];
+	        this.service = source["service"];
+	        this.open = source["open"];
+	        this.banner = source["banner"];
+	    }
+	}
+	export class Host {
+	    IP: string;
+	    MAC: string;
+	    Hostname: string;
+	    Vendor: string;
+	    os: string;
+	    IsGateway: boolean;
+	    Ports: Port[];
+	    HTTP: HTTPInfo[];
+	    MDNS: MDNSService[];
+	    UDPServices: UDPService[];
+	    SNMP: SNMPInfo[];
+	    Type: string;
+	    Confidence: number;
+	    Sources: DiscoverySource[];
+	    Online: boolean;
+	    RTT: number;
+	    fingerprint: FingerprintEvidence[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Host(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.IP = source["IP"];
+	        this.MAC = source["MAC"];
+	        this.Hostname = source["Hostname"];
+	        this.Vendor = source["Vendor"];
+	        this.os = source["os"];
+	        this.IsGateway = source["IsGateway"];
+	        this.Ports = this.convertValues(source["Ports"], Port);
+	        this.HTTP = this.convertValues(source["HTTP"], HTTPInfo);
+	        this.MDNS = this.convertValues(source["MDNS"], MDNSService);
+	        this.UDPServices = this.convertValues(source["UDPServices"], UDPService);
+	        this.SNMP = this.convertValues(source["SNMP"], SNMPInfo);
+	        this.Type = source["Type"];
+	        this.Confidence = source["Confidence"];
+	        this.Sources = this.convertValues(source["Sources"], DiscoverySource);
+	        this.Online = source["Online"];
+	        this.RTT = source["RTT"];
+	        this.fingerprint = this.convertValues(source["fingerprint"], FingerprintEvidence);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class Link {
+	    from: string;
+	    to: string;
+	    type: string;
+	    latency: number;
+	    status: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Link(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.from = source["from"];
+	        this.to = source["to"];
+	        this.type = source["type"];
+	        this.latency = source["latency"];
+	        this.status = source["status"];
+	    }
+	}
+	
+	export class Network {
+	    cidr: string;
+	    interface: string;
+	    gateway: string;
+	    hosts: Host[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Network(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.cidr = source["cidr"];
+	        this.interface = source["interface"];
+	        this.gateway = source["gateway"];
+	        this.hosts = this.convertValues(source["hosts"], Host);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class Node {
+	    id: string;
+	    label: string;
+	    type: string;
+	    ip: string;
+	    mac: string;
+	    hostname: string;
+	    vendor: string;
+	    os: string;
+	    ports: Port[];
+	    http: HTTPInfo[];
+	    mdns: MDNSService[];
+	    udpServices: UDPService[];
+	    snmp: SNMPInfo[];
+	    sources: DiscoverySource[];
+	    fingerprint: FingerprintEvidence[];
+	    online: boolean;
+	    rtt: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Node(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.label = source["label"];
+	        this.type = source["type"];
+	        this.ip = source["ip"];
+	        this.mac = source["mac"];
+	        this.hostname = source["hostname"];
+	        this.vendor = source["vendor"];
+	        this.os = source["os"];
+	        this.ports = this.convertValues(source["ports"], Port);
+	        this.http = this.convertValues(source["http"], HTTPInfo);
+	        this.mdns = this.convertValues(source["mdns"], MDNSService);
+	        this.udpServices = this.convertValues(source["udpServices"], UDPService);
+	        this.snmp = this.convertValues(source["snmp"], SNMPInfo);
+	        this.sources = this.convertValues(source["sources"], DiscoverySource);
+	        this.fingerprint = this.convertValues(source["fingerprint"], FingerprintEvidence);
+	        this.online = source["online"];
+	        this.rtt = source["rtt"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	
+	
+	export class Topology {
+	    nodes: Node[];
+	    links: Link[];
+	    networks: Network[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Topology(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.nodes = this.convertValues(source["nodes"], Node);
+	        this.links = this.convertValues(source["links"], Link);
+	        this.networks = this.convertValues(source["networks"], Network);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class ScanResult {
+	    topology: Topology;
+	    duration: number;
+	    lastScan: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ScanResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.topology = this.convertValues(source["topology"], Topology);
+	        this.duration = source["duration"];
+	        this.lastScan = source["lastScan"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class ScannerConfig {
+	    enable_icmp: boolean;
+	    enable_arp: boolean;
+	    enable_reverse_dns: boolean;
+	    enable_netbios: boolean;
+	    enable_mdns: boolean;
+	    enable_ssdp: boolean;
+	    enable_snmp: boolean;
+	    enable_tcp: boolean;
+	    enable_udp: boolean;
+	    workers: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ScannerConfig(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.enable_icmp = source["enable_icmp"];
+	        this.enable_arp = source["enable_arp"];
+	        this.enable_reverse_dns = source["enable_reverse_dns"];
+	        this.enable_netbios = source["enable_netbios"];
+	        this.enable_mdns = source["enable_mdns"];
+	        this.enable_ssdp = source["enable_ssdp"];
+	        this.enable_snmp = source["enable_snmp"];
+	        this.enable_tcp = source["enable_tcp"];
+	        this.enable_udp = source["enable_udp"];
+	        this.workers = source["workers"];
+	    }
+	}
+	
 
-    static createFrom(source: any = {}) {
-      return new DiscoverySource(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.Type = source["Type"];
-      this.Value = source["Value"];
-    }
-  }
-  export class FingerprintEvidence {
-    Source: string;
-    Value: string;
-
-    static createFrom(source: any = {}) {
-      return new FingerprintEvidence(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.Source = source["Source"];
-      this.Value = source["Value"];
-    }
-  }
-  export class HTTPInfo {
-    port: number;
-    scheme: string;
-    server: string;
-    title: string;
-    statusCode: number;
-    contentType: string;
-    scripts: string[];
-    keywords: string[];
-    fingerprint: string[];
-
-    static createFrom(source: any = {}) {
-      return new HTTPInfo(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.port = source["port"];
-      this.scheme = source["scheme"];
-      this.server = source["server"];
-      this.title = source["title"];
-      this.statusCode = source["statusCode"];
-      this.contentType = source["contentType"];
-      this.scripts = source["scripts"];
-      this.keywords = source["keywords"];
-      this.fingerprint = source["fingerprint"];
-    }
-  }
-  export class SNMPInfo {
-    Version: string;
-    Community: string;
-    SysDescr: string;
-    SysName: string;
-    SysLocation: string;
-
-    static createFrom(source: any = {}) {
-      return new SNMPInfo(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.Version = source["Version"];
-      this.Community = source["Community"];
-      this.SysDescr = source["SysDescr"];
-      this.SysName = source["SysName"];
-      this.SysLocation = source["SysLocation"];
-    }
-  }
-  export class UDPService {
-    ip: string;
-    port: number;
-    protocol: string;
-    service: string;
-    info: string;
-
-    static createFrom(source: any = {}) {
-      return new UDPService(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.ip = source["ip"];
-      this.port = source["port"];
-      this.protocol = source["protocol"];
-      this.service = source["service"];
-      this.info = source["info"];
-    }
-  }
-  export class MDNSService {
-    name: string;
-    service: string;
-    host: string;
-    ip: string;
-    port: number;
-    txt: string[];
-
-    static createFrom(source: any = {}) {
-      return new MDNSService(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.name = source["name"];
-      this.service = source["service"];
-      this.host = source["host"];
-      this.ip = source["ip"];
-      this.port = source["port"];
-      this.txt = source["txt"];
-    }
-  }
-  export class Port {
-    number: number;
-    protocol: string;
-    service: string;
-    open: boolean;
-    banner: string;
-
-    static createFrom(source: any = {}) {
-      return new Port(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.number = source["number"];
-      this.protocol = source["protocol"];
-      this.service = source["service"];
-      this.open = source["open"];
-      this.banner = source["banner"];
-    }
-  }
-  export class Host {
-    IP: string;
-    MAC: string;
-    Hostname: string;
-    Vendor: string;
-    os: string;
-    IsGateway: boolean;
-    Ports: Port[];
-    HTTP: HTTPInfo[];
-    MDNS: MDNSService[];
-    UDPServices: UDPService[];
-    SNMP: SNMPInfo[];
-    Type: string;
-    Confidence: number;
-    Sources: DiscoverySource[];
-    Online: boolean;
-    RTT: number;
-    fingerprint: FingerprintEvidence[];
-
-    static createFrom(source: any = {}) {
-      return new Host(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.IP = source["IP"];
-      this.MAC = source["MAC"];
-      this.Hostname = source["Hostname"];
-      this.Vendor = source["Vendor"];
-      this.os = source["os"];
-      this.IsGateway = source["IsGateway"];
-      this.Ports = this.convertValues(source["Ports"], Port);
-      this.HTTP = this.convertValues(source["HTTP"], HTTPInfo);
-      this.MDNS = this.convertValues(source["MDNS"], MDNSService);
-      this.UDPServices = this.convertValues(source["UDPServices"], UDPService);
-      this.SNMP = this.convertValues(source["SNMP"], SNMPInfo);
-      this.Type = source["Type"];
-      this.Confidence = source["Confidence"];
-      this.Sources = this.convertValues(source["Sources"], DiscoverySource);
-      this.Online = source["Online"];
-      this.RTT = source["RTT"];
-      this.fingerprint = this.convertValues(
-        source["fingerprint"],
-        FingerprintEvidence,
-      );
-    }
-
-    convertValues(a: any, classs: any, asMap: boolean = false): any {
-      if (!a) {
-        return a;
-      }
-      if (a.slice && a.map) {
-        return (a as any[]).map((elem) => this.convertValues(elem, classs));
-      } else if ("object" === typeof a) {
-        if (asMap) {
-          for (const key of Object.keys(a)) {
-            a[key] = new classs(a[key]);
-          }
-          return a;
-        }
-        return new classs(a);
-      }
-      return a;
-    }
-  }
-  export class Link {
-    from: string;
-    to: string;
-    type: string;
-    latency: number;
-    status: string;
-
-    static createFrom(source: any = {}) {
-      return new Link(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.from = source["from"];
-      this.to = source["to"];
-      this.type = source["type"];
-      this.latency = source["latency"];
-      this.status = source["status"];
-    }
-  }
-
-  export class Network {
-    cidr: string;
-    interface: string;
-    gateway: string;
-    hosts: Host[];
-
-    static createFrom(source: any = {}) {
-      return new Network(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.cidr = source["cidr"];
-      this.interface = source["interface"];
-      this.gateway = source["gateway"];
-      this.hosts = this.convertValues(source["hosts"], Host);
-    }
-
-    convertValues(a: any, classs: any, asMap: boolean = false): any {
-      if (!a) {
-        return a;
-      }
-      if (a.slice && a.map) {
-        return (a as any[]).map((elem) => this.convertValues(elem, classs));
-      } else if ("object" === typeof a) {
-        if (asMap) {
-          for (const key of Object.keys(a)) {
-            a[key] = new classs(a[key]);
-          }
-          return a;
-        }
-        return new classs(a);
-      }
-      return a;
-    }
-  }
-  export class Node {
-    id: string;
-    label: string;
-    type: string;
-    ip: string;
-    mac: string;
-    hostname: string;
-    vendor: string;
-    os: string;
-    ports: Port[];
-    http: HTTPInfo[];
-    mdns: MDNSService[];
-    udpServices: UDPService[];
-    snmp: SNMPInfo[];
-    sources: DiscoverySource[];
-    fingerprint: FingerprintEvidence[];
-    online: boolean;
-    rtt: number;
-
-    static createFrom(source: any = {}) {
-      return new Node(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.id = source["id"];
-      this.label = source["label"];
-      this.type = source["type"];
-      this.ip = source["ip"];
-      this.mac = source["mac"];
-      this.hostname = source["hostname"];
-      this.vendor = source["vendor"];
-      this.os = source["os"];
-      this.ports = this.convertValues(source["ports"], Port);
-      this.http = this.convertValues(source["http"], HTTPInfo);
-      this.mdns = this.convertValues(source["mdns"], MDNSService);
-      this.udpServices = this.convertValues(source["udpServices"], UDPService);
-      this.snmp = this.convertValues(source["snmp"], SNMPInfo);
-      this.sources = this.convertValues(source["sources"], DiscoverySource);
-      this.fingerprint = this.convertValues(
-        source["fingerprint"],
-        FingerprintEvidence,
-      );
-      this.online = source["online"];
-      this.rtt = source["rtt"];
-    }
-
-    convertValues(a: any, classs: any, asMap: boolean = false): any {
-      if (!a) {
-        return a;
-      }
-      if (a.slice && a.map) {
-        return (a as any[]).map((elem) => this.convertValues(elem, classs));
-      } else if ("object" === typeof a) {
-        if (asMap) {
-          for (const key of Object.keys(a)) {
-            a[key] = new classs(a[key]);
-          }
-          return a;
-        }
-        return new classs(a);
-      }
-      return a;
-    }
-  }
-
-  export class Topology {
-    nodes: Node[];
-    links: Link[];
-    networks: Network[];
-
-    static createFrom(source: any = {}) {
-      return new Topology(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.nodes = this.convertValues(source["nodes"], Node);
-      this.links = this.convertValues(source["links"], Link);
-      this.networks = this.convertValues(source["networks"], Network);
-    }
-
-    convertValues(a: any, classs: any, asMap: boolean = false): any {
-      if (!a) {
-        return a;
-      }
-      if (a.slice && a.map) {
-        return (a as any[]).map((elem) => this.convertValues(elem, classs));
-      } else if ("object" === typeof a) {
-        if (asMap) {
-          for (const key of Object.keys(a)) {
-            a[key] = new classs(a[key]);
-          }
-          return a;
-        }
-        return new classs(a);
-      }
-      return a;
-    }
-  }
-  export class ScanResult {
-    topology: Topology;
-    duration: number;
-    lastScan: number;
-
-    static createFrom(source: any = {}) {
-      return new ScanResult(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.topology = this.convertValues(source["topology"], Topology);
-      this.duration = source["duration"];
-      this.lastScan = source["lastScan"];
-    }
-
-    convertValues(a: any, classs: any, asMap: boolean = false): any {
-      if (!a) {
-        return a;
-      }
-      if (a.slice && a.map) {
-        return (a as any[]).map((elem) => this.convertValues(elem, classs));
-      } else if ("object" === typeof a) {
-        if (asMap) {
-          for (const key of Object.keys(a)) {
-            a[key] = new classs(a[key]);
-          }
-          return a;
-        }
-        return new classs(a);
-      }
-      return a;
-    }
-  }
-  export class ScannerConfig {
-    enable_icmp: boolean;
-    enable_arp: boolean;
-    enable_reverse_dns: boolean;
-    enable_netbios: boolean;
-    enable_mdns: boolean;
-    enable_ssdp: boolean;
-    enable_snmp: boolean;
-    enable_tcp: boolean;
-    enable_udp: boolean;
-    workers: number;
-
-    static createFrom(source: any = {}) {
-      return new ScannerConfig(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.enable_icmp = source["enable_icmp"];
-      this.enable_arp = source["enable_arp"];
-      this.enable_reverse_dns = source["enable_reverse_dns"];
-      this.enable_netbios = source["enable_netbios"];
-      this.enable_mdns = source["enable_mdns"];
-      this.enable_ssdp = source["enable_ssdp"];
-      this.enable_snmp = source["enable_snmp"];
-      this.enable_tcp = source["enable_tcp"];
-      this.enable_udp = source["enable_udp"];
-      this.workers = source["workers"];
-    }
-  }
 }
 
 export namespace wifi {
-  export class Network {
-    ssid: string;
-    bssid?: string;
-    signal?: string;
-    security?: string;
-    channel?: string;
-    freq?: string;
-    rate?: string;
-    mode?: string;
+	
+	export class Network {
+	    ssid: string;
+	    bssid?: string;
+	    signal?: string;
+	    security?: string;
+	    channel?: string;
+	    freq?: string;
+	    rate?: string;
+	    mode?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Network(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ssid = source["ssid"];
+	        this.bssid = source["bssid"];
+	        this.signal = source["signal"];
+	        this.security = source["security"];
+	        this.channel = source["channel"];
+	        this.freq = source["freq"];
+	        this.rate = source["rate"];
+	        this.mode = source["mode"];
+	    }
+	}
 
-    static createFrom(source: any = {}) {
-      return new Network(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.ssid = source["ssid"];
-      this.bssid = source["bssid"];
-      this.signal = source["signal"];
-      this.security = source["security"];
-      this.channel = source["channel"];
-      this.freq = source["freq"];
-      this.rate = source["rate"];
-      this.mode = source["mode"];
-    }
-  }
 }
+

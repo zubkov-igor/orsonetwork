@@ -241,11 +241,6 @@ export default function Devices() {
                     {(http) => (
                       <div>
                         <div class="device-details__row">
-                          <span>Port</span>
-                          <strong>{http.port}</strong>
-                        </div>
-
-                        <div class="device-details__row">
                           <span>Scheme</span>
                           <strong>{http.scheme || "—"}</strong>
                         </div>
