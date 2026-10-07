@@ -68,3 +68,53 @@ func CalculateConfidence(
 
 	return score
 }
+
+
+func CollectEvidence(host models.Host) []string {
+
+	evidence := []string{}
+
+	for _, source := range host.Sources {
+
+		switch source.Type {
+
+		case models.DiscoveryARP:
+			evidence = append(evidence, "ARP")
+
+		case models.DiscoveryReverseDNS:
+			evidence = append(evidence, "ReverseDNS")
+
+		case models.DiscoveryNetBIOS:
+			evidence = append(evidence, "NetBIOS")
+
+		case models.DiscoveryMDNS:
+			evidence = append(evidence, "mDNS")
+		}
+	}
+
+	if host.MAC != "" {
+		evidence = append(evidence, "MAC")
+	}
+
+	if host.Vendor != "" {
+		evidence = append(evidence, "Vendor")
+	}
+
+	if host.Hostname != "" {
+		evidence = append(evidence, "Hostname")
+	}
+
+	if len(host.Ports) > 0 {
+		evidence = append(evidence, "TCP")
+	}
+
+	if len(host.HTTP) > 0 {
+		evidence = append(evidence, "HTTP")
+	}
+
+	if len(host.UDPServices) > 0 {
+		evidence = append(evidence, "UDP")
+	}
+
+	return evidence
+}

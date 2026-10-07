@@ -340,3 +340,21 @@ func containsAny(
 
 	return false
 }
+
+func hasEvidence(
+    evidence []models.FingerprintEvidence,
+    value string,
+) bool {
+
+    for _, item := range evidence {
+
+        if strings.EqualFold(
+            item.Value,
+            value,
+        ) {
+            return true
+        }
+    }
+
+    return false
+}

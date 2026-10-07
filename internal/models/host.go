@@ -26,6 +26,8 @@ type Host struct {
 
 	SNMP []SNMPInfo
 
+	SMBShares []SMBShare `json:"smb_shares"`
+
 	Type DeviceType
 
 	Confidence int
