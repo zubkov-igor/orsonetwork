@@ -53,4 +53,4 @@ require (
 
 // replace github.com/wailsapp/wails/v2 v2.12.0 => /home/winny/go/pkg/mod
 
-replace github.com/hirochachacha/go-smb2 => ../go-smb2
+replace github.com/hirochachacha/go-smb2 => github.com/zubkov-igor/go-smb2 v0.0.0-20261009034616-1a83d75efec3
