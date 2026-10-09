@@ -3,6 +3,8 @@ package scanner
 import (
 	"time"
 
+	"strconv"
+
 	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 )
@@ -106,6 +108,80 @@ func EnrichHosts(
 
 		logger.Debug(
 			"ENRICH TIMING PORTS:",
+			time.Since(stepStart),
+		)
+	}
+
+	// =========================
+	// SMB
+	// =========================
+
+	if config.EnableSMB {
+
+		stepStart := time.Now()
+
+		for i := range hosts {
+
+			hasSMB := false
+
+			for _, port := range hosts[i].Ports {
+
+				if port.Number == 445 {
+
+					hasSMB = true
+					break
+				}
+			}
+
+			if !hasSMB {
+				continue
+			}
+
+			logger.Debug(
+				"SMB ENRICH:",
+				hosts[i].IP,
+			)
+
+			result := ProbeSMB(
+				hosts[i].IP,
+			)
+
+			if !result.Found {
+				continue
+			}
+
+			for _, share := range result.Shares {
+
+				logger.Info(
+					"SMB SHARE:",
+					hosts[i].IP,
+					"NAME:",
+					share.Name,
+					"TYPE:",
+					share.Type,
+					"COMMENT:",
+					share.Comment,
+				)
+
+				hosts[i].SMBShares = append(
+					hosts[i].SMBShares,
+					models.SMBShare{
+						Name:    share.Name,
+						Type:    strconv.FormatUint(uint64(share.Type), 10),
+						Comment: share.Comment,
+					},
+				)
+			}
+
+			logger.Info(
+				"SMB SHARES:",
+				hosts[i].IP,
+				hosts[i].SMBShares,
+			)
+		}
+
+		logger.Debug(
+			"ENRICH TIMING SMB:",
 			time.Since(stepStart),
 		)
 	}
@@ -291,6 +367,5 @@ func UpdateHostStatus(
 		"OFFLINE",
 		"REASON: NO RESPONSE",
 	)
-
 
 }
