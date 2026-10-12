@@ -14,6 +14,7 @@ export default function Settings() {
     enable_mdns: true,
     enable_ssdp: true,
     enable_tcp: true,
+    enable_smb: true,
     enable_udp: true,
     enable_snmp: false,
     workers: 20,
@@ -126,6 +127,18 @@ export default function Settings() {
             checked={settings().enable_tcp}
             onChange={(e) =>
               updateSetting("enable_tcp", e.currentTarget.checked)
+            }
+          />
+        </div>
+
+        <div class="settings__row">
+          <span>SMB</span>
+
+          <input
+            type="checkbox"
+            checked={settings().enable_smb}
+            onChange={(e) =>
+              updateSetting("enable_smb", e.currentTarget.checked)
             }
           />
         </div>

@@ -20,7 +20,6 @@ func TestLookupDeviceModel(t *testing.T) {
 	}
 }
 
-
 func TestLookupDeviceModelNotFound(t *testing.T) {
 	_, ok := LookupDeviceModel("THIS-IS-NOT-A-DEVICE-CODE")
 
@@ -29,26 +28,23 @@ func TestLookupDeviceModelNotFound(t *testing.T) {
 	}
 }
 
-
-
 func TestFindDeviceModelFromHostname(t *testing.T) {
-      model, ok := FindDeviceModelFromHostname(
-            "xq-de72.igd_rostelecom",
-      )
+	model, ok := FindDeviceModelFromHostname(
+		"xq-de72.igd_rostelecom",
+	)
 
-      if !ok {
-            t.Fatal("device model not found")
-      }
+	if !ok {
+		t.Fatal("device model not found")
+	}
 
-      if model.Brand != "Sony" {
-            t.Fatalf("unexpected brand: %s", model.Brand)
-      }
+	if model.Brand != "Sony" {
+		t.Fatalf("unexpected brand: %s", model.Brand)
+	}
 
-      if model.Name != "Xperia 5 V" {
-            t.Fatalf("unexpected model: %s", model.Name)
-      }
+	if model.Name != "Xperia 5 V" {
+		t.Fatalf("unexpected model: %s", model.Name)
+	}
 }
-
 
 func TestFindDeviceModelFromHostnameNoGuess(t *testing.T) {
 	hostnames := []string{

@@ -194,68 +194,67 @@ func (s *Scanner) Scan() []models.Network {
 			len(network.Hosts),
 		)
 
-network.Hosts = EnrichHosts(
-    network.Hosts,
-    iface,
-    s.Config,
-)
+		network.Hosts = EnrichHosts(
+			network.Hosts,
+			iface,
+			s.Config,
+		)
 
-for i := range network.Hosts {
+		for i := range network.Hosts {
 
-    host := &network.Hosts[i]
+			host := &network.Hosts[i]
 
-    evidence := BuildFingerprint(*host)
+			evidence := BuildFingerprint(*host)
 
-    host.Fingerprint = evidence
+			host.Fingerprint = evidence
 
-    host.OS = IdentifyOS(*host)
+			host.OS = IdentifyOS(*host)
 
-    logger.Info(
-        "OS IDENTIFIED:",
-        host.IP,
-        "OS:",
-        host.OS,
-    )
-}
+			logger.Info(
+				"OS IDENTIFIED:",
+				host.IP,
+				"OS:",
+				host.OS,
+			)
+		}
 
-logger.Info(
-    "HOSTS ENRICHMENT FINISHED:",
-    len(network.Hosts),
-)
+		logger.Info(
+			"HOSTS ENRICHMENT FINISHED:",
+			len(network.Hosts),
+		)
 
-var ssdpResponses []SSDPResponse
+		var ssdpResponses []SSDPResponse
 
-if s.Config.EnableSSDP {
+		if s.Config.EnableSSDP {
 
-    ssdpResponses = ProbeSSDP(
-        iface,
-    )
+			ssdpResponses = ProbeSSDP(
+				iface,
+			)
 
-    logger.Info(
-        "SSDP RESPONSES:",
-        len(ssdpResponses),
-    )
-}
+			logger.Info(
+				"SSDP RESPONSES:",
+				len(ssdpResponses),
+			)
+		}
 
-if s.Config.EnableMDNS {
+		if s.Config.EnableMDNS {
 
-    mdnsServices := DiscoverMDNS()
+			mdnsServices := DiscoverMDNS()
 
-    logger.Info(
-        "MDNS DISCOVERED:",
-        len(mdnsServices),
-    )
-}
+			logger.Info(
+				"MDNS DISCOVERED:",
+				len(mdnsServices),
+			)
+		}
 
-networks = append(
-    networks,
-    network,
-)
-}
+		networks = append(
+			networks,
+			network,
+		)
+	}
 
 	return networks
 }
-
 
 func (s *Scanner) Topology() models.ScanResult {
 

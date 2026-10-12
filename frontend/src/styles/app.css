@@ -556,12 +556,48 @@
   text-align: right;
 }
 
-.hr {
-  display: block;
-  width: 100%;
-  border: none;
-  border-top: 1px solid var(--color-light);
-  margin: 5px 0;
+.device-details__shares {
+  display: flex;
+  flex-direction: column;
+}
+
+.device-details__share {
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.device-details__share:last-child {
+  border-bottom: none;
+}
+
+.device-details__share-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.device-details__share-name {
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.device-details__share-type {
+  flex-shrink: 0;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
+.device-details__share-comment {
+  margin-top: 0.25rem;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.device-details__mdns-item:last-child {
+  border-bottom: none;
 }
 
 /* ---------------------------------------------- */
@@ -631,6 +667,42 @@
   color: var(--color-muted);
   font-size: 0.85rem;
   text-transform: uppercase;
+}
+
+.device-details__mdns {
+  display: flex;
+  flex-direction: column;
+}
+
+.device-details__mdns-item {
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.device-details__mdns-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.device-details__mdns-name {
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.device-details__mdns-service {
+  flex-shrink: 0;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+
+.device-details__mdns-meta {
+  margin-top: 0.25rem;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
 }
 
 /* =============================================

@@ -69,7 +69,6 @@ func CalculateConfidence(
 	return score
 }
 
-
 func CollectEvidence(host models.Host) []string {
 
 	evidence := []string{}

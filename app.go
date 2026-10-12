@@ -1,11 +1,11 @@
 package main
 
 import (
-	"context"
 	"OrsoNetwork/internal/logger"
 	"OrsoNetwork/internal/models"
 	"OrsoNetwork/internal/scanner"
 	"OrsoNetwork/internal/wifi"
+	"context"
 )
 
 type App struct {
@@ -37,21 +37,21 @@ func (a *App) GetTopology() models.ScanResult {
 }
 
 func (a *App) UpdateScannerConfig(
-    config models.ScannerConfig,
+	config models.ScannerConfig,
 ) error {
 
-    logger.Info(
-        "NEW SCANNER CONFIG:",
-        config,
-    )
+	logger.Info(
+		"NEW SCANNER CONFIG:",
+		config,
+	)
 
-    return a.scanner.UpdateConfig(
-        config,
-    )
+	return a.scanner.UpdateConfig(
+		config,
+	)
 }
 
 func (a *App) GetScannerConfig() models.ScannerConfig {
-    return a.scanner.GetConfig()
+	return a.scanner.GetConfig()
 }
 
 func (a *App) ScanWifi() ([]wifi.Network, error) {

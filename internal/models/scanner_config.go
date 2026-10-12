@@ -9,6 +9,7 @@ type ScannerConfig struct {
 	EnableSSDP       bool `json:"enable_ssdp"`
 	EnableSNMP       bool `json:"enable_snmp"`
 	EnableTCP        bool `json:"enable_tcp"`
+	EnableSMB        bool `json:"enable_smb"`
 	EnableUDP        bool `json:"enable_udp"`
 
 	Workers int `json:"workers"`

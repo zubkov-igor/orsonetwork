@@ -23,13 +23,11 @@ func IdentifyDevice(
 	)
 
 	hostname := strings.ToLower(host.Hostname)
-vendor := strings.ToLower(host.Vendor)
+	vendor := strings.ToLower(host.Vendor)
 
-scores := make(
-    map[models.DeviceType]int,
-)
-
-
+	scores := make(
+		map[models.DeviceType]int,
+	)
 
 	// =========================
 	// Router / Gateway
@@ -342,19 +340,19 @@ func containsAny(
 }
 
 func hasEvidence(
-    evidence []models.FingerprintEvidence,
-    value string,
+	evidence []models.FingerprintEvidence,
+	value string,
 ) bool {
 
-    for _, item := range evidence {
+	for _, item := range evidence {
 
-        if strings.EqualFold(
-            item.Value,
-            value,
-        ) {
-            return true
-        }
-    }
+		if strings.EqualFold(
+			item.Value,
+			value,
+		) {
+			return true
+		}
+	}
 
-    return false
+	return false
 }

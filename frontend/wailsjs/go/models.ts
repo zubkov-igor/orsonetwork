@@ -289,6 +289,7 @@ export namespace models {
 	    mdns: MDNSService[];
 	    udpServices: UDPService[];
 	    snmp: SNMPInfo[];
+	    smb_shares: SMBShare[];
 	    sources: DiscoverySource[];
 	    fingerprint: FingerprintEvidence[];
 	    online: boolean;
@@ -313,6 +314,7 @@ export namespace models {
 	        this.mdns = this.convertValues(source["mdns"], MDNSService);
 	        this.udpServices = this.convertValues(source["udpServices"], UDPService);
 	        this.snmp = this.convertValues(source["snmp"], SNMPInfo);
+	        this.smb_shares = this.convertValues(source["smb_shares"], SMBShare);
 	        this.sources = this.convertValues(source["sources"], DiscoverySource);
 	        this.fingerprint = this.convertValues(source["fingerprint"], FingerprintEvidence);
 	        this.online = source["online"];
@@ -417,6 +419,7 @@ export namespace models {
 	    enable_ssdp: boolean;
 	    enable_snmp: boolean;
 	    enable_tcp: boolean;
+	    enable_smb: boolean;
 	    enable_udp: boolean;
 	    workers: number;
 	
@@ -434,6 +437,7 @@ export namespace models {
 	        this.enable_ssdp = source["enable_ssdp"];
 	        this.enable_snmp = source["enable_snmp"];
 	        this.enable_tcp = source["enable_tcp"];
+	        this.enable_smb = source["enable_smb"];
 	        this.enable_udp = source["enable_udp"];
 	        this.workers = source["workers"];
 	    }

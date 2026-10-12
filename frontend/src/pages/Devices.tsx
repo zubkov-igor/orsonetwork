@@ -6,6 +6,48 @@ import { topology, selectedDevice, setSelectedDevice } from "../store/topology";
 
 import Select from "../components/Select";
 
+function formatSMBShareType(type: string): string {
+  const value = Number(type);
+
+  if (!Number.isFinite(value)) {
+    return type || "Unknown";
+  }
+
+  const unsigned = value >>> 0;
+  const baseType = unsigned & 0xff;
+
+  let name: string;
+
+  switch (baseType) {
+    case 0:
+      name = "Disk share";
+      break;
+    case 1:
+      name = "Print queue";
+      break;
+    case 2:
+      name = "Device";
+      break;
+    case 3:
+      name = "IPC";
+      break;
+    default:
+      name = `Unknown (${baseType})`;
+  }
+
+  const suffixes: string[] = [];
+
+  if ((unsigned & 0x80000000) !== 0) {
+    suffixes.push("special");
+  }
+
+  if ((unsigned & 0x02000000) !== 0) {
+    suffixes.push("temporary");
+  }
+
+  return suffixes.length > 0 ? `${name} (${suffixes.join(", ")})` : name;
+}
+
 export default function Devices() {
   const [search, setSearch] = createSignal("");
 
@@ -149,6 +191,7 @@ export default function Devices() {
 
                   <span class="device-details__ip">{device().ip}</span>
                 </div>
+
                 <span
                   class={`device-status ${
                     device().online
@@ -157,8 +200,6 @@ export default function Devices() {
                   }`}
                 ></span>
               </div>
-
-              <div class="device-details__status"></div>
 
               {/* NETWORK */}
 
@@ -204,7 +245,6 @@ export default function Devices() {
               </div>
 
               {/* SERVICES */}
-              <hr />
 
               <div class="device-details__section">
                 <Show
@@ -222,7 +262,7 @@ export default function Devices() {
                           </span>
 
                           <strong class="device-details__service-name">
-                            {port.service || "unknown"}
+                            {port.service || "Unknown"}
                           </strong>
                         </div>
                       )}
@@ -231,18 +271,57 @@ export default function Devices() {
                 </Show>
               </div>
 
-              {/* HTTP */}
+              {/* SMB SHARES */}
 
-              <hr />
+              <Show
+                when={device().smb_shares && device().smb_shares.length > 0}
+              >
+                <div class="device-details__section">
+                  <h3>SMB Shares</h3>
+
+                  <div class="device-details__shares">
+                    <For each={device().smb_shares}>
+                      {(share) => (
+                        <div class="device-details__share">
+                          <div class="device-details__share-header">
+                            <strong class="device-details__share-name">
+                              {share.name || "—"}
+                            </strong>
+
+                            <span class="device-details__share-type">
+                              {share.type
+                                ? formatSMBShareType(share.type)
+                                : "Unknown"}
+                            </span>
+                          </div>
+
+                          <Show when={share.comment}>
+                            <div class="device-details__share-comment">
+                              {share.comment}
+                            </div>
+                          </Show>
+                        </div>
+                      )}
+                    </For>
+                  </div>
+                </div>
+              </Show>
+
+              {/* HTTP */}
 
               <Show when={device().http && device().http.length > 0}>
                 <div class="device-details__section">
+                  <h3>HTTP</h3>
+
                   <For each={device().http}>
                     {(http) => (
                       <div>
                         <div class="device-details__row">
-                          <span>Scheme</span>
-                          <strong>{http.scheme || "—"}</strong>
+                          <span>Endpoint</span>
+                          <strong>
+                            {(http.scheme || "http").toUpperCase()} /{" "}
+                            {http.port || "—"}
+                          </strong>
                         </div>
 
                         <div class="device-details__row">
@@ -258,6 +337,11 @@ export default function Devices() {
                         <div class="device-details__row">
                           <span>Status</span>
                           <strong>{http.statusCode || "—"}</strong>
+                        </div>
+
+                        <div class="device-details__row">
+                          <span>Content-Type</span>
+                          <strong>{http.contentType || "—"}</strong>
                         </div>
                       </div>
                     )}
@@ -278,7 +362,7 @@ export default function Devices() {
                       <div class="device-details__row">
                         <span>UDP / {service.port}</span>
 
-                        <strong>{service.service || "unknown"}</strong>
+                        <strong>{service.service || "Unknown"}</strong>
                       </div>
                     )}
                   </For>
@@ -293,10 +377,31 @@ export default function Devices() {
 
                   <For each={device().snmp}>
                     {(info) => (
-                      <div class="device-details__row">
-                        <span>SNMP</span>
+                      <div>
+                        <div class="device-details__row">
+                          <span>Version</span>
+                          <strong>{info.Version || "—"}</strong>
+                        </div>
 
-                        <strong>{JSON.stringify(info)}</strong>
+                        <div class="device-details__row">
+                          <span>Community</span>
+                          <strong>{info.Community || "—"}</strong>
+                        </div>
+
+                        <div class="device-details__row">
+                          <span>System</span>
+                          <strong>{info.SysName || "—"}</strong>
+                        </div>
+
+                        <div class="device-details__row">
+                          <span>Description</span>
+                          <strong>{info.SysDescr || "—"}</strong>
+                        </div>
+
+                        <div class="device-details__row">
+                          <span>Location</span>
+                          <strong>{info.SysLocation || "—"}</strong>
+                        </div>
                       </div>
                     )}
                   </For>
@@ -309,15 +414,29 @@ export default function Devices() {
                 <div class="device-details__section">
                   <h3>mDNS</h3>
 
-                  <For each={device().mdns}>
-                    {(service) => (
-                      <div class="device-details__row">
-                        <span>Service</span>
+                  <div class="device-details__mdns">
+                    <For each={device().mdns}>
+                      {(service) => (
+                        <div class="device-details__mdns-item">
+                          <div class="device-details__mdns-header">
+                            <strong class="device-details__mdns-name">
+                              {service.name || "—"}
+                            </strong>
 
-                        <strong>{JSON.stringify(service)}</strong>
-                      </div>
-                    )}
-                  </For>
+                            <span class="device-details__mdns-service">
+                              {service.service || "Unknown"}
+                            </span>
+                          </div>
+
+                          <div class="device-details__mdns-meta">
+                            {service.host || "—"}
+                            {service.ip ? ` · ${service.ip}` : ""}
+                            {service.port ? ` · ${service.port}` : ""}
+                          </div>
+                        </div>
+                      )}
+                    </For>
+                  </div>
                 </div>
               </Show>
             </aside>
