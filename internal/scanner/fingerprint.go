@@ -145,6 +145,21 @@ func BuildFingerprint(host models.Host) []models.FingerprintEvidence {
 		}
 	}
 
+	// SMB
+	for _, share := range host.SMBShares {
+		if share.Name == "" {
+			continue
+		}
+
+		evidence = append(
+			evidence,
+			models.FingerprintEvidence{
+				Source: models.DiscoveryTCP,
+				Value:  "smb-share:" + strings.ToLower(share.Name),
+			},
+		)
+	}
+
 	// =========================
 	// UDP
 	// =========================

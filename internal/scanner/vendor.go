@@ -10,7 +10,7 @@ import (
 	"OrsoNetwork/internal/logger"
 )
 
-//go:embed data/ieee-oui.txt
+//go:embed data/manuf.txt
 var vendorTXT []byte
 
 var (
