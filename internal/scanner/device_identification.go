@@ -29,22 +29,34 @@ func IdentifyDevice(
 		map[models.DeviceType]int,
 	)
 
-	// Strong HTTP fingerprint evidence
+	routerHTTPFingerprint := 0
+
 	if hasEvidence(evidence, "http-fingerprint:router-ui") {
-		scores[models.DeviceRouter] += 30
+		routerHTTPFingerprint++
 	}
 
 	if hasEvidence(evidence, "http-fingerprint:router-firmware") {
-		scores[models.DeviceRouter] += 30
+		routerHTTPFingerprint++
 	}
 
 	if hasEvidence(evidence, "http-fingerprint:router-login") {
-		scores[models.DeviceRouter] += 30
+		routerHTTPFingerprint++
 	}
+
+	switch routerHTTPFingerprint {
+	case 1:
+		scores[models.DeviceRouter] += 30
+	case 2:
+		scores[models.DeviceRouter] += 40
+	case 3:
+		scores[models.DeviceRouter] += 45
+	}
+
 	if hasEvidence(evidence, "smb-share:admin$") &&
 		hasEvidence(evidence, "smb-share:c$") {
 		scores[models.DeviceComputer] += 50
 	}
+
 	// =========================
 	// Router / Gateway
 	// =========================
@@ -212,6 +224,7 @@ func IdentifyDevice(
 		return models.DeviceIdentification{
 			Type:       models.DeviceUnknown,
 			Confidence: 0,
+			Scores:     scores,
 		}
 	}
 
@@ -222,6 +235,7 @@ func IdentifyDevice(
 	return models.DeviceIdentification{
 		Type:       bestType,
 		Confidence: bestScore,
+		Scores:     scores,
 	}
 }
 

@@ -1,72 +1,81 @@
 package scanner
 
-import "OrsoNetwork/internal/models"
+import (
+	"OrsoNetwork/internal/logger"
+	"OrsoNetwork/internal/models"
+)
 
 func CalculateConfidence(
 	host models.Host,
+	evidence []models.FingerprintEvidence,
+	deviceType models.DeviceType,
+	scores map[models.DeviceType]int,
 ) int {
 
-	score := 0
+	if deviceType == models.DeviceUnknown {
+		return 0
+	}
 
-	for _, source := range host.Sources {
+	bestScore := scores[deviceType]
+	secondScore := 0
 
-		switch source.Type {
+	for candidateType, candidateScore := range scores {
 
-		case models.DiscoveryARP:
-			score += 20
+		if candidateType == models.DeviceUnknown {
+			continue
+		}
 
-		case models.DiscoveryReverseDNS:
-			score += 20
+		if candidateType == deviceType {
+			continue
+		}
 
-		case models.DiscoveryNetBIOS:
-			score += 30
-
-		case models.DiscoveryMDNS:
-			score += 25
+		if candidateScore > secondScore {
+			secondScore = candidateScore
 		}
 	}
 
-	// MAC address found
-
-	if host.MAC != "" {
-		score += 10
+	if bestScore < 20 {
+		return 0
 	}
 
-	// Vendor found
+	margin := bestScore - secondScore
 
-	if host.Vendor != "" {
-		score += 15
+	strength := float64(bestScore-20) / 80 * 100
+
+	if strength > 100 {
+		strength = 100
 	}
 
-	// Hostname found
+	marginScore := float64(margin) / float64(bestScore) * 100
 
-	if host.Hostname != "" {
-		score += 15
+	confidence := int(
+		strength * marginScore / 100,
+	)
+
+	if confidence > 100 {
+		confidence = 100
 	}
 
-	// Open ports found
+	logger.Debug(
+		"CONFIDENCE INPUT:",
+		host.IP,
+		"TYPE:",
+		deviceType,
+		"BEST SCORE:",
+		bestScore,
+		"SECOND SCORE:",
+		secondScore,
+		"MARGIN:",
+		margin,
+		"STRENGTH:",
+		strength,
+		"MARGIN SCORE:",
+		marginScore,
+		"CONFIDENCE:",
+		confidence,
+	)
 
-	if len(host.Ports) > 0 {
-		score += 10
-	}
-
-	// HTTP information found
-
-	if len(host.HTTP) > 0 {
-		score += 10
-	}
-
-	// UDP service found
-
-	if len(host.UDPServices) > 0 {
-		score += 10
-	}
-
-	if score > 100 {
-		score = 100
-	}
-
-	return score
+	return confidence
 }
 
 func CollectEvidence(host models.Host) []string {

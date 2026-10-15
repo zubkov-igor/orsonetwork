@@ -4,4 +4,6 @@ type DeviceIdentification struct {
 	Type DeviceType
 
 	Confidence int
+
+	Scores map[DeviceType]int
 }

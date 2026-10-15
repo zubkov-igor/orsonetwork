@@ -239,11 +239,20 @@ func EnrichHosts(
 			evidence,
 		)
 
+		logger.Debug(
+			"IDENTIFICATION SCORES:",
+			hosts[i].IP,
+			identification.Scores,
+		)
+
 		hosts[i].Type = identification.Type
 
 		hosts[i].Confidence =
 			CalculateConfidence(
 				hosts[i],
+				evidence,
+				identification.Type,
+				identification.Scores,
 			)
 
 		logger.Debug(
@@ -367,5 +376,4 @@ func UpdateHostStatus(
 		"OFFLINE",
 		"REASON: NO RESPONSE",
 	)
-
 }
