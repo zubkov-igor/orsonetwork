@@ -22,7 +22,6 @@ func IdentifyDevice(
 		"MDNS:", len(host.MDNS),
 	)
 
-	hostname := strings.ToLower(host.Hostname)
 	vendor := strings.ToLower(host.Vendor)
 
 	scores := make(
@@ -54,22 +53,13 @@ func IdentifyDevice(
 
 	if hasEvidence(evidence, "smb-share:admin$") &&
 		hasEvidence(evidence, "smb-share:c$") {
+
 		scores[models.DeviceComputer] += 50
 	}
 
 	// =========================
 	// Router / Gateway
 	// =========================
-
-	if containsAny(
-		hostname,
-		"router",
-		"gateway",
-		"mikrotik",
-		"openwrt",
-	) {
-		scores[models.DeviceRouter] += 80
-	}
 
 	if containsAny(
 		vendor,
@@ -84,61 +74,6 @@ func IdentifyDevice(
 	}
 
 	// =========================
-	// Camera
-	// =========================
-
-	if containsAny(
-		hostname,
-		"camera",
-		"cam",
-		"ipc",
-		"nvr",
-	) {
-		scores[models.DeviceCamera] += 80
-	}
-
-	// =========================
-	// Printer
-	// =========================
-
-	if containsAny(
-		hostname,
-		"printer",
-		"print",
-	) {
-		scores[models.DevicePrinter] += 80
-	}
-
-	// =========================
-	// NAS
-	// =========================
-
-	if containsAny(
-		hostname,
-		"nas",
-		"storage",
-		"synology",
-		"qnap",
-	) {
-		scores[models.DeviceNAS] += 80
-	}
-
-	// =========================
-	// Computer
-	// =========================
-
-	if containsAny(
-		hostname,
-		"desktop",
-		"pc",
-		"laptop",
-		"computer",
-		"workstation",
-	) {
-		scores[models.DeviceComputer] += 70
-	}
-
-	// =========================
 	// Ports
 	// =========================
 
@@ -146,15 +81,15 @@ func IdentifyDevice(
 
 		switch port.Number {
 
-		case 22:
-			scores[models.DeviceServer] += 20
-
 		case 3389:
 			scores[models.DeviceComputer] += 20
 
 		case 445:
 			scores[models.DeviceComputer] += 15
 			scores[models.DeviceNAS] += 15
+
+		case 135:
+			scores[models.DeviceComputer] += 20
 		}
 	}
 
@@ -167,20 +102,6 @@ func IdentifyDevice(
 		server := strings.ToLower(
 			httpInfo.Server,
 		)
-
-		if strings.Contains(
-			server,
-			"apache",
-		) {
-			scores[models.DeviceComputer] += 10
-		}
-
-		if strings.Contains(
-			server,
-			"nginx",
-		) {
-			scores[models.DeviceComputer] += 10
-		}
 
 		if strings.Contains(
 			server,

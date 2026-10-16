@@ -34,8 +34,9 @@ func ScanHTTP(ip string, port int) models.HTTPInfo {
 	defer resp.Body.Close()
 
 	info.Server = resp.Header.Get("Server")
-	info.StatusCode = resp.StatusCode
 	info.ContentType = resp.Header.Get("Content-Type")
+	info.PoweredBy = resp.Header.Get("X-Powered-By")
+	info.StatusCode = resp.StatusCode
 
 	body, err := io.ReadAll(
 		io.LimitReader(resp.Body, 32768),

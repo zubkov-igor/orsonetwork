@@ -97,6 +97,15 @@ func BuildFingerprint(host models.Host) []models.FingerprintEvidence {
 				Source: models.DiscoveryTCP,
 				Value:  "ssh",
 			})
+
+			banner := strings.ToLower(port.Banner)
+
+			if strings.Contains(banner, "openssh") {
+				evidence = append(evidence, models.FingerprintEvidence{
+					Source: models.DiscoveryTCP,
+					Value:  "ssh-banner:openssh",
+				})
+			}
 		case 135:
 			evidence = append(evidence, models.FingerprintEvidence{
 				Source: models.DiscoveryTCP,
@@ -294,6 +303,16 @@ func BuildFingerprint(host models.Host) []models.FingerprintEvidence {
 				models.FingerprintEvidence{
 					Source: models.DiscoveryTCP,
 					Value:  "http-server:" + httpInfo.Server,
+				},
+			)
+		}
+
+		if httpInfo.PoweredBy != "" {
+			evidence = append(
+				evidence,
+				models.FingerprintEvidence{
+					Source: models.DiscoveryTCP,
+					Value:  "http-powered-by:" + strings.ToLower(httpInfo.PoweredBy),
 				},
 			)
 		}

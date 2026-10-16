@@ -9,6 +9,7 @@ type HTTPInfo struct {
 
 	StatusCode  int    `json:"statusCode"`
 	ContentType string `json:"contentType"`
+	PoweredBy   string `json:"poweredBy"`
 
 	Scripts []string `json:"scripts"`
 

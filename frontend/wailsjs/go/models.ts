@@ -35,6 +35,7 @@ export namespace models {
 	    title: string;
 	    statusCode: number;
 	    contentType: string;
+	    poweredBy: string;
 	    scripts: string[];
 	    keywords: string[];
 	    fingerprint: string[];
@@ -51,6 +52,7 @@ export namespace models {
 	        this.title = source["title"];
 	        this.statusCode = source["statusCode"];
 	        this.contentType = source["contentType"];
+	        this.poweredBy = source["poweredBy"];
 	        this.scripts = source["scripts"];
 	        this.keywords = source["keywords"];
 	        this.fingerprint = source["fingerprint"];
