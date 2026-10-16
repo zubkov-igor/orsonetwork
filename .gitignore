@@ -3,3 +3,6 @@ node_modules
 frontend/dist
 capture
 *.log
+*.info
+*.lst
+*.sh
