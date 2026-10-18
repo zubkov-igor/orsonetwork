@@ -22,8 +22,8 @@ export default function TopologyGraph(props: TopologyGraphProps) {
     cy.layout({
       name: "dagre",
       rankDir: "TB",
-      nodeSep: compact ? 45 : 50, // было 20
-      rankSep: compact ? 55 : 70, // было 35
+      nodeSep: compact ? 45 : 50,
+      rankSep: compact ? 55 : 70,
       edgeSep: compact ? 15 : 10,
       padding: compact ? 30 : 40,
       animate: !compact,
@@ -46,10 +46,10 @@ export default function TopologyGraph(props: TopologyGraphProps) {
       .getPropertyValue("--color-gateway-border")
       .trim();
     const colorLight = styles.getPropertyValue("--color-light").trim();
-    const colorSwitch = styles.getPropertyValue("--color-switch").trim();
-    const colorSwitchBorder = styles
-      .getPropertyValue("--color-switch-border")
-      .trim();
+    //   const colorSwitch = styles.getPropertyValue("--color-switch").trim();
+    //   const colorSwitchBorder = styles
+    //     .getPropertyValue("--color-switch-border")
+    //     .trim();
     const colorServer = styles.getPropertyValue("--color-server").trim();
     const colorServerBorder = styles
       .getPropertyValue("--color-server-border")
@@ -88,9 +88,9 @@ export default function TopologyGraph(props: TopologyGraphProps) {
             "text-halign": "center",
             "text-margin-y": 6,
             "font-size": 11,
-            "font-weight": "bold",
+            "font-weight": "normal",
             "text-wrap": "wrap",
-            "text-max-width": "80px",
+            "text-max-width": "40px",
             "border-width": 1,
             "border-color": colorNodeBorder,
           },
@@ -157,17 +157,6 @@ export default function TopologyGraph(props: TopologyGraphProps) {
             "text-margin-y": -8,
           },
         },
-        // Switch
-        {
-          selector: 'node[type = "switch"]',
-          style: {
-            "background-color": colorSwitch,
-            shape: "rectangle",
-            width: 20,
-            height: 20,
-            "border-color": colorSwitchBorder,
-          },
-        },
         // Server
         {
           selector: 'node[type = "server"]',
@@ -181,7 +170,7 @@ export default function TopologyGraph(props: TopologyGraphProps) {
         },
         // AP
         {
-          selector: 'node[type = "ap"]',
+          selector: 'node[type = "access_point"]',
           style: {
             "background-color": colorAP,
             shape: "triangle",
@@ -192,7 +181,7 @@ export default function TopologyGraph(props: TopologyGraphProps) {
         },
         // Host
         {
-          selector: 'node[type = "host"]',
+          selector: 'node[type = "computer"]',
           style: {
             "background-color": colorNode,
             shape: "ellipse",
@@ -202,7 +191,7 @@ export default function TopologyGraph(props: TopologyGraphProps) {
           },
         },
         {
-          selector: 'node.compact[type = "host"]',
+          selector: 'node.compact[type = "computer"]',
           style: {
             width: 18,
             height: 18,

@@ -48,34 +48,67 @@ function formatSMBShareType(type: string): string {
   return suffixes.length > 0 ? `${name} (${suffixes.join(", ")})` : name;
 }
 
+function formatDeviceType(type: string): string {
+  switch (type) {
+    case "access_point":
+      return "Access Point";
+    case "computer":
+      return "Computer";
+    case "gateway":
+      return "Gateway";
+    case "server":
+      return "Server";
+    case "phone":
+      return "Phone";
+    case "tablet":
+      return "Tablet";
+    case "printer":
+      return "Printer";
+    case "camera":
+      return "Camera";
+    case "nas":
+      return "NAS";
+    case "tv":
+      return "TV";
+    case "console":
+      return "Console";
+    case "iot":
+      return "IoT";
+    case "router":
+      return "Router";
+    case "unknown":
+      return "Unknown";
+    default:
+      return type;
+  }
+}
+
 export default function Devices() {
   const [search, setSearch] = createSignal("");
-
   const [typeFilter, setTypeFilter] = createSignal("all");
+
+  const deviceTypes = () => {
+    const types = new Set(
+      (topology()?.nodes ?? []).map((node) => node.type).filter(Boolean),
+    );
+
+    return Array.from(types).sort();
+  };
 
   const devices = () => {
     const nodes = topology()?.nodes ?? [];
 
-    return nodes
-      .filter((node) => {
-        return (
-          node.mac ||
-          node.hostname ||
-          node.vendor ||
-          (node.type && node.type !== "unknown")
-        );
-      })
-      .filter((node) => {
-        const text = `${node.label}
-                    ${node.ip}
-                    ${node.mac ?? ""}
-                    ${node.vendor ?? ""}`.toLowerCase();
+    return nodes.filter((node) => {
+      const text = `${node.label}
+                  ${node.ip}
+                  ${node.mac ?? ""}
+                  ${node.vendor ?? ""}`.toLowerCase();
 
-        return (
-          text.includes(search().toLowerCase()) &&
-          (typeFilter() === "all" || node.type === typeFilter())
-        );
-      });
+      return (
+        text.includes(search().toLowerCase()) &&
+        (typeFilter() === "all" || node.type === typeFilter())
+      );
+    });
   };
 
   let rowElements: Record<string, HTMLTableRowElement> = {};
@@ -99,14 +132,10 @@ export default function Devices() {
               value: "all",
               label: "All",
             },
-            {
-              value: "gateway",
-              label: "Gateway",
-            },
-            {
-              value: "host",
-              label: "Host",
-            },
+            ...deviceTypes().map((type) => ({
+              value: type,
+              label: formatDeviceType(type),
+            })),
           ]}
           onChange={setTypeFilter}
         />
