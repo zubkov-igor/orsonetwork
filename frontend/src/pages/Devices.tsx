@@ -275,107 +275,115 @@ export default function Devices() {
 
               {/* SERVICES */}
 
-              <div class="device-details__section">
-                <Show
-                  when={device().ports && device().ports.length > 0}
-                  fallback={
-                    <div class="device-details__empty">No open ports</div>
-                  }
-                >
-                  <div class="device-details__services">
-                    <For each={device().ports}>
-                      {(port) => (
-                        <div class="device-details__service">
-                          <span class="device-details__service-port">
-                            {port.protocol || "TCP"} / {port.number}
-                          </span>
+              <details class="device-details__accordion">
+                <summary>Services</summary>
 
-                          <strong class="device-details__service-name">
-                            {port.service || "Unknown"}
-                          </strong>
-                        </div>
-                      )}
-                    </For>
-                  </div>
-                </Show>
-              </div>
+                <div class="device-details__section">
+                  <Show
+                    when={device().ports && device().ports.length > 0}
+                    fallback={
+                      <div class="device-details__empty">No open ports</div>
+                    }
+                  >
+                    <div class="device-details__services">
+                      <For each={device().ports}>
+                        {(port) => (
+                          <div class="device-details__service">
+                            <span class="device-details__service-port">
+                              {port.protocol || "TCP"} / {port.number}
+                            </span>
+
+                            <strong class="device-details__service-name">
+                              {port.service || "Unknown"}
+                            </strong>
+                          </div>
+                        )}
+                      </For>
+                    </div>
+                  </Show>
+                </div>
+              </details>
 
               {/* SMB SHARES */}
 
               <Show
                 when={device().smb_shares && device().smb_shares.length > 0}
               >
-                <div class="device-details__section">
-                  <h3>SMB Shares</h3>
+                <details class="device-details__accordion">
+                  <summary>SMB Shares</summary>
 
-                  <div class="device-details__shares">
-                    <For each={device().smb_shares}>
-                      {(share) => (
-                        <div class="device-details__share">
-                          <div class="device-details__share-header">
-                            <strong class="device-details__share-name">
-                              {share.name || "—"}
-                            </strong>
+                  <div class="device-details__section">
+                    <div class="device-details__shares">
+                      <For each={device().smb_shares}>
+                        {(share) => (
+                          <div class="device-details__share">
+                            <div class="device-details__share-header">
+                              <strong class="device-details__share-name">
+                                {share.name || "—"}
+                              </strong>
 
-                            <span class="device-details__share-type">
-                              {share.type
-                                ? formatSMBShareType(share.type)
-                                : "Unknown"}
-                            </span>
-                          </div>
-
-                          <Show when={share.comment}>
-                            <div class="device-details__share-comment">
-                              {share.comment}
+                              <span class="device-details__share-type">
+                                {share.type
+                                  ? formatSMBShareType(share.type)
+                                  : "Unknown"}
+                              </span>
                             </div>
-                          </Show>
-                        </div>
-                      )}
-                    </For>
+
+                            <Show when={share.comment}>
+                              <div class="device-details__share-comment">
+                                {share.comment}
+                              </div>
+                            </Show>
+                          </div>
+                        )}
+                      </For>
+                    </div>
                   </div>
-                </div>
+                </details>
               </Show>
 
               {/* HTTP */}
 
               <Show when={device().http && device().http.length > 0}>
-                <div class="device-details__section">
-                  <h3>HTTP</h3>
+                <details class="device-details__accordion">
+                  <summary>HTTP</summary>
 
-                  <For each={device().http}>
-                    {(http) => (
-                      <div>
-                        <div class="device-details__row">
-                          <span>Endpoint</span>
-                          <strong>
-                            {(http.scheme || "http").toUpperCase()} /{" "}
-                            {http.port || "—"}
-                          </strong>
-                        </div>
+                  <div class="device-details__section">
+                    <For each={device().http}>
+                      {(http) => (
+                        <div>
+                          <div class="device-details__row">
+                            <span>Endpoint</span>
+                            <strong>
+                              {(http.scheme || "http").toUpperCase()} /{" "}
+                              {http.port || "—"}
+                            </strong>
+                          </div>
 
-                        <div class="device-details__row">
-                          <span>Server</span>
-                          <strong>{http.server || "—"}</strong>
-                        </div>
+                          <div class="device-details__row">
+                            <span>Server</span>
+                            <strong>{http.server || "—"}</strong>
+                          </div>
 
-                        <div class="device-details__row">
-                          <span>Title</span>
-                          <strong>{http.title || "—"}</strong>
-                        </div>
+                          <div class="device-details__row">
+                            <span>Title</span>
+                            <strong>{http.title || "—"}</strong>
+                          </div>
 
-                        <div class="device-details__row">
-                          <span>Status</span>
-                          <strong>{http.statusCode || "—"}</strong>
-                        </div>
+                          <div class="device-details__row">
+                            <span>Status</span>
+                            <strong>{http.statusCode || "—"}</strong>
+                          </div>
 
-                        <div class="device-details__row">
-                          <span>Content-Type</span>
-                          <strong>{http.contentType || "—"}</strong>
+                          <div class="device-details__row">
+                            <span>Content-Type</span>
+                            <strong>{http.contentType || "—"}</strong>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </For>
-                </div>
+                      )}
+                    </For>
+                  </div>
+                </details>
               </Show>
 
               {/* UDP SERVICES */}
