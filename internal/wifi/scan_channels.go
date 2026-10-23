@@ -12,7 +12,7 @@ func ScanChannels(
 	duration time.Duration,
 ) ([]AccessPoint, []Client, error) {
 	accessPoints := make(map[string]AccessPoint)
-	var clients []Client
+	clients := make(map[string]Client)
 
 	if err := enableMonitor(iface); err != nil {
 		return nil, nil, fmt.Errorf(
@@ -51,7 +51,10 @@ func ScanChannels(
 			accessPoints[ap.BSSID] = ap
 		}
 
-		clients = append(clients, channelClients...)
+		for _, client := range channelClients {
+			key := client.MAC + "|" + client.BSSID
+			clients[key] = client
+		}
 	}
 
 	result := make([]AccessPoint, 0, len(accessPoints))
@@ -60,5 +63,11 @@ func ScanChannels(
 		result = append(result, ap)
 	}
 
-	return result, clients, nil
+	clientResult := make([]Client, 0, len(clients))
+
+	for _, client := range clients {
+		clientResult = append(clientResult, client)
+	}
+
+	return result, clientResult, nil
 }

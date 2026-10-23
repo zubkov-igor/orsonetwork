@@ -6,16 +6,43 @@ import (
 	"OrsoNetwork/internal/scanner"
 	"OrsoNetwork/internal/wifi"
 	"context"
+	"time"
 )
 
 type App struct {
 	scanner *scanner.Scanner
 }
 
+type DeepScanResult struct {
+	AccessPoints []wifi.AccessPoint `json:"accessPoints"`
+	Clients      []wifi.Client      `json:"clients"`
+}
+
 func NewApp() *App {
 	return &App{
 		scanner: scanner.New(),
 	}
+}
+
+func (a *App) DeepScanWifi() (DeepScanResult, error) {
+	iface, err := wifi.FindWirelessInterface()
+	if err != nil {
+		return DeepScanResult{}, err
+	}
+
+	accessPoints, clients, err := wifi.DeepScan(
+		context.Background(),
+		iface,
+		5*time.Second,
+	)
+	if err != nil {
+		return DeepScanResult{}, err
+	}
+
+	return DeepScanResult{
+		AccessPoints: accessPoints,
+		Clients:      clients,
+	}, nil
 }
 
 func (a *App) startup(ctx context.Context) {

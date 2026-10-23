@@ -38,6 +38,14 @@ func AirodumpScan(
 	scanCtx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
 
+	fmt.Printf("AirodumpScan: iface=%s\n", iface)
+
+	out, err := exec.Command(iwBin, "dev", iface, "info").CombinedOutput()
+	fmt.Printf("AirodumpScan: iw info:\n%s\n", out)
+	if err != nil {
+		fmt.Printf("AirodumpScan: iw info error: %v\n", err)
+	}
+
 	cmd := exec.CommandContext(
 		scanCtx,
 		"/usr/sbin/airodump-ng",

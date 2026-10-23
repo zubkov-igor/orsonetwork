@@ -1,5 +1,7 @@
 import { createSignal } from "solid-js";
-import { ScanWifi } from "../../wailsjs/go/main/App";
+import { ScanWifi, DeepScanWifi } from "../../wailsjs/go/main/App";
+
+import { wifi } from "../../wailsjs/go/models";
 
 interface WifiNetwork {
   ssid: string;
@@ -47,7 +49,11 @@ function getRiskLabel(risk: keyof typeof riskOrder): string {
 export default function Utility() {
   const [networks, setNetworks] = createSignal<WifiNetwork[]>([]);
   const [loading, setLoading] = createSignal(false);
+  const [deepLoading, setDeepLoading] = createSignal(false);
   const [error, setError] = createSignal("");
+
+  const [accessPoints, setAccessPoints] = createSignal<wifi.AccessPoint[]>([]);
+  const [clients, setClients] = createSignal<wifi.Client[]>([]);
 
   const sortedNetworks = () =>
     [...networks()].sort(
@@ -72,19 +78,43 @@ export default function Utility() {
       const result = await ScanWifi();
       setNetworks(result ?? []);
     } catch (e: any) {
-      console.error(e);
-      setError(e?.message || "Wi-Fi scanning error");
+      console.error("Wi-Fi Scan error:", e);
+      setError(e?.message || String(e));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDeepScan() {
+    setDeepLoading(true);
+    setError("");
+
+    try {
+      const result = await DeepScanWifi();
+
+      setAccessPoints(result.accessPoints ?? []);
+      setClients(result.clients ?? []);
+
+      console.log("Deep Scan:", result);
+    } catch (e: any) {
+      console.error("Deep Scan error:", e);
+      setError(e?.message || String(e));
+    } finally {
+      setDeepLoading(false);
     }
   }
 
   return (
     <div class="utility-page">
       <div class="utility-page__header">
-        <h2>Wi‑Fi Scanner</h2>
-        <button onClick={handleScan} disabled={loading()}>
-          {loading() ? "Scan..." : "Scanning Wi‑Fi"}
+        <h2>Wi-Fi Scanner</h2>
+
+        <button onClick={handleScan} disabled={loading() || deepLoading()}>
+          {loading() ? "Scan..." : "Scanning Wi-Fi"}
+        </button>
+
+        <button onClick={handleDeepScan} disabled={loading() || deepLoading()}>
+          {deepLoading() ? "Deep Scanning..." : "Deep Scan"}
         </button>
       </div>
 
@@ -113,6 +143,66 @@ export default function Utility() {
         </div>
       </div>
 
+      {/* Deep Scan — Access Points */}
+      {accessPoints().length > 0 && (
+        <section class="wifi-deep-scan">
+          <h3>Access Points ({accessPoints().length})</h3>
+          {networks().length > 0 && (
+            <table>
+              <thead>
+                <tr>
+                  <th>SSID</th>
+                  <th>BSSID</th>
+                  <th>Signal</th>
+                  <th>Channel</th>
+                  <th>Encryption</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {accessPoints().map((ap) => (
+                  <tr>
+                    <td>{ap.ssid || "<hidden>"}</td>
+                    <td>{ap.bssid}</td>
+                    <td>{ap.signal}</td>
+                    <td>{ap.channel}</td>
+                    <td>{ap.encryption}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+      )}
+
+      {/* Deep Scan — Clients */}
+      {clients().length > 0 && (
+        <section class="wifi-deep-scan">
+          <h3>Clients ({clients().length})</h3>
+
+          <table>
+            <thead>
+              <tr>
+                <th>MAC</th>
+                <th>Access Point</th>
+                <th>Signal</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {clients().map((client) => (
+                <tr>
+                  <td>{client.mac}</td>
+                  <td>{client.bssid || "Unknown"}</td>
+                  <td>{client.signal}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {/* Обычный Wi-Fi Scan */}
       <table>
         <thead>
           <tr>
@@ -124,6 +214,7 @@ export default function Utility() {
             <th>BSSID</th>
           </tr>
         </thead>
+
         <tbody>
           {sortedNetworks().map((n) => {
             const risk = getWifiRisk(n);

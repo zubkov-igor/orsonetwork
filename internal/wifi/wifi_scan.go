@@ -100,12 +100,12 @@ func splitNmcliLine(line string, expected int) []string {
 
 func scanIw() ([]Network, error) {
 	// Определяем беспроводной интерфейс
-	iface, err := findWirelessInterface()
+	iface, err := FindWirelessInterface()
 	if err != nil {
 		return nil, err
 	}
 
-	cmd := exec.Command("iw", "dev", iface, "scan")
+	cmd := exec.Command(iwBin, "dev", iface, "scan")
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -114,8 +114,8 @@ func scanIw() ([]Network, error) {
 	return parseIwScan(string(out)), nil
 }
 
-func findWirelessInterface() (string, error) {
-	out, err := exec.Command("iw", "dev").Output()
+func FindWirelessInterface() (string, error) {
+	out, err := exec.Command(iwBin, "dev").Output()
 	if err != nil {
 		return "", err
 	}
@@ -123,10 +123,12 @@ func findWirelessInterface() (string, error) {
 	lines := strings.Split(string(out), "\n")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
+
 		if strings.HasPrefix(line, "Interface ") {
 			return strings.TrimPrefix(line, "Interface "), nil
 		}
 	}
+
 	return "", exec.ErrNotFound
 }
 
