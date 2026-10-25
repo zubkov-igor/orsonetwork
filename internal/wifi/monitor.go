@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	iwBin = "/usr/sbin/iw"
-	ipBin = "/usr/sbin/ip"
+	iwBin       = "/usr/sbin/iw"
+	ipBin       = "/usr/sbin/ip"
+	airodumpBin = "/usr/sbin/airodump-ng"
 )
 
 var command = exec.Command
@@ -42,13 +43,6 @@ func enableMonitor(iface string) (err error) {
 	}
 
 	changed = true
-
-	if err := exec.Command(
-		ipBin,
-		"link", "set", iface, "down",
-	).Run(); err != nil {
-		return fmt.Errorf("bring interface down: %w", err)
-	}
 
 	if output, err := exec.Command(
 		iwBin,

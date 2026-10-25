@@ -29,26 +29,16 @@ func AirodumpScan(
 	if err != nil {
 		return nil, nil, err
 	}
-	//defer os.RemoveAll(dir)
+	defer os.RemoveAll(dir)
 
 	prefix := filepath.Join(dir, "scan")
-
-	fmt.Println("Airodump output:", dir)
 
 	scanCtx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
 
-	fmt.Printf("AirodumpScan: iface=%s\n", iface)
-
-	out, err := exec.Command(iwBin, "dev", iface, "info").CombinedOutput()
-	fmt.Printf("AirodumpScan: iw info:\n%s\n", out)
-	if err != nil {
-		fmt.Printf("AirodumpScan: iw info error: %v\n", err)
-	}
-
 	cmd := exec.CommandContext(
 		scanCtx,
-		"/usr/sbin/airodump-ng",
+		airodumpBin,
 		"--output-format", "csv",
 		"--channel", strconv.Itoa(channel),
 		"--write", prefix,
