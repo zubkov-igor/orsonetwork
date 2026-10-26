@@ -33,7 +33,7 @@ func (a *App) DeepScanWifi() (DeepScanResult, error) {
 	accessPoints, clients, err := wifi.DeepScan(
 		context.Background(),
 		iface,
-		5*time.Second,
+		10*time.Second,
 	)
 	if err != nil {
 		return DeepScanResult{}, err

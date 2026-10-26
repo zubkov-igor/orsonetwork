@@ -14,133 +14,58 @@ const (
 
 var command = exec.Command
 
-func enableMonitor(iface string) (err error) {
-	changed := false
-
-	defer func() {
-		if err == nil || !changed {
-			return
-		}
-
-		if restoreErr := restoreManaged(iface); restoreErr != nil {
-			err = fmt.Errorf(
-				"%w; failed to restore managed mode: %v",
-				err,
-				restoreErr,
-			)
-		}
-	}()
+func createMonitorInterface(iface string) (string, error) {
+	const monitorIface = "mon0"
 
 	if output, err := exec.Command(
-		ipBin,
-		"link", "set", iface, "down",
+		iwBin,
+		"dev", iface,
+		"interface", "add",
+		monitorIface,
+		"type", "monitor",
 	).CombinedOutput(); err != nil {
-		return fmt.Errorf(
-			"bring interface down: %w: %s",
+		return "", fmt.Errorf(
+			"create monitor interface: %w: %s",
 			err,
 			strings.TrimSpace(string(output)),
 		)
 	}
 
-	changed = true
-
 	if output, err := exec.Command(
-		iwBin,
-		"dev", iface, "set", "type", "monitor",
+		ipBin,
+		"link", "set", monitorIface, "up",
 	).CombinedOutput(); err != nil {
-		return fmt.Errorf(
-			"set monitor mode: %w: %s",
+		_ = exec.Command(
+			iwBin,
+			"dev", monitorIface,
+			"del",
+		).Run()
+
+		return "", fmt.Errorf(
+			"bring monitor interface up: %w: %s",
 			err,
-			string(output),
+			strings.TrimSpace(string(output)),
 		)
 	}
 
-	if err := exec.Command(
-		ipBin,
-		"link", "set", iface, "up",
-	).Run(); err != nil {
-		return fmt.Errorf("bring interface up: %w", err)
-	}
-
-	return nil
+	return monitorIface, nil
 }
 
-func disableMonitor(iface string) error {
-	if err := exec.Command(
-		ipBin,
-		"link", "set", iface, "down",
-	).Run(); err != nil {
-		return fmt.Errorf("bring interface down: %w", err)
+func deleteMonitorInterface(iface string) error {
+	if iface == "" {
+		return nil
 	}
 
 	if output, err := exec.Command(
-		iwBin,
-		"dev", iface, "set", "type", "managed",
+		iwBin, "dev", iface, "del",
 	).CombinedOutput(); err != nil {
 		return fmt.Errorf(
-			"set managed mode: %w: %s",
+			"delete monitor interface: %w: %s",
 			err,
-			string(output),
-		)
-	}
-
-	if err := exec.Command(
-		ipBin,
-		"link", "set", iface, "up",
-	).Run(); err != nil {
-		return fmt.Errorf("bring interface up: %w", err)
-	}
-
-	if output, err := exec.Command(
-		"nmcli",
-		"device", "set", iface, "managed", "yes",
-	).CombinedOutput(); err != nil {
-		return fmt.Errorf(
-			"set interface managed: %w: %s",
-			err,
-			string(output),
+			strings.TrimSpace(string(output)),
 		)
 	}
 
 	return nil
 }
 
-func restoreManaged(iface string) error {
-	if err := exec.Command(
-		ipBin,
-		"link", "set", iface, "down",
-	).Run(); err != nil {
-		return fmt.Errorf("bring interface down: %w", err)
-	}
-
-	if output, err := exec.Command(
-		iwBin,
-		"dev", iface, "set", "type", "managed",
-	).CombinedOutput(); err != nil {
-		return fmt.Errorf(
-			"set managed mode: %w: %s",
-			err,
-			string(output),
-		)
-	}
-
-	if err := exec.Command(
-		ipBin,
-		"link", "set", iface, "up",
-	).Run(); err != nil {
-		return fmt.Errorf("bring interface up: %w", err)
-	}
-
-	if output, err := exec.Command(
-		"nmcli",
-		"device", "set", iface, "managed", "yes",
-	).CombinedOutput(); err != nil {
-		return fmt.Errorf(
-			"set interface managed: %w: %s",
-			err,
-			string(output),
-		)
-	}
-
-	return nil
-}

@@ -14,17 +14,18 @@ func ScanChannels(
 	accessPoints := make(map[string]AccessPoint)
 	clients := make(map[string]Client)
 
-	if err := enableMonitor(iface); err != nil {
+	monitorIface, err := createMonitorInterface(iface)
+	if err != nil {
 		return nil, nil, fmt.Errorf(
-			"enable monitor mode: %w",
+			"create monitor interface: %w",
 			err,
 		)
 	}
 
 	defer func() {
-		if err := disableMonitor(iface); err != nil {
+		if err := deleteMonitorInterface(monitorIface); err != nil {
 			fmt.Printf(
-				"warning: failed to restore managed mode: %v\n",
+				"warning: failed to delete monitor interface: %v\n",
 				err,
 			)
 		}
@@ -35,7 +36,7 @@ func ScanChannels(
 
 		aps, channelClients, err := AirodumpScan(
 			ctx,
-			iface,
+			monitorIface,
 			channel,
 			duration,
 		)
@@ -46,6 +47,13 @@ func ScanChannels(
 				err,
 			)
 		}
+
+		fmt.Printf(
+			"Channel %d: %d APs, %d clients\n",
+			channel,
+			len(aps),
+			len(channelClients),
+		)
 
 		for _, ap := range aps {
 			accessPoints[ap.BSSID] = ap

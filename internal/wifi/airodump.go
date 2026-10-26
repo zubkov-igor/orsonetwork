@@ -29,6 +29,7 @@ func AirodumpScan(
 	if err != nil {
 		return nil, nil, err
 	}
+
 	defer os.RemoveAll(dir)
 
 	prefix := filepath.Join(dir, "scan")

@@ -1,89 +1,32 @@
 import { createSignal } from "solid-js";
-import { ScanWifi, DeepScanWifi } from "../../wailsjs/go/main/App";
 
+import { DeepScanWifi } from "../../wailsjs/go/main/App";
 import { wifi } from "../../wailsjs/go/models";
 
-interface WifiNetwork {
-  ssid: string;
-  bssid?: string;
-  signal?: string;
-  security?: string;
-  channel?: string;
-  freq?: string;
-  rate?: string;
-  mode?: string;
-}
-
-function getWifiRisk(n: WifiNetwork): "critical" | "high" | "medium" | "low" {
-  const sec = (n.security || "").toUpperCase();
-
-  if (!sec || sec === "--" || sec.includes("OPEN")) return "critical";
-  if (sec.includes("WEP")) return "critical";
-  if (sec.includes("WPA") && !sec.includes("WPA2") && !sec.includes("WPA3"))
-    return "high";
-  if (sec.includes("TKIP")) return "high";
-  if (sec.includes("WPA2") && !sec.includes("WPA3")) return "medium";
-  return "low";
-}
-
-const riskOrder = {
-  critical: 0,
-  high: 1,
-  medium: 2,
-  low: 3,
-} as const;
-
-function getRiskLabel(risk: keyof typeof riskOrder): string {
-  switch (risk) {
-    case "critical":
-      return "No encryption or WEP";
-    case "high":
-      return "Outdated WPA / TKIP";
-    case "medium":
-      return "WPA2 — consider upgrading to WPA3";
-    case "low":
-      return "Modern protection (WPA3)";
-  }
-}
-
 export default function Utility() {
-  const [networks, setNetworks] = createSignal<WifiNetwork[]>([]);
-  const [loading, setLoading] = createSignal(false);
   const [deepLoading, setDeepLoading] = createSignal(false);
   const [error, setError] = createSignal("");
 
   const [accessPoints, setAccessPoints] = createSignal<wifi.AccessPoint[]>([]);
   const [clients, setClients] = createSignal<wifi.Client[]>([]);
 
-  const sortedNetworks = () =>
-    [...networks()].sort(
-      (a, b) => riskOrder[getWifiRisk(a)] - riskOrder[getWifiRisk(b)],
+  const getAccessPointLabel = (bssid?: string) => {
+    if (!bssid) {
+      return "Not associated";
+    }
+
+    const ap = accessPoints().find(
+      (item) => item.bssid.toLowerCase() === bssid.toLowerCase(),
     );
 
-  const riskStats = () => {
-    const stats = { critical: 0, high: 0, medium: 0, low: 0 };
-
-    for (const n of networks()) {
-      stats[getWifiRisk(n)]++;
+    if (!ap) {
+      return bssid;
     }
 
-    return stats;
+    const ssid = ap.ssid || "<hidden>";
+
+    return `${ssid} (${ap.bssid})`;
   };
-
-  async function handleScan() {
-    setLoading(true);
-    setError("");
-
-    try {
-      const result = await ScanWifi();
-      setNetworks(result ?? []);
-    } catch (e: any) {
-      console.error("Wi-Fi Scan error:", e);
-      setError(e?.message || String(e));
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function handleDeepScan() {
     setDeepLoading(true);
@@ -109,69 +52,50 @@ export default function Utility() {
       <div class="utility-page__header">
         <h2>Wi-Fi Scanner</h2>
 
-        <button onClick={handleScan} disabled={loading() || deepLoading()}>
-          {loading() ? "Scan..." : "Scanning Wi-Fi"}
-        </button>
+    <button
+    onClick={handleDeepScan}
+    disabled={deepLoading()}
+  >
+    {deepLoading() ? "Deep Scanning..." : "Deep Scan"}
+  </button>
+</div>
 
-        <button onClick={handleDeepScan} disabled={loading() || deepLoading()}>
-          {deepLoading() ? "Deep Scanning..." : "Deep Scan"}
-        </button>
-      </div>
+{deepLoading() && (
+  <div class="scan-spinner">
+    <span class="scan-spinner__icon"></span>
+  </div>
+)}
 
-      {error() && <p class="error">{error()}</p>}
-
-      {/* Счётчики рисков */}
-      <div class="wifi-summary">
-        <div class="risk-metric risk-metric--critical">
-          <span class="risk-metric__value">{riskStats().critical}</span>
-          <span class="risk-metric__label">Critical</span>
-        </div>
-
-        <div class="risk-metric risk-metric--high">
-          <span class="risk-metric__value">{riskStats().high}</span>
-          <span class="risk-metric__label">High</span>
-        </div>
-
-        <div class="risk-metric risk-metric--medium">
-          <span class="risk-metric__value">{riskStats().medium}</span>
-          <span class="risk-metric__label">Medium</span>
-        </div>
-
-        <div class="risk-metric risk-metric--low">
-          <span class="risk-metric__value">{riskStats().low}</span>
-          <span class="risk-metric__label">Low</span>
-        </div>
-      </div>
+{error() && <p class="error">{error()}</p>}
 
       {/* Deep Scan — Access Points */}
       {accessPoints().length > 0 && (
         <section class="wifi-deep-scan">
           <h3>Access Points ({accessPoints().length})</h3>
-          {networks().length > 0 && (
-            <table>
-              <thead>
-                <tr>
-                  <th>SSID</th>
-                  <th>BSSID</th>
-                  <th>Signal</th>
-                  <th>Channel</th>
-                  <th>Encryption</th>
-                </tr>
-              </thead>
 
-              <tbody>
-                {accessPoints().map((ap) => (
-                  <tr>
-                    <td>{ap.ssid || "<hidden>"}</td>
-                    <td>{ap.bssid}</td>
-                    <td>{ap.signal}</td>
-                    <td>{ap.channel}</td>
-                    <td>{ap.encryption}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+          <table>
+            <thead>
+              <tr>
+                <th>SSID</th>
+                <th>BSSID</th>
+                <th>Signal</th>
+                <th>Channel</th>
+                <th>Encryption</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {accessPoints().map((ap) => (
+                <tr>
+                  <td>{ap.ssid || "<hidden>"}</td>
+                  <td>{ap.bssid}</td>
+                  <td>{ap.signal}</td>
+                  <td>{ap.channel}</td>
+                  <td>{ap.encryption}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </section>
       )}
 
@@ -193,7 +117,7 @@ export default function Utility() {
               {clients().map((client) => (
                 <tr>
                   <td>{client.mac}</td>
-                  <td>{client.bssid || "Unknown"}</td>
+                  <td>{getAccessPointLabel(client.bssid)}</td>
                   <td>{client.signal}</td>
                 </tr>
               ))}
@@ -201,44 +125,6 @@ export default function Utility() {
           </table>
         </section>
       )}
-
-      {/* Обычный Wi-Fi Scan */}
-      <table>
-        <thead>
-          <tr>
-            <th>SSID</th>
-            <th>Signal</th>
-            <th>Security</th>
-            <th>Risk</th>
-            <th>Channel</th>
-            <th>BSSID</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {sortedNetworks().map((n) => {
-            const risk = getWifiRisk(n);
-
-            return (
-              <tr>
-                <td>{n.ssid}</td>
-                <td>{n.signal}</td>
-                <td>{n.security}</td>
-                <td>
-                  <span
-                    class={`risk-badge risk-badge--${risk}`}
-                    title={getRiskLabel(risk)}
-                  >
-                    {risk}
-                  </span>
-                </td>
-                <td>{n.channel}</td>
-                <td>{n.bssid}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
     </div>
   );
 }
