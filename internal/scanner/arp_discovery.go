@@ -133,13 +133,10 @@ func ARPDiscovery(
 			continue
 		}
 
-		mac, err := client.Resolve(
-			addr,
-		)
+		mac, err := client.Resolve(addr)
 
 		if err != nil {
-
-			logger.Warn(
+			logger.Debug(
 				"ARP RESOLVE ERROR:",
 				host.IP,
 				err.Error(),
@@ -174,6 +171,11 @@ func ARPDiscovery(
 
 func ARPResolve(ip string) string {
 
+	logger.Debug(
+		"ARP RESOLVE ENTER:",
+		ip,
+	)
+
 	interfaces := GetInterfaces()
 
 	var iface *net.Interface
@@ -195,6 +197,13 @@ func ARPResolve(ip string) string {
 		}
 
 		iface = found
+
+		logger.Debug(
+			"ARP RESOLVE INTERFACE:",
+			iface.Name,
+			iface.HardwareAddr.String(),
+		)
+
 		break
 	}
 
@@ -210,7 +219,19 @@ func ARPResolve(ip string) string {
 
 	defer client.Close()
 
+	logger.Debug(
+		"ARP AFTER DIAL CHECK:",
+		ip,
+	)
+
 	addr, err := netip.ParseAddr(ip)
+
+	logger.Debug(
+		"ARP AFTER PARSE:",
+		ip,
+		"ERR:",
+		err,
+	)
 
 	if err != nil {
 		return ""
@@ -218,17 +239,29 @@ func ARPResolve(ip string) string {
 
 	err = client.SetReadDeadline(
 		time.Now().Add(
-			300 * time.Millisecond,
+			1 * time.Second,
 		),
 	)
 
 	if err != nil {
+		logger.Debug(
+			"ARP DEADLINE ERROR:",
+			ip,
+			err.Error(),
+		)
+
 		return ""
 	}
 
 	mac, err := client.Resolve(addr)
 
 	if err != nil {
+		logger.Debug(
+			"ARP RESOLVE ERROR:",
+			ip,
+			err.Error(),
+		)
+
 		return ""
 	}
 

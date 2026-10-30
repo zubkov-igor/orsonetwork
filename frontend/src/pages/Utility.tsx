@@ -10,24 +10,6 @@ export default function Utility() {
   const [accessPoints, setAccessPoints] = createSignal<wifi.AccessPoint[]>([]);
   const [clients, setClients] = createSignal<wifi.Client[]>([]);
 
-  const getAccessPointLabel = (bssid?: string) => {
-    if (!bssid) {
-      return "Not associated";
-    }
-
-    const ap = accessPoints().find(
-      (item) => item.bssid.toLowerCase() === bssid.toLowerCase(),
-    );
-
-    if (!ap) {
-      return bssid;
-    }
-
-    const ssid = ap.ssid || "<hidden>";
-
-    return `${ssid} (${ap.bssid})`;
-  };
-
   async function handleDeepScan() {
     setDeepLoading(true);
     setError("");
@@ -47,26 +29,64 @@ export default function Utility() {
     }
   }
 
+  const groupedClients = () => {
+    const groups = new Map<
+      string,
+      {
+        accessPoint?: wifi.AccessPoint;
+        clients: wifi.Client[];
+      }
+    >();
+
+    const unassociated: wifi.Client[] = [];
+
+    for (const client of clients()) {
+      const bssid = client.bssid?.trim();
+
+      if (!bssid || bssid.toLowerCase() === "(not associated)") {
+        unassociated.push(client);
+        continue;
+      }
+
+      const key = bssid.toLowerCase();
+
+      if (!groups.has(key)) {
+        const accessPoint = accessPoints().find(
+          (ap) => ap.bssid.toLowerCase() === key,
+        );
+
+        groups.set(key, {
+          accessPoint,
+          clients: [],
+        });
+      }
+
+      groups.get(key)!.clients.push(client);
+    }
+
+    return {
+      associated: Array.from(groups.values()),
+      unassociated,
+    };
+  };
+
   return (
     <div class="utility-page">
       <div class="utility-page__header">
         <h2>Wi-Fi Scanner</h2>
 
-    <button
-    onClick={handleDeepScan}
-    disabled={deepLoading()}
-  >
-    {deepLoading() ? "Deep Scanning..." : "Deep Scan"}
-  </button>
-</div>
+        <button onClick={handleDeepScan} disabled={deepLoading()}>
+          {deepLoading() ? "Deep Scanning..." : "Deep Scan"}
+        </button>
+      </div>
 
-{deepLoading() && (
-  <div class="scan-spinner">
-    <span class="scan-spinner__icon"></span>
-  </div>
-)}
+      {deepLoading() && (
+        <div class="scan-spinner">
+          <span class="scan-spinner__icon"></span>
+        </div>
+      )}
 
-{error() && <p class="error">{error()}</p>}
+      {error() && <p class="error">{error()}</p>}
 
       {/* Deep Scan — Access Points */}
       {accessPoints().length > 0 && (
@@ -81,17 +101,19 @@ export default function Utility() {
                 <th>Signal</th>
                 <th>Channel</th>
                 <th>Encryption</th>
+                <th>VENDOR</th>
               </tr>
             </thead>
 
             <tbody>
               {accessPoints().map((ap) => (
                 <tr>
-                  <td>{ap.ssid || "<hidden>"}</td>
+                  <td>{ap.ssid || "<Hidden network>"}</td>
                   <td>{ap.bssid}</td>
                   <td>{ap.signal}</td>
                   <td>{ap.channel}</td>
                   <td>{ap.encryption}</td>
+                  <td>{ap.vendor || "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -104,25 +126,106 @@ export default function Utility() {
         <section class="wifi-deep-scan">
           <h3>Clients ({clients().length})</h3>
 
-          <table>
-            <thead>
-              <tr>
-                <th>MAC</th>
-                <th>Access Point</th>
-                <th>Signal</th>
-              </tr>
-            </thead>
+          {groupedClients().associated.length > 0 && (
+            <div class="wifi-client-groups">
+              {groupedClients().associated.map((group) => (
+                <div class="wifi-client-group">
+                  <div class="wifi-client-group__header">
+                    <div class="wifi-client-group__info">
+                      <strong>{group.accessPoint?.ssid || "Unknown AP"}</strong>
 
-            <tbody>
-              {clients().map((client) => (
-                <tr>
-                  <td>{client.mac}</td>
-                  <td>{getAccessPointLabel(client.bssid)}</td>
-                  <td>{client.signal}</td>
-                </tr>
+                      <span class="wifi-client-group__bssid">
+                        BSSID:{" "}
+                        {group.accessPoint?.bssid || group.clients[0]?.bssid}
+                      </span>
+                    </div>
+
+                    <span class="wifi-client-group__count">
+                      {group.clients.length}{" "}
+                      {group.clients.length === 1 ? "client" : "clients"}
+                    </span>
+                  </div>
+
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Client MAC</th>
+                        <th>VENDOR</th>
+                        <th>Brand</th>
+                        <th>Model</th>
+                        <th>Signal</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {group.clients.map((client) => (
+                        <tr>
+                          <td>{client.mac}</td>
+                          <td>{client.vendor || "—"}</td>
+                          <td>{client.brand || "—"}</td>
+                          <td>{client.model || "—"}</td>
+                          <td>
+                            {client.signal && client.signal !== "-1"
+                              ? client.signal
+                              : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          )}
+
+          {groupedClients().unassociated.length > 0 && (
+            <div class="wifi-client-group wifi-client-group--unassociated">
+              <div class="wifi-client-group__header">
+                <div class="wifi-client-group__info">
+                  <strong>Not associated</strong>
+
+                  <span class="wifi-client-group__bssid">
+                    No associated access point
+                  </span>
+                </div>
+
+                <span class="wifi-client-group__count">
+                  {groupedClients().unassociated.length}{" "}
+                  {groupedClients().unassociated.length === 1
+                    ? "client"
+                    : "clients"}
+                </span>
+              </div>
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>Client MAC</th>
+                    <th>VENDOR</th>
+                    <th>Brand</th>
+                    <th>Model</th>
+                    <th>Signal</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {groupedClients().unassociated.map((client) => (
+                    <tr>
+                      <td>{client.mac}</td>
+                      <td>{client.vendor || "—"}</td>
+                      <td>{client.brand || "—"}</td>
+                      <td>{client.model || "—"}</td>
+                      <td>
+                        {client.signal && client.signal !== "-1"
+                          ? client.signal
+                          : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
       )}
     </div>

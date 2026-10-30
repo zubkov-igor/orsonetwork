@@ -39,6 +39,38 @@ func (a *App) DeepScanWifi() (DeepScanResult, error) {
 		return DeepScanResult{}, err
 	}
 
+	for i := range clients {
+		host, ok := a.scanner.FindHostByMAC(clients[i].MAC)
+		if !ok {
+			continue
+		}
+
+		logger.Info(
+			"WIFI CLIENT MATCH:",
+			clients[i].MAC,
+			"IP:",
+			host.IP,
+			"HOSTNAME:",
+			host.Hostname,
+		)
+
+		model, modelOK := scanner.FindDeviceModelFromHostname(host.Hostname)
+
+		if modelOK {
+			clients[i].Brand = model.Brand
+			clients[i].Model = model.Name
+
+			logger.Info(
+				"WIFI CLIENT MODEL:",
+				clients[i].MAC,
+				"BRAND:",
+				model.Brand,
+				"MODEL:",
+				model.Name,
+			)
+		}
+	}
+
 	return DeepScanResult{
 		AccessPoints: accessPoints,
 		Clients:      clients,

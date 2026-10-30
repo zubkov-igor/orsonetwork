@@ -41,9 +41,24 @@ func FindDeviceModelFromHostname(hostname string) (DeviceModel, bool) {
 
 	// Берём только первую DNS label.
 	code := strings.SplitN(hostname, ".", 2)[0]
-
-	// Коды в базе записаны с разным регистром.
 	code = strings.ToUpper(code)
 
-	return LookupDeviceModel(code)
+	// Сначала пробуем точное совпадение.
+	if model, ok := LookupDeviceModel(code); ok {
+		return model, true
+	}
+
+	// Некоторые устройства добавляют дополнительное имя
+	// после кода модели: например M2004J19C-Redmi9.
+	parts := strings.Split(code, "-")
+
+	for i := len(parts) - 1; i > 0; i-- {
+		candidate := strings.Join(parts[:i], "-")
+
+		if model, ok := LookupDeviceModel(candidate); ok {
+			return model, true
+		}
+	}
+
+	return DeviceModel{}, false
 }

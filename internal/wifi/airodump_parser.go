@@ -4,6 +4,8 @@ import (
 	"encoding/csv"
 	"fmt"
 	"strings"
+
+	"OrsoNetwork/internal/scanner"
 )
 
 func parseAirodumpCSV(data string) ([]AccessPoint, []Client, error) {
@@ -44,12 +46,15 @@ func parseAirodumpCSV(data string) ([]AccessPoint, []Client, error) {
 				continue
 			}
 
+			bssid := strings.TrimSpace(record[0])
+
 			accessPoints = append(accessPoints, AccessPoint{
-				BSSID:      strings.TrimSpace(record[0]),
+				BSSID:      bssid,
 				Channel:    strings.TrimSpace(record[3]),
 				Signal:     strings.TrimSpace(record[8]),
 				Encryption: strings.TrimSpace(record[5]),
 				SSID:       strings.TrimSpace(record[13]),
+				Vendor:     scanner.LookupVendor(bssid),
 			})
 
 		case "clients":
@@ -57,10 +62,13 @@ func parseAirodumpCSV(data string) ([]AccessPoint, []Client, error) {
 				continue
 			}
 
+			mac := strings.TrimSpace(record[0])
+
 			clients = append(clients, Client{
-				MAC:    strings.TrimSpace(record[0]),
+				MAC:    mac,
 				Signal: strings.TrimSpace(record[3]),
 				BSSID:  strings.TrimSpace(record[5]),
+				Vendor: scanner.LookupVendor(mac),
 			})
 		}
 	}

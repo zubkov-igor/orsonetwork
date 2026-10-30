@@ -68,4 +68,3 @@ func deleteMonitorInterface(iface string) error {
 
 	return nil
 }
-

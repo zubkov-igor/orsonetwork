@@ -45,15 +45,6 @@ func discoverHostNew(
 				},
 			)
 		}
-
-		//	if pingDuration > 100*time.Millisecond {
-		//		logger.Debug(
-		//			"DISCOVERY SLOW:",
-		//			ip,
-		//			"PING:",
-		//			pingDuration,
-		//		)
-		//	}
 	}
 
 	// ARP
@@ -105,18 +96,6 @@ func discoverHostNew(
 
 		hostname := LookupReverseDNS(ip)
 
-		//	dnsDuration := time.Since(stepStart)
-
-		//	if dnsDuration > 100*time.Millisecond {
-
-		//		logger.Debug(
-		//			"DISCOVERY SLOW:",
-		//			ip,
-		//			"REVERSE DNS:",
-		//			dnsDuration,
-		//		)
-		//	}
-
 		if hostname != "" && host.Hostname == "" {
 
 			host.Hostname = hostname
@@ -130,16 +109,6 @@ func discoverHostNew(
 			)
 		}
 	}
-	// totalDuration := time.Since(start)
-
-	//if totalDuration > 1*time.Second {
-	//
-	//		logger.Debug(
-	//			"DISCOVERY SLOW TOTAL:",
-	//			ip,
-	//			totalDuration,
-	//		)
-	//	}
 
 	return host
 

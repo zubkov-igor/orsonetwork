@@ -493,6 +493,7 @@ export namespace wifi {
 	    signal?: string;
 	    encryption?: string;
 	    ssid: string;
+	    vendor?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new AccessPoint(source);
@@ -505,12 +506,16 @@ export namespace wifi {
 	        this.signal = source["signal"];
 	        this.encryption = source["encryption"];
 	        this.ssid = source["ssid"];
+	        this.vendor = source["vendor"];
 	    }
 	}
 	export class Client {
 	    mac: string;
 	    bssid?: string;
 	    signal?: string;
+	    vendor?: string;
+	    brand?: string;
+	    model?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Client(source);
@@ -521,6 +526,9 @@ export namespace wifi {
 	        this.mac = source["mac"];
 	        this.bssid = source["bssid"];
 	        this.signal = source["signal"];
+	        this.vendor = source["vendor"];
+	        this.brand = source["brand"];
+	        this.model = source["model"];
 	    }
 	}
 	export class Network {

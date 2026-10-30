@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"strings"
 	"time"
 
 	"OrsoNetwork/internal/logger"
@@ -8,7 +9,8 @@ import (
 )
 
 type Scanner struct {
-	Config models.ScannerConfig
+	Config       models.ScannerConfig
+	LastNetworks []models.Network
 }
 
 func New() *Scanner {
@@ -253,6 +255,8 @@ func (s *Scanner) Scan() []models.Network {
 		)
 	}
 
+	s.LastNetworks = networks
+
 	return networks
 }
 
@@ -356,4 +360,16 @@ func (s *Scanner) Topology() models.ScanResult {
 		Duration: time.Since(start).Milliseconds(),
 		LastScan: time.Now().Unix(),
 	}
+}
+
+func (s *Scanner) FindHostByMAC(mac string) (models.Host, bool) {
+	for _, network := range s.LastNetworks {
+		for _, host := range network.Hosts {
+			if strings.EqualFold(host.MAC, mac) {
+				return host, true
+			}
+		}
+	}
+
+	return models.Host{}, false
 }
